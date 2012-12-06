@@ -118,6 +118,11 @@ function Brush(canvasRenderingContext)
 			}
 		}
 	});
+	var knockout = false;
+	Object.defineProperty(this, "knockout", {
+		get: function(){return knockout;},
+		set: function(value){knockout = value;}
+	});
 	var size = 10;
 	Object.defineProperty(this, "size", {
 		get: function(){return size;},
@@ -179,10 +184,11 @@ function Brush(canvasRenderingContext)
 		this.delta = 0;
 		if(scale != 0)
 		{
-			this.context.save();
-			this.context.translate(Math.floor(x - halfSize), Math.floor(y - halfSize));
+			context.save();
+			context.globalCompositeOperation = knockout ? "destination-out" : "source-over";
+			context.translate(Math.floor(x - halfSize), Math.floor(y - halfSize));
 			drawFunction(halfSize + halfSize);
-			this.context.restore();
+			context.restore();
 		}
 		prevX = x;
 		prevY = y;
@@ -204,18 +210,21 @@ function Brush(canvasRenderingContext)
 			var xInterval = dx * drawStep;
 			var yInterval = dy * drawStep;
 			var scaleInterval = (scale - prevScale) * drawStep;
+			context.save();
+			context.globalCompositeOperation = knockout ? "destination-out" : "source-over";
 			while(delta > drawInterval)
 			{
 				prevScale += scaleInterval;
 				prevX += xInterval;
 				prevY += yInterval;
-				this.context.save();
+				context.save();
 				var halfSize = size * prevScale * 0.5;
-				this.context.translate(Math.floor(prevX - halfSize), Math.floor(prevY - halfSize));
+				context.translate(Math.floor(prevX - halfSize), Math.floor(prevY - halfSize));
 				drawFunction(halfSize + halfSize);
-				this.context.restore();
+				context.restore();
 				delta -= drawInterval;
 			}
+			context.restore();
 		}
 		else
 		{
