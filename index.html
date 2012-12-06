@@ -7,7 +7,7 @@
 	<div>
 		<canvas id="croquispopCanvas" width="500" height="500">
 	</div>
-	<img id="kkeumBrush" src="KKUEM_pencil.png" onload="brushLoaded()">
+	<img id="kkeumBrush" src="KKUEM_pencil.png">
 	<object id="tabletPlugin" type="application/x-wacomtabletplugin" width="0" height="0"></object>
 	<script>
 	//canvas
@@ -23,9 +23,11 @@
 	brush.size = 50;
 	brush.interval = 0.3;
 	brush.color = new Color(0, 0, 0, 1);
+	var brushImage = document.getElementById("kkeumBrush");
+	brushImage.addEventListener("load", brushLoaded);
 	function brushLoaded()
 	{
-		brush.image = document.getElementById("kkeumBrush");
+		brush.image = brushImage;
 	}
 	canvas.addEventListener("mousedown", onMouseDown);
 	document.addEventListener("mouseup", onMouseUp);
