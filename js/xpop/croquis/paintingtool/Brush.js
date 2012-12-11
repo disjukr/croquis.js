@@ -1,4 +1,4 @@
-define(["xpop/croquis/Color"],
+define(["xpop/croquis/color/Color"],
 	function (Color) {
 	return function (canvasRenderingContext)
 	{
@@ -7,7 +7,7 @@ define(["xpop/croquis/Color"],
 			get: function(){return context;},
 			set: function(value){context = value;}
 		});
-		var color = new Color(0, 0, 0, 1);
+		var color = new Color;
 		Object.defineProperty(this, "color",{
 			get: function(){return color;},
 			set: function(value)
@@ -20,7 +20,7 @@ define(["xpop/croquis/Color"],
 					brushContext.globalCompositeOperation = "source-over";
 					brushContext.drawImage(image, 0, 0, coloredImage.width, coloredImage.height);
 					brushContext.globalCompositeOperation = "source-in";
-					brushContext.fillStyle = color.toString();
+					brushContext.fillStyle = color.htmlColor;
 					brushContext.fillRect(0, 0, coloredImage.width, coloredImage.height);
 				}
 			}
@@ -62,7 +62,7 @@ define(["xpop/croquis/Color"],
 					var brushContext = coloredImage.getContext("2d");
 					brushContext.drawImage(image, 0, 0, coloredImage.width, coloredImage.height);
 					brushContext.globalCompositeOperation = "source-in";
-					brushContext.fillStyle = color.toString();
+					brushContext.fillStyle = color.htmlColor;
 					brushContext.fillRect(0, 0, coloredImage.width, coloredImage.height);
 					drawFunction = drawImage;
 				}
@@ -76,7 +76,7 @@ define(["xpop/croquis/Color"],
 		function drawCircle(size)
 		{
 			var halfSize = size * 0.5;
-			context.fillStyle = color.toString();
+			context.fillStyle = color.htmlColor;
 			context.beginPath();
 			context.arc(halfSize, halfSize, halfSize, 0, Math.PI * 2);
 			context.closePath();

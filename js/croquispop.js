@@ -1,9 +1,9 @@
-require(["xpop/croquis/Color",
-		"xpop/croquis/DrawData",
+require(["xpop/croquis/DrawData",
 		"xpop/croquis/Drawer",
 		"xpop/croquis/tabletapi",
+		"xpop/croquis/color/RGBColor",
 		"xpop/croquis/paintingtool/Brush"],
-	function (Color, DrawData, Drawer, tabletapi, Brush)
+	function (DrawData, Drawer, tabletapi, RGBColor, Brush)
 	{
 		var layers = document.getElementById("layers");
 		var canvas = document.createElement("canvas");
@@ -18,7 +18,7 @@ require(["xpop/croquis/Color",
 		var brush = new Brush(context);
 		brush.size = 50;
 		brush.interval = 0;
-		brush.color = new Color(0, 0, 0, 1);
+		brush.color = new RGBColor(0, 0, 0, 1);
 		document.body.addEventListener("mousedown", onMouseDown, false);
 		document.addEventListener("mouseup", onMouseUp, false);
 		function onMouseDown(e)
