@@ -42,6 +42,7 @@ define(["xpop/croquis/Color"],
 		});
 		var image = null;
 		var coloredImage = null;
+		var imageRatio = 1;
 		Object.defineProperty(this, "image", {
 			get: function(){return image;},
 			set: function(value)
@@ -54,6 +55,7 @@ define(["xpop/croquis/Color"],
 				else
 				{
 					image = value;
+					imageRatio = image.height / image.width;
 					coloredImage = document.createElement("canvas");
 					coloredImage.width = image.width;
 					coloredImage.height = image.height;
@@ -82,8 +84,7 @@ define(["xpop/croquis/Color"],
 		}
 		function drawImage(size)
 		{
-			//assume: image is square
-			context.drawImage(coloredImage, 0, 0, size, size);
+			context.drawImage(coloredImage, 0, 0, size, size * imageRatio);
 		}
 		this.down = function(x, y, scale)
 		{
@@ -93,7 +94,7 @@ define(["xpop/croquis/Color"],
 			{
 				context.save();
 				context.globalCompositeOperation = knockout ? "destination-out" : "source-over";
-				context.translate(Math.floor(x - halfSize), Math.floor(y - halfSize));
+				context.translate(Math.floor(x - halfSize), Math.floor(y - halfSize * imageRatio));
 				drawFunction(halfSize + halfSize);
 				context.restore();
 			}
@@ -126,7 +127,7 @@ define(["xpop/croquis/Color"],
 					prevY += yInterval;
 					context.save();
 					var halfSize = size * prevScale * 0.5;
-					context.translate(Math.floor(prevX - halfSize), Math.floor(prevY - halfSize));
+					context.translate(Math.floor(prevX - halfSize), Math.floor(prevY - halfSize * imageRatio));
 					drawFunction(halfSize + halfSize);
 					context.restore();
 					delta -= drawInterval;
