@@ -1,32 +1,44 @@
 define(["xpop/croquis/color/Color"],
 	function (Color) {
-	var RGBColor = function (red, green, blue, alpha)
+	var RGBColor = function (r, g, b, a)
 	{
-		var r = red;
-		Object.defineProperty(this, "r",{
-			get: function(){updateHTMLColor();},
-			set: function(value){r = value;}
-		});
-		var g = green;
-		Object.defineProperty(this, "g",{
-			get: function(){updateHTMLColor();},
-			set: function(value){g = value;}
-		});
-		var b = blue;
-		Object.defineProperty(this, "b",{
-			get: function(){updateHTMLColor();},
-			set: function(value){b = value;}
-		});
-		var a = alpha;
-		Object.defineProperty(this, "a",{
-			get: function(){updateHTMLColor();},
-			set: function(value){a = value;}
-		});
+		var r = r;
+		this.getR = function () {
+			return r;
+		}
+		this.setR = function (value) {
+			r = value;
+			updateHTMLColor();
+		}
+		var g = g;
+		this.getG = function () {
+			return g;
+		}
+		this.setG = function (value) {
+			g = value;
+			updateHTMLColor();
+		}
+		var b = b;
+		this.getB = function () {
+			return b;
+		}
+		this.setB = function (value) {
+			b = value;
+			updateHTMLColor();
+		}
+		var a = a;
+		this.getA = function () {
+			return a;
+		}
+		this.setA = function (value) {
+			a = value;
+			updateHTMLColor();
+		}
 		var htmlColor;
+		this.getHTMLColor = function () {
+			return htmlColor;
+		}
 		updateHTMLColor();
-		Object.defineProperty(this, "htmlColor",{
-			get: function(){return htmlColor;}
-		});
 		function updateHTMLColor()
 		{
 			htmlColor = "rgba(" +
@@ -35,7 +47,7 @@ define(["xpop/croquis/color/Color"],
 				Math.round(b * 0xFF) + "," +
 				a + ")";
 		}
-	};
+	}
 	RGBColor.prototype = new Color;
 	return RGBColor;
 });

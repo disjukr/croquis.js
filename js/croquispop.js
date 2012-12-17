@@ -14,11 +14,11 @@ require(["xpop/croquis/DrawData",
 		context.fillStyle = "#FFFFFF";
 		context.fillRect(0, 0, canvas.width, canvas.height);
 		var drawer = new Drawer;
-		drawer.drawInterval = 5;
+		drawer.setDrawInterval(5);
 		var brush = new Brush(context);
-		brush.size = 50;
-		brush.interval = 0;
-		brush.color = new RGBColor(0, 0, 0, 1);
+		brush.setSize(30);
+		brush.setInterval(0);
+		brush.setColor(new RGBColor(0.5, 0.5, 1, 1));
 		document.body.addEventListener("mousedown", onMouseDown, false);
 		document.addEventListener("mouseup", onMouseUp, false);
 		function onMouseDown(e)
