@@ -6,10 +6,25 @@ require(["xpop/croquis/DrawData",
 	function (DrawData, Drawer, tabletapi, RGBColor, Brush)
 	{
 		var layers = document.getElementById("layers");
+		var background = document.createElement("div");
+		layers.appendChild(background);
+		var backgroundImage = document.createElement("canvas");
+		backgroundImage.width = backgroundImage.height = 20;
+		var backgroundImageContext = backgroundImage.getContext("2d");
+		backgroundImageContext.fillStyle = "#FFFFFF";
+		backgroundImageContext.fillRect(0, 0, 20, 20);
+		backgroundImageContext.fillStyle = "#CCCCCC";
+		backgroundImageContext.fillRect(0, 0, 10, 10);
+		backgroundImageContext.fillRect(10, 10, 20, 20);
+		background.style.backgroundImage = "url(" + backgroundImage.toDataURL() + ")";
+		background.style.width = "500px";
+		background.style.height = "500px";
 		var canvas = document.createElement("canvas");
 		canvas.width = 500;
 		canvas.height = 500;
 		layers.appendChild(canvas);
+		canvas.style.marginTop = "-500px";
+		canvas.style.position = "absolute";
 		var context = canvas.getContext("2d");
 		context.fillStyle = "#FFFFFF";
 		context.fillRect(0, 0, canvas.width, canvas.height);
@@ -18,6 +33,7 @@ require(["xpop/croquis/DrawData",
 		drawer.setDrawInterval(5);
 
 		var brush = new Brush(context);
+		brush.setKnockout(true);
 		brush.setSize(30);
 		brush.setInterval(0);
 		brush.setColor(new RGBColor(0.5, 0.5, 1, 1));
