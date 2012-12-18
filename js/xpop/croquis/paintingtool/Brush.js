@@ -15,16 +15,7 @@ define(["xpop/croquis/color/Color"],
 		}
 		this.setColor = function (value) {
 			color = value;
-			if(image && coloredImage)
-			{
-				var brushContext = coloredImage.getContext("2d");
-				brushContext.clearRect(0, 0, coloredImage.width, coloredImage.height);
-				brushContext.globalCompositeOperation = "source-over";
-				brushContext.drawImage(image, 0, 0, coloredImage.width, coloredImage.height);
-				brushContext.globalCompositeOperation = "source-in";
-				brushContext.fillStyle = color.htmlColor;
-				brushContext.fillRect(0, 0, coloredImage.width, coloredImage.height);
-			}
+			transformedImageIsDirty = true;
 		}
 		var knockout = false;
 		this.getKnockout = function () {
@@ -39,6 +30,7 @@ define(["xpop/croquis/color/Color"],
 		}
 		this.setSize = function (value) {
 			size = value < 1 ? 1 : value;
+			transformedImageIsDirty = true;
 		}
 		var interval = 0.05;
 		this.getInterval = function () {
@@ -48,7 +40,8 @@ define(["xpop/croquis/color/Color"],
 			interval = value < 0.01 ? 0.01 : value;
 		}
 		var image = null;
-		var coloredImage = null;
+		var transformedImage = null;
+		var transformedImageIsDirty = true;
 		var imageRatio = 1;
 		this.getImage = function () {
 			return image;
@@ -56,22 +49,17 @@ define(["xpop/croquis/color/Color"],
 		this.setImage = function (value) {
 			if(value == null)
 			{
-				coloredImage = image = null;
+				transformedImage = image = null;
+				imageRatio = 1;
 				drawFunction = drawCircle;
 			}
 			else
 			{
 				image = value;
 				imageRatio = image.height / image.width;
-				coloredImage = document.createElement("canvas");
-				coloredImage.width = image.width;
-				coloredImage.height = image.height;
-				var brushContext = coloredImage.getContext("2d");
-				brushContext.drawImage(image, 0, 0, coloredImage.width, coloredImage.height);
-				brushContext.globalCompositeOperation = "source-in";
-				brushContext.fillStyle = color.getHTMLColor();
-				brushContext.fillRect(0, 0, coloredImage.width, coloredImage.height);
+				transformedImage = document.createElement("canvas");
 				drawFunction = drawImage;
+				transformedImageIsDirty = true;
 			}
 		}
 		var delta = 0;
@@ -79,6 +67,17 @@ define(["xpop/croquis/color/Color"],
 		var prevY = 0;
 		var prevScale = 0;
 		var drawFunction = drawCircle;
+		function transformImage()
+		{
+			transformedImage.width = size;
+			transformedImage.height = size * imageRatio;
+			var brushContext = transformedImage.getContext("2d");
+			brushContext.clearRect(0, 0, transformedImage.width, transformedImage.height);
+			brushContext.drawImage(image, 0, 0, transformedImage.width, transformedImage.height);
+			brushContext.globalCompositeOperation = "source-in";
+			brushContext.fillStyle = color.getHTMLColor();
+			brushContext.fillRect(0, 0, transformedImage.width, transformedImage.height);
+		}
 		function drawCircle(size)
 		{
 			var halfSize = size * 0.5;
@@ -90,7 +89,9 @@ define(["xpop/croquis/color/Color"],
 		}
 		function drawImage(size)
 		{
-			context.drawImage(coloredImage, 0, 0, size, size * imageRatio);
+			if(transformedImageIsDirty)
+				transformImage();
+			context.drawImage(transformedImage, 0, 0, size, size * imageRatio);
 		}
 		this.down = function(x, y, scale)
 		{
