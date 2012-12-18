@@ -6,33 +6,17 @@ define(["xpop/croquis/color/Color"],
 		this.getR = function () {
 			return r;
 		}
-		this.setR = function (value) {
-			r = value;
-			updateHTMLColor();
-		}
 		var g = g;
 		this.getG = function () {
 			return g;
-		}
-		this.setG = function (value) {
-			g = value;
-			updateHTMLColor();
 		}
 		var b = b;
 		this.getB = function () {
 			return b;
 		}
-		this.setB = function (value) {
-			b = value;
-			updateHTMLColor();
-		}
 		var a = a;
 		this.getA = function () {
 			return a;
-		}
-		this.setA = function (value) {
-			a = value;
-			updateHTMLColor();
 		}
 		var htmlColor;
 		this.getHTMLColor = function () {
