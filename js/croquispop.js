@@ -1,108 +1,20 @@
-require(["xpop/croquis/DrawData",
-		"xpop/croquis/Drawer",
-		"xpop/croquis/tabletapi",
-		"xpop/croquis/color/RGBColor",
-		"xpop/croquis/paintingtool/Brush"],
-	function (DrawData, Drawer, tabletapi, RGBColor, Brush)
-	{
-		var layers = document.getElementById("layers");
-		var background = document.createElement("div");
-		layers.appendChild(background);
-		var backgroundImage = document.createElement("canvas");
-		backgroundImage.width = backgroundImage.height = 20;
-		var backgroundImageContext = backgroundImage.getContext("2d");
-		backgroundImageContext.fillStyle = "#FFFFFF";
-		backgroundImageContext.fillRect(0, 0, 20, 20);
-		backgroundImageContext.fillStyle = "#CCCCCC";
-		backgroundImageContext.fillRect(0, 0, 10, 10);
-		backgroundImageContext.fillRect(10, 10, 20, 20);
-		background.style.backgroundImage = "url(" + backgroundImage.toDataURL() + ")";
-		background.style.width = "500px";
-		background.style.height = "500px";
-		var canvas = document.createElement("canvas");
-		canvas.width = 500;
-		canvas.height = 500;
-		layers.appendChild(canvas);
-		canvas.style.marginTop = "-500px";
-		canvas.style.position = "absolute";
-		var context = canvas.getContext("2d");
-		context.fillStyle = "#FFFFFF";
-		context.fillRect(0, 0, canvas.width, canvas.height);
-
-		var drawer = new Drawer;
-		drawer.setDrawInterval(5);
-
-		var brush = new Brush(context);
-		brush.setKnockout(true);
-		brush.setSize(30);
-		brush.setInterval(0);
-		brush.setColor(new RGBColor(0.5, 0.5, 1, 1));
-
-		var brushSizeSlider = document.getElementById("brushSizeSlider");
-		brushSizeSlider.value = brush.getSize();
-		brushSizeSlider.addEventListener("mousedown", function(e){
-			e.stopPropagation();
-		});
-		brushSizeSlider.addEventListener("change", function(){
-			drawer.addDrawData(new DrawData(brush, brush.setSize, [brushSizeSlider.value]));
-		});
-
-		var brushColorRSlider = document.getElementById("brushColorRSlider");
-		brushColorRSlider.value = brush.getColor().getR()*0xFF;
-		brushColorRSlider.addEventListener("mousedown", function(e){
-			e.stopPropagation();
-		});
-		brushColorRSlider.addEventListener("change", function(){
-			var brushColor = brush.getColor();
-			drawer.addDrawData(new DrawData(brush, brush.setColor, [new RGBColor(
-				brushColorRSlider.value/0xFF,
-				brushColor.getG(),
-				brushColor.getB(),
-				brushColor.getA())]));
-		});
-
-		var brushColorGSlider = document.getElementById("brushColorGSlider");
-		brushColorGSlider.value = brush.getColor().getG()*0xFF;
-		brushColorGSlider.addEventListener("mousedown", function(e){
-			e.stopPropagation();
-		});
-		brushColorGSlider.addEventListener("change", function(){
-			var brushColor = brush.getColor();
-			drawer.addDrawData(new DrawData(brush, brush.setColor, [new RGBColor(
-				brushColor.getR(),
-				brushColorGSlider.value/255,
-				brushColor.getB(),
-				brushColor.getA())]));
-		});
-
-		var brushColorBSlider = document.getElementById("brushColorBSlider");
-		brushColorBSlider.value = brush.getColor().getB()*0xFF;
-		brushColorBSlider.addEventListener("mousedown", function(e){
-			e.stopPropagation();
-		});
-		brushColorBSlider.addEventListener("change", function(){
-			var brushColor = brush.getColor();
-			drawer.addDrawData(new DrawData(brush, brush.setColor, [new RGBColor(
-				brushColor.getR(),
-				brushColor.getG(),
-				brushColorBSlider.value/0xFF,
-				brushColor.getA())]));
-		});
-
-		document.body.addEventListener("mousedown", onMouseDown);
-		document.addEventListener("mouseup", onMouseUp);
-		function onMouseDown(e)
-		{
-			drawer.addDrawData(new DrawData(brush, brush.down, [e.clientX, e.clientY, tabletapi.pressure()]));
+require(["xpop/croquis/Croquis"],
+	function (Croquis) {
+		var croquis = new Croquis(500, 500);
+		croquis.addLayer();
+		document.body.appendChild(croquis.getDomElement());
+		function onMouseDown(e) {
+			croquis.down(e.clientX, e.clientY);
 			document.body.addEventListener("mousemove", onMouseMove);
 		}
-		function onMouseMove(e)
-		{
-			drawer.addDrawData(new DrawData(brush, brush.move, [e.clientX, e.clientY, tabletapi.pressure()]));
+		function onMouseMove(e) {
+			croquis.move(e.clientX, e.clientY);
 		}
-		function onMouseUp(e)
-		{
+		function onMouseUp(e) {
+			croquis.up(e.clientX, e.clientY);
 			document.body.removeEventListener("mousemove", onMouseMove);
 		}
+		document.body.addEventListener("mousedown", onMouseDown);
+		document.body.addEventListener("mouseup", onMouseUp);
 	}
 );

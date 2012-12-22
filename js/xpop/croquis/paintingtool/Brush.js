@@ -97,7 +97,7 @@ define(["xpop/croquis/color/Color"],
 		{
 			var halfSize = size * scale * 0.5;
 			this.delta = 0;
-			if(scale != 0)
+			if(scale > 0 && context)
 			{
 				context.save();
 				context.globalCompositeOperation = knockout ? "destination-out" : "source-over";
@@ -111,7 +111,7 @@ define(["xpop/croquis/color/Color"],
 		}
 		this.move = function(x, y, scale)
 		{
-			if(scale > 0)
+			if(scale > 0 && context)
 			{
 				var dx = x - prevX;
 				var dy = y - prevY;
