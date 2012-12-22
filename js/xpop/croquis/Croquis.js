@@ -24,7 +24,7 @@ define(["xpop/croquis/tabletapi",
 		}
 		var size = {width: width, height: height};
 		this.getCanvasSize = function () {
-			return size;
+			return {width: sizw.width, height: size.height};
 		}
 		this.setCanvasSize = function (width, height) {
 			size.width = width = Math.floor(width);
