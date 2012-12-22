@@ -94,7 +94,7 @@ define(["xpop/croquis/tabletapi",
 			domElement.removeChild(layers[index]);
 			layers.splice(index, 1);
 			if(layerIndex == layers.length)
-				--layerIndex;
+				this.selectLayer(--layerIndex);
 			layersZIndex();
 		}
 		this.swapLayer = function (index1, index2) {
@@ -139,8 +139,9 @@ define(["xpop/croquis/tabletapi",
 				default:
 					break;
 			}
-			setToolSize(toolSize);
-			setToolColor(toolColor);
+			this.setToolSize(toolSize);
+			this.setToolColor(toolColor);
+			this.selectLayer(layerIndex);
 		}
 		this.getToolSize = function () {
 			return toolSize;
