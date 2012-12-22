@@ -179,7 +179,27 @@ define(["xpop/croquis/tabletapi",
 				tool.setColor(toolColor);
 		}
 		this.getMergedImageData = function () {
-			//TODO: implement
+			var mergedImage = document.createElement("canvas");
+			mergedImage.width = size.width;
+			mergedImage.height = size.height;
+			var context = mergedImage.getContext("2d");
+			for(var i=0; i<layers.length; ++i)
+			{
+				var layer = layers[i];
+				if(layer.style.visible != "hidden")
+				{
+					context.globalAlpha = layer.style.opacity;
+					switch(layer.tagName.toLowerCase())
+					{
+						case "canvas":
+							context.drawImage(layer, 0, 0, size.width, size.height);
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			return mergedImage.toDataURL();
 		}
 		this.down = function (x, y) {
 			if(tool.down)
