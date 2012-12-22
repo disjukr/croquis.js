@@ -104,6 +104,8 @@ define(["xpop/croquis/tabletapi",
 			layersZIndex();
 		}
 		this.selectLayer = function (index) {
+			if(tool.setContext)
+				tool.setContext(null);
 			layerIndex = index;
 			switch(layers[index].tagName.toLowerCase())
 			{
