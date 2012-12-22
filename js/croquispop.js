@@ -8,7 +8,7 @@ require(["xpop/croquis/Croquis",
 		croquis.setTool("brush");
 		croquis.setToolSize(10);
 		croquis.setToolColor(new RGBColor(0, 0, 0, 1));
-		document.body.appendChild(croquis.getDomElement());
+		document.body.appendChild(croquis.getDOMElement());
 		function onMouseDown(e) {
 			croquis.down(e.clientX, e.clientY);
 			document.body.addEventListener("mousemove", onMouseMove);

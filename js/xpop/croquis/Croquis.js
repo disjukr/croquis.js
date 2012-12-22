@@ -25,7 +25,7 @@ define(["xpop/croquis/tabletapi",
 			backgroundCheckers.style.position = "absolute";
 		})();
 		domElement.appendChild(backgroundCheckers);
-		this.getDomElement = function () {
+		this.getDOMElement = function () {
 			return domElement;
 		}
 		/*
