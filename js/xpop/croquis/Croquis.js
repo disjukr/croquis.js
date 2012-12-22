@@ -82,7 +82,8 @@ define(["xpop/croquis/tabletapi",
 		}
 		this.addLayer = function (layerType) {
 			var layer;
-			switch(layerType || "canvas")
+			layerType = layerType || "canvas";
+			switch(layerType.toLowerCase())
 			{
 				case "canvas":
 					layer = document.createElement("canvas");
@@ -91,7 +92,7 @@ define(["xpop/croquis/tabletapi",
 					break;
 				default:
 					throw "unknown layer type";
-					return;
+					return null;
 			}
 			layer.style.position = "absolute";
 			domElement.appendChild(layer);
@@ -99,6 +100,14 @@ define(["xpop/croquis/tabletapi",
 			if(layers.length == 1)
 				this.selectLayer(0);
 			layersZIndex();
+			return layer;
+		}
+		this.addFilledLayer = function (fillColor) {
+			var layer = this.addLayer("canvas");
+			var context = layer.getContext("2d");
+			context.fillStyle = fillColor.getHTMLColor();
+			context.fillRect(0, 0, layer.width, layer.height);
+			return layer;
 		}
 		this.removeLayer = function (index) {
 			domElement.removeChild(layers[index]);
@@ -138,7 +147,7 @@ define(["xpop/croquis/tabletapi",
 		var toolSize = 10;
 		var toolColor = new Color;
 		this.setTool = function (toolName) {
-			switch(toolName)
+			switch(toolName.toLowerCase())
 			{
 				case "brush":
 					tool = tools.getBrush();
