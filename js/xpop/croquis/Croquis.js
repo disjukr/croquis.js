@@ -4,6 +4,12 @@ define(["xpop/croquis/tabletapi",
 	function (tabletapi, Color, Tools) {
 	var Croquis = function (width, height) {
 		var domElement = document.createElement("div");
+		/*
+		배경이 투명하다는 것을 인식시키기 위한 체크무늬를 바닥에 붙인다.
+		인터넷 익스플로러에서 zIndex가 0일 경우 제대로 작동하지 않으므로:
+		http://brenelz.com/blog/squish-the-internet-explorer-z-index-bug/
+		체크무늬의 zIndex를 1로 설정했다.
+		*/
 		var backgroundCheckers = document.createElement("div");
 		(function () {
 			var backgroundImage = document.createElement("canvas");
@@ -22,6 +28,10 @@ define(["xpop/croquis/tabletapi",
 		this.getDomElement = function () {
 			return domElement;
 		}
+		/*
+		외부에서 임의로 내부 상태를 바꾸면 안되므로
+		getCanvasSize는 읽기전용 값을 새로 만들어서 반환한다.
+		*/
 		var size = {width: width, height: height};
 		this.getCanvasSize = function () {
 			return {width: sizw.width, height: size.height};
