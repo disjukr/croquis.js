@@ -5,9 +5,12 @@ require(["xpop/croquis/Croquis",
 		croquis.addFilledLayer(new RGBColor(1, 1, 1));
 		croquis.addLayer();
 		croquis.selectLayer(1);
+		croquis.setLayerOpacity(1);
+		croquis.setLayerVisible(true);
 		croquis.setTool("brush");
 		croquis.setToolSize(10);
 		croquis.setToolColor(new RGBColor(0, 0, 0));
+		croquis.setToolOpacity(1);
 		document.body.appendChild(croquis.getDOMElement());
 		function onMouseDown(e) {
 			croquis.down(e.clientX, e.clientY);

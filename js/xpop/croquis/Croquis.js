@@ -39,6 +39,8 @@ define(["xpop/croquis/tabletapi",
 		this.setCanvasSize = function (width, height) {
 			size.width = width = Math.floor(width);
 			size.height = height = Math.floor(height);
+			paintingLayer.width = width;
+			paintingLayer.height = height;
 			domElement.style.width = backgroundCheckers.style.width = width + "px";
 			domElement.style.height = backgroundCheckers.style.height = height + "px";
 			for(var i=0; i<layers.length; ++i)
@@ -72,10 +74,15 @@ define(["xpop/croquis/tabletapi",
 		}
 		var layers = [];
 		var layerIndex = 0;
+		var paintingLayer = document.createElement("canvas");
+		paintingLayer.style.zIndex = 3;
+		paintingLayer.style.position = "absolute";
+		domElement.appendChild(paintingLayer);
+		var paintingContext = paintingLayer.getContext("2d");
 		this.setCanvasSize(width, height);
 		function layersZIndex() {
 			for(var i=0; i<layers.length; ++i)
-				layers[i].style.zIndex = i + 2;
+				layers[i].style.zIndex = i * 2 + 2;
 		}
 		this.getLayers = function () {
 			return layers.concat();
@@ -87,6 +94,8 @@ define(["xpop/croquis/tabletapi",
 			{
 				case "canvas":
 					layer = document.createElement("canvas");
+					layer.style.visibility = "visible";
+					layer.style.opacity = 1;
 					layer.width = size.width;
 					layer.height = size.height;
 					break;
@@ -126,11 +135,12 @@ define(["xpop/croquis/tabletapi",
 			if(tool.setContext)
 				tool.setContext(null);
 			layerIndex = index;
+			paintingLayer.style.zIndex = index * 2 + 3;
 			switch(layers[index].tagName.toLowerCase())
 			{
 				case "canvas":
 					if(tool.setContext)
-						tool.setContext(layers[index].getContext("2d"));
+						tool.setContext(paintingContext);
 					break;
 				default:
 					break;
@@ -139,13 +149,14 @@ define(["xpop/croquis/tabletapi",
 		this.setLayerOpacity = function (opacity) {
 			layers[layerIndex].style.opacity = opacity;
 		}
-		this.setLayerVisible = function (visibile) {
+		this.setLayerVisible = function (visible) {
 			layers[layerIndex].style.visibility = visible ? "visible" : "hidden";
 		}
 		var tools = new Tools;
 		var tool = tools.getBrush();
 		var toolSize = 10;
 		var toolColor = new Color;
+		var toolOpacity = 1;
 		this.setTool = function (toolName) {
 			switch(toolName.toLowerCase())
 			{
@@ -178,6 +189,12 @@ define(["xpop/croquis/tabletapi",
 			if(tool.setColor)
 				tool.setColor(toolColor);
 		}
+		this.getToolOpacity = function () {
+			return toolOpacity;
+		}
+		this.setToolOpacity = function (opacity) {
+			toolOpacity = opacity;
+		}
 		this.getMergedImageData = function () {
 			var mergedImage = document.createElement("canvas");
 			mergedImage.width = size.width;
@@ -202,6 +219,8 @@ define(["xpop/croquis/tabletapi",
 			return mergedImage.toDataURL();
 		}
 		this.down = function (x, y, pressure) {
+			paintingLayer.style.opacity = layers[layerIndex].style.opacity * toolOpacity;
+			paintingLayer.style.visibility = layers[layerIndex].style.visibility;
 			if(tool.down)
 				tool.down(x, y, pressure || tabletapi.pressure());
 		}
@@ -212,6 +231,18 @@ define(["xpop/croquis/tabletapi",
 		this.up = function (x, y, pressure) {
 			if(tool.up)
 				tool.up(x, y, pressure || tabletapi.pressure());
+			var layer = layers[layerIndex];
+			switch(layer.tagName.toLowerCase())
+			{
+				case "canvas":
+					var context = layer.getContext("2d");
+					context.globalAlpha = toolOpacity;
+					context.drawImage(paintingLayer, 0, 0, size.width, size.height);
+					paintingContext.clearRect(0, 0, size.width, size.height);
+					break;
+				default:
+					break;
+			}
 		}
 	}
 	return Croquis;
