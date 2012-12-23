@@ -21,10 +21,10 @@ define(["xpop/croquis/color/Color"],
 		updateHTMLColor();
 		function updateHTMLColor()
 		{
-			htmlColor = "rgba(" +
+			htmlColor = "rgb(" +
 				Math.round(r * 0xFF) + "," +
 				Math.round(g * 0xFF) + "," +
-				Math.round(b * 0xFF) + "," + ")";
+				Math.round(b * 0xFF) + ")";
 		}
 	}
 	RGBColor.prototype = new Color;
