@@ -1,6 +1,6 @@
 define(["xpop/croquis/color/Color"],
 	function (Color) {
-	var RGBColor = function (r, g, b, a)
+	var RGBColor = function (r, g, b)
 	{
 		var r = r;
 		this.getR = function () {
@@ -14,10 +14,6 @@ define(["xpop/croquis/color/Color"],
 		this.getB = function () {
 			return b;
 		}
-		var a = a;
-		this.getA = function () {
-			return a;
-		}
 		var htmlColor;
 		this.getHTMLColor = function () {
 			return htmlColor;
@@ -28,8 +24,7 @@ define(["xpop/croquis/color/Color"],
 			htmlColor = "rgba(" +
 				Math.round(r * 0xFF) + "," +
 				Math.round(g * 0xFF) + "," +
-				Math.round(b * 0xFF) + "," +
-				a + ")";
+				Math.round(b * 0xFF) + "," + ")";
 		}
 	}
 	RGBColor.prototype = new Color;
