@@ -17,6 +17,14 @@ define(["xpop/croquis/color/Color"],
 			color = value;
 			transformedImageIsDirty = true;
 		}
+		var flow = 1;
+		this.getFlow = function() {
+			return flow;
+		}
+		this.setFlow = function(value) {
+			flow = value;
+			transformedImageIsDirty = true;
+		}
 		var knockout = false;
 		this.getKnockout = function () {
 			return knockout;
@@ -76,12 +84,14 @@ define(["xpop/croquis/color/Color"],
 			brushContext.drawImage(image, 0, 0, transformedImage.width, transformedImage.height);
 			brushContext.globalCompositeOperation = "source-in";
 			brushContext.fillStyle = color.getHTMLColor();
+			brushContext.globalAlpha = flow;
 			brushContext.fillRect(0, 0, transformedImage.width, transformedImage.height);
 		}
 		function drawCircle(size)
 		{
 			var halfSize = size * 0.5;
 			context.fillStyle = color.getHTMLColor();
+			context.globalAlpha = flow;
 			context.beginPath();
 			context.arc(halfSize, halfSize, halfSize, 0, Math.PI * 2);
 			context.closePath();
