@@ -201,17 +201,17 @@ define(["xpop/croquis/tabletapi",
 			}
 			return mergedImage.toDataURL();
 		}
-		this.down = function (x, y) {
+		this.down = function (x, y, pressure) {
 			if(tool.down)
-				tool.down(x, y, tabletapi.pressure());
+				tool.down(x, y, pressure || tabletapi.pressure());
 		}
-		this.move = function (x, y) {
+		this.move = function (x, y, pressure) {
 			if(tool.move)
-				tool.move(x, y, tabletapi.pressure());
+				tool.move(x, y, pressure || tabletapi.pressure());
 		}
-		this.up = function (x, y) {
+		this.up = function (x, y, pressure) {
 			if(tool.up)
-				tool.up(x, y, tabletapi.pressure());
+				tool.up(x, y, pressure || tabletapi.pressure());
 		}
 	}
 	return Croquis;
