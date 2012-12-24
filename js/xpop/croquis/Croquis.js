@@ -245,7 +245,7 @@ define(["xpop/croquis/tabletapi",
 			switch(layer.tagName.toLowerCase())
 			{
 				case "canvas":
-					if(eraserTool)
+					if(!eraserTool)
 					{
 						var context = layer.getContext("2d");
 						context.globalAlpha = toolOpacity;
