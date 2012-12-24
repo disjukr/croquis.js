@@ -140,7 +140,14 @@ define(["xpop/croquis/tabletapi",
 			{
 				case "canvas":
 					if(tool.setContext)
-						tool.setContext(paintingContext);
+						if(eraserTool)
+						{
+							tool.setContext(layers[index].getContext("2d"));
+						}
+						else
+						{
+							tool.setContext(paintingContext);
+						}
 					break;
 				default:
 					break;
@@ -154,6 +161,7 @@ define(["xpop/croquis/tabletapi",
 		}
 		var tools = new Tools;
 		var tool = tools.getBrush();
+		var eraserTool = false;
 		var toolSize = 10;
 		var toolColor = new Color;
 		var toolOpacity = 1;
@@ -162,9 +170,11 @@ define(["xpop/croquis/tabletapi",
 			{
 				case "brush":
 					tool = tools.getBrush();
+					eraserTool = false;
 					break;
 				case "eraser":
 					tool = tools.getEraser();
+					eraserTool = true;
 					break;
 				default:
 					break;
@@ -235,10 +245,13 @@ define(["xpop/croquis/tabletapi",
 			switch(layer.tagName.toLowerCase())
 			{
 				case "canvas":
-					var context = layer.getContext("2d");
-					context.globalAlpha = toolOpacity;
-					context.drawImage(paintingLayer, 0, 0, size.width, size.height);
-					paintingContext.clearRect(0, 0, size.width, size.height);
+					if(eraserTool)
+					{
+						var context = layer.getContext("2d");
+						context.globalAlpha = toolOpacity;
+						context.drawImage(paintingLayer, 0, 0, size.width, size.height);
+						paintingContext.clearRect(0, 0, size.width, size.height);
+					}
 					break;
 				default:
 					break;
