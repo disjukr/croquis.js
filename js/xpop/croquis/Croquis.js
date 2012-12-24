@@ -74,6 +74,11 @@ define(["xpop/croquis/tabletapi",
 		}
 		var layers = [];
 		var layerIndex = 0;
+		/*
+		포토샵 브러시의 opacity와 같은 효과를 주기 위해서
+		화면에 그림을 그리는 툴들은 paintingLayer에 먼저 그림을 그린 다음
+		마우스를 떼는 순간(up 함수가 호출되는 순간) 레이어 캔버스에 옮겨그린다.
+		*/
 		var paintingLayer = document.createElement("canvas");
 		paintingLayer.style.zIndex = 3;
 		paintingLayer.style.position = "absolute";
@@ -81,6 +86,11 @@ define(["xpop/croquis/tabletapi",
 		var paintingContext = paintingLayer.getContext("2d");
 		this.setCanvasSize(width, height);
 		function layersZIndex() {
+			/*
+			paintingLayer가 들어갈 자리를 만들기 위해
+			레이어의 zIndex는 2 간격으로 설정한다.
+			zIndex 1은 체크무늬가 사용하고 있으므로 2부터 시작한다.
+			*/
 			for(var i=0; i<layers.length; ++i)
 				layers[i].style.zIndex = i * 2 + 2;
 		}
@@ -135,6 +145,10 @@ define(["xpop/croquis/tabletapi",
 			if(tool.setContext)
 				tool.setContext(null);
 			layerIndex = index;
+			/*
+			paintingLayer는 현재 선택된 레이어의 바로 위에 보여야 하므로
+			현재 선택된 레이어보다 zIndex를 1만큼 크게 설정한다.
+			*/
 			paintingLayer.style.zIndex = index * 2 + 3;
 			switch(layers[index].tagName.toLowerCase())
 			{
@@ -161,6 +175,10 @@ define(["xpop/croquis/tabletapi",
 		}
 		var tools = new Tools;
 		var tool = tools.getBrush();
+		/*
+		화면에 내용이 없는 paintingLayer에 지우개질을 하면 의미가 없으므로
+		지우개 툴일 경우에는 레이어의 context를 툴에 바로 적용한다.
+		*/
 		var eraserTool = false;
 		var toolSize = 10;
 		var toolColor = new Color;
@@ -205,6 +223,10 @@ define(["xpop/croquis/tabletapi",
 		this.setToolOpacity = function (opacity) {
 			toolOpacity = opacity;
 		}
+		/*
+		보이는 모든 레이어를 하나로 합친 이미지 데이터를 반환한다.
+		png 파일로 뽑아보기 위해 임시로 만들어졌다.
+		*/
 		this.getMergedImageData = function () {
 			var mergedImage = document.createElement("canvas");
 			mergedImage.width = size.width;
@@ -245,6 +267,11 @@ define(["xpop/croquis/tabletapi",
 			switch(layer.tagName.toLowerCase())
 			{
 				case "canvas":
+					/*
+					지우개툴이 아니라면 paintingLayer에 그려진 내용이 있으므로
+					현재 선택된 레이어에 paintingLayer를 옮겨 그린 뒤
+					paintingLayer의 내용을 지운다.
+					*/
 					if(!eraserTool)
 					{
 						var context = layer.getContext("2d");
