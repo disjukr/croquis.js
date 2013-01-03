@@ -4,6 +4,7 @@ define(["xpop/croquis/tabletapi",
 	function (tabletapi, Color, Tools) {
 	var Croquis = function (width, height) {
 		var domElement = document.createElement("div");
+		domElement.style.clear = "both";
 		/*
 		배경이 투명하다는 것을 인식시키기 위한 체크무늬를 바닥에 붙인다.
 		인터넷 익스플로러에서 zIndex가 0일 경우 제대로 작동하지 않으므로:
