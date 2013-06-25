@@ -119,16 +119,16 @@ function Croquis(width, height) {
         {
             switch(layers[i].tagName.toLowerCase())
             {
-                case "canvas":
-                    var canvas = layers[i];
-                    var context = canvas.getContext("2d");
-                    var imageData = context.getImageData(0, 0, width, height);
-                    canvas.width = width;
-                    canvas.height = height;
-                    context.putImageData(imageData, 0, 0);
-                    break;
-                default:
-                    continue;
+            case "canvas":
+                var canvas = layers[i];
+                var context = canvas.getContext("2d");
+                var imageData = context.getImageData(0, 0, width, height);
+                canvas.width = width;
+                canvas.height = height;
+                context.putImageData(imageData, 0, 0);
+                break;
+            default:
+                continue;
             }
         }
     }
@@ -174,16 +174,16 @@ function Croquis(width, height) {
         layerType = layerType || "canvas";
         switch(layerType.toLowerCase())
         {
-            case "canvas":
-                layer = document.createElement("canvas");
-                layer.style.visibility = "visible";
-                layer.style.opacity = 1;
-                layer.width = size.width;
-                layer.height = size.height;
-                break;
-            default:
-                throw "unknown layer type";
-                return null;
+        case "canvas":
+            layer = document.createElement("canvas");
+            layer.style.visibility = "visible";
+            layer.style.opacity = 1;
+            layer.width = size.width;
+            layer.height = size.height;
+            break;
+        default:
+            throw "unknown layer type";
+            return null;
         }
         layer.style.position = "absolute";
         domElement.appendChild(layer);
@@ -224,19 +224,19 @@ function Croquis(width, height) {
         paintingLayer.style.zIndex = index * 2 + 3;
         switch(layers[index].tagName.toLowerCase())
         {
-            case "canvas":
-                if(tool.setContext)
-                    if(eraserTool)
-                    {
-                        tool.setContext(layers[index].getContext("2d"));
-                    }
-                    else
-                    {
-                        tool.setContext(paintingContext);
-                    }
-                break;
-            default:
-                break;
+        case "canvas":
+            if(tool.setContext)
+                if(eraserTool)
+                {
+                    tool.setContext(layers[index].getContext("2d"));
+                }
+                else
+                {
+                    tool.setContext(paintingContext);
+                }
+            break;
+        default:
+            break;
         }
     }
     this.setLayerOpacity = function (opacity) {
@@ -258,16 +258,16 @@ function Croquis(width, height) {
     this.setTool = function (toolName) {
         switch(toolName.toLowerCase())
         {
-            case "brush":
-                tool = tools.getBrush();
-                eraserTool = false;
-                break;
-            case "eraser":
-                tool = tools.getEraser();
-                eraserTool = true;
-                break;
-            default:
-                break;
+        case "brush":
+            tool = tools.getBrush();
+            eraserTool = false;
+            break;
+        case "eraser":
+            tool = tools.getEraser();
+            eraserTool = true;
+            break;
+        default:
+            break;
         }
         this.setToolSize(toolSize);
         this.setToolColor(toolColor);
@@ -312,11 +312,11 @@ function Croquis(width, height) {
                 context.globalAlpha = layer.style.opacity;
                 switch(layer.tagName.toLowerCase())
                 {
-                    case "canvas":
-                        context.drawImage(layer, 0, 0, size.width, size.height);
-                        break;
-                    default:
-                        break;
+                case "canvas":
+                    context.drawImage(layer, 0, 0, size.width, size.height);
+                    break;
+                default:
+                    break;
                 }
             }
         }
@@ -338,22 +338,22 @@ function Croquis(width, height) {
         var layer = layers[layerIndex];
         switch(layer.tagName.toLowerCase())
         {
-            case "canvas":
-                /*
-                지우개툴이 아니라면 paintingLayer에 그려진 내용이 있으므로
-                현재 선택된 레이어에 paintingLayer를 옮겨 그린 뒤
-                paintingLayer의 내용을 지운다.
-                */
-                if(!eraserTool)
-                {
-                    var context = layer.getContext("2d");
-                    context.globalAlpha = toolOpacity;
-                    context.drawImage(paintingLayer, 0, 0, size.width, size.height);
-                    paintingContext.clearRect(0, 0, size.width, size.height);
-                }
-                break;
-            default:
-                break;
+        case "canvas":
+            /*
+            지우개툴이 아니라면 paintingLayer에 그려진 내용이 있으므로
+            현재 선택된 레이어에 paintingLayer를 옮겨 그린 뒤
+            paintingLayer의 내용을 지운다.
+            */
+            if(!eraserTool)
+            {
+                var context = layer.getContext("2d");
+                context.globalAlpha = toolOpacity;
+                context.drawImage(paintingLayer, 0, 0, size.width, size.height);
+                paintingContext.clearRect(0, 0, size.width, size.height);
+            }
+            break;
+        default:
+            break;
         }
     }
 }
@@ -477,14 +477,12 @@ function Brush(canvasRenderingContext)
         return image;
     }
     this.setImage = function (value) {
-        if(value == null)
-        {
+        if(value == null) {
             transformedImage = image = null;
             imageRatio = 1;
             drawFunction = drawCircle;
         }
-        else
-        {
+        else {
             image = value;
             imageRatio = image.height / image.width;
             transformedImage = document.createElement("canvas");
@@ -538,14 +536,13 @@ function Brush(canvasRenderingContext)
         prevScale = scale;
     }
     this.move = function(x, y, scale) {
-        if(scale > 0 && context)
-        {
+        if(scale > 0 && context) {
             var dx = x - prevX;
             var dy = y - prevY;
             delta += Math.sqrt(dx * dx + dy * dy);
             if(delta == 0)
                 return;
-            var drawInterval = size * interval * ( prevScale + scale ) * 0.5;
+            var drawInterval = size * interval * (prevScale + scale) * 0.5;
             if(drawInterval < 0.5)
                 drawInterval = 0.5;
             var drawStep = drawInterval / delta;
@@ -554,8 +551,7 @@ function Brush(canvasRenderingContext)
             var scaleInterval = (scale - prevScale) * drawStep;
             context.save();
             context.globalCompositeOperation = knockout ? "destination-out" : "source-over";
-            while(delta > drawInterval)
-            {
+            while(delta > drawInterval) {
                 prevScale += scaleInterval;
                 prevX += xInterval;
                 prevY += yInterval;
@@ -568,8 +564,7 @@ function Brush(canvasRenderingContext)
             }
             context.restore();
         }
-        else
-        {
+        else {
             delta = 0;
             prevX = x;
             prevY = y;
