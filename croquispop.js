@@ -3,7 +3,7 @@ init();
 var croquis;
 
 function init() {
-    croquis = new Croquis(640, 480);
+    croquis = new Croquis(640, 480, true);
     croquis.addFilledLayer(new RGBColor(1, 1, 1));
     croquis.addLayer();
     croquis.selectLayer(1);
@@ -73,7 +73,7 @@ var tabletapi = {
     }
 }
 
-function Croquis(width, height) {
+function Croquis(width, height, makeCheckers) {
     var domElement = document.createElement("div");
     domElement.style.clear = "both";
     /*
@@ -82,21 +82,24 @@ function Croquis(width, height) {
     http://brenelz.com/blog/squish-the-internet-explorer-z-index-bug/
     체크무늬의 zIndex를 1로 설정했다.
     */
-    var backgroundCheckers = document.createElement("div");
-    (function () {
-        var backgroundImage = document.createElement("canvas");
-        backgroundImage.width = backgroundImage.height = 20;
-        var backgroundImageContext = backgroundImage.getContext("2d");
-        backgroundImageContext.fillStyle = "#FFFFFF";
-        backgroundImageContext.fillRect(0, 0, 20, 20);
-        backgroundImageContext.fillStyle = "#CCCCCC";
-        backgroundImageContext.fillRect(0, 0, 10, 10);
-        backgroundImageContext.fillRect(10, 10, 20, 20);
-        backgroundCheckers.style.backgroundImage = "url(" + backgroundImage.toDataURL() + ")";
-        backgroundCheckers.style.zIndex = 1;
-        backgroundCheckers.style.position = "absolute";
-    })();
-    domElement.appendChild(backgroundCheckers);
+    if (makeCheckers) {
+        var backgroundCheckers = document.createElement("div");
+        (function () {
+            var backgroundImage = document.createElement("canvas");
+            backgroundImage.width = backgroundImage.height = 20;
+            var backgroundImageContext = backgroundImage.getContext("2d");
+            backgroundImageContext.fillStyle = "#FFFFFF";
+            backgroundImageContext.fillRect(0, 0, 20, 20);
+            backgroundImageContext.fillStyle = "#CCCCCC";
+            backgroundImageContext.fillRect(0, 0, 10, 10);
+            backgroundImageContext.fillRect(10, 10, 20, 20);
+            backgroundCheckers.style.backgroundImage = "url(" +
+                backgroundImage.toDataURL() + ")";
+            backgroundCheckers.style.zIndex = 1;
+            backgroundCheckers.style.position = "absolute";
+        })();
+        domElement.appendChild(backgroundCheckers);
+    }
     this.getDOMElement = function () {
         return domElement;
     }
