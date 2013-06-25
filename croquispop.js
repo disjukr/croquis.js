@@ -21,6 +21,7 @@ function init() {
         document.addEventListener("mousemove", onMouseMove);
     }
     function onMouseMove(e) {
+        croquis.setToolColor(new RGBColor(Math.random(), Math.random(), Math.random()));
         var mousePosition = getRelativePosition(e.clientX, e.clientY);
         croquis.move(mousePosition.x, mousePosition.y);
     }
@@ -596,13 +597,8 @@ function RGBColor(r, g, b)
     this.getB = function () {
         return b;
     }
-    var htmlColor;
     this.getHTMLColor = function () {
-        return htmlColor;
-    }
-    updateHTMLColor();
-    function updateHTMLColor() {
-        htmlColor = "rgb(" +
+        return "rgb(" +
             Math.round(r * 0xFF) + "," +
             Math.round(g * 0xFF) + "," +
             Math.round(b * 0xFF) + ")";
