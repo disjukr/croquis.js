@@ -35,11 +35,29 @@ function init() {
     document.addEventListener("mouseup", onMouseUp);
 }
 
+var tabletPlugin = getTabletPlugin();
+function getTabletPlugin() {
+    return document.querySelector('object[type="application/x-wacomtabletplugin"]');
+}
 var tabletapi = {
     pressure: function () {
-        var plugin = document.querySelector('object[type="application/x-wacomtabletplugin"]');
+        var plugin = tabletPlugin || getTabletPlugin();
+        var pressure;
         if(plugin) {
-            return plugin.penAPI && plugin.penAPI.pressure || 1;
+            pressure = plugin.penAPI && plugin.penAPI.pressure;
+            if (pressure) {
+                tabletapi.latestPressure = pressure;
+            }
+            else {
+                if (tabletapi.latestPressure) {
+                    pressure = tabletapi.latestPressure;
+                    tabletapi.latestPressure = null;
+                }
+                else {
+                    tabletapi.latestPressure = null;
+                    pressure = 1;
+                }
+            }
         }
         else {
             plugin = document.createElement("object");
@@ -48,7 +66,9 @@ var tabletapi = {
             plugin.style.position = "absolute";
             plugin.style.top = "-1000px";
             document.body.appendChild(plugin);
+            pressure = 1;
         }
+        return pressure;
     }
 }
 
