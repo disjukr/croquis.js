@@ -2,9 +2,12 @@
 <html>
   <head>
     <title>Croquispop</title>
+    <link rel="stylesheet" type="text/css" href="./croquispop.css">
   </head>
-  <body style="background-color: #888;">
-    <object type="application/x-wacomtabletplugin" style="position: absolute; top: -1000px; visibility: hidden;"></object>
+  <body>
+    <div id="canvas-area">
+      <object id="tablet-api" type="application/x-wacomtabletplugin"></object>
+    </div>
     <script src="./croquispop.js"></script>
   </body>
 </html>

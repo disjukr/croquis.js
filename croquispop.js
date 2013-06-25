@@ -1,7 +1,9 @@
 init();
 
+var croquis;
+
 function init() {
-    var croquis = new Croquis(480, 480);
+    croquis = new Croquis(640, 480);
     croquis.addFilledLayer(new RGBColor(1, 1, 1));
     croquis.addLayer();
     croquis.selectLayer(1);
@@ -12,7 +14,7 @@ function init() {
     croquis.setToolColor(new RGBColor(0, 0, 0));
     croquis.setToolOpacity(1);
     var croquisDOMElement = croquis.getDOMElement();
-    document.body.appendChild(croquisDOMElement);
+    document.getElementById('canvas-area').appendChild(croquisDOMElement);
     function onMouseDown(e) {
         var mousePosition = getRelativePosition(e.clientX, e.clientY);
         croquis.down(mousePosition.x, mousePosition.y);
@@ -62,7 +64,6 @@ var tabletapi = {
         else {
             plugin = document.createElement("object");
             plugin.type = "application/x-wacomtabletplugin";
-            plugin.style.visibility = "hidden";
             plugin.style.position = "absolute";
             plugin.style.top = "-1000px";
             document.body.appendChild(plugin);

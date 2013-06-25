@@ -1,0 +1,8 @@
+body {
+  background-color: #888;
+}
+
+#tablet-api {
+  position: absolute;
+  top: -1000px;
+}
