@@ -45,7 +45,7 @@ var tabletapi = {
     pressure: function () {
         var plugin = tabletPlugin || getTabletPlugin();
         var pressure;
-        if(plugin) {
+        if (plugin) {
             pressure = plugin.penAPI && plugin.penAPI.pressure;
             if (pressure) {
                 tabletapi.latestPressure = pressure;
@@ -118,10 +118,8 @@ function Croquis(width, height, makeCheckers) {
         paintingLayer.height = height;
         domElement.style.width = backgroundCheckers.style.width = width + "px";
         domElement.style.height = backgroundCheckers.style.height = height + "px";
-        for(var i=0; i<layers.length; ++i)
-        {
-            switch(layers[i].tagName.toLowerCase())
-            {
+        for (var i=0; i<layers.length; ++i) {
+            switch (layers[i].tagName.toLowerCase()) {
             case "canvas":
                 var canvas = layers[i];
                 var context = canvas.getContext("2d");
@@ -166,7 +164,7 @@ function Croquis(width, height, makeCheckers) {
         레이어의 zIndex는 2 간격으로 설정한다.
         zIndex 1은 체크무늬가 사용하고 있으므로 2부터 시작한다.
         */
-        for(var i=0; i<layers.length; ++i)
+        for (var i=0; i<layers.length; ++i)
             layers[i].style.zIndex = i * 2 + 2;
     }
     this.getLayers = function () {
@@ -175,8 +173,7 @@ function Croquis(width, height, makeCheckers) {
     this.addLayer = function (layerType) {
         var layer;
         layerType = layerType || "canvas";
-        switch(layerType.toLowerCase())
-        {
+        switch (layerType.toLowerCase()) {
         case "canvas":
             layer = document.createElement("canvas");
             layer.style.visibility = "visible";
@@ -191,7 +188,7 @@ function Croquis(width, height, makeCheckers) {
         layer.style.position = "absolute";
         domElement.appendChild(layer);
         layers.push(layer);
-        if(layers.length == 1)
+        if (layers.length == 1)
             this.selectLayer(0);
         layersZIndex();
         return layer;
@@ -206,7 +203,7 @@ function Croquis(width, height, makeCheckers) {
     this.removeLayer = function (index) {
         domElement.removeChild(layers[index]);
         layers.splice(index, 1);
-        if(layerIndex == layers.length)
+        if (layerIndex == layers.length)
             this.selectLayer(--layerIndex);
         layersZIndex();
     }
@@ -217,7 +214,7 @@ function Croquis(width, height, makeCheckers) {
         layersZIndex();
     }
     this.selectLayer = function (index) {
-        if(tool.setContext)
+        if (tool.setContext)
             tool.setContext(null);
         layerIndex = index;
         /*
@@ -225,18 +222,13 @@ function Croquis(width, height, makeCheckers) {
         현재 선택된 레이어보다 zIndex를 1만큼 크게 설정한다.
         */
         paintingLayer.style.zIndex = index * 2 + 3;
-        switch(layers[index].tagName.toLowerCase())
-        {
+        switch (layers[index].tagName.toLowerCase()) {
         case "canvas":
-            if(tool.setContext)
-                if(eraserTool)
-                {
+            if (tool.setContext)
+                if (eraserTool)
                     tool.setContext(layers[index].getContext("2d"));
-                }
                 else
-                {
                     tool.setContext(paintingContext);
-                }
             break;
         default:
             break;
@@ -259,8 +251,7 @@ function Croquis(width, height, makeCheckers) {
     var toolColor = new Color;
     var toolOpacity = 1;
     this.setTool = function (toolName) {
-        switch(toolName.toLowerCase())
-        {
+        switch (toolName.toLowerCase()) {
         case "brush":
             tool = tools.getBrush();
             eraserTool = false;
@@ -281,7 +272,7 @@ function Croquis(width, height, makeCheckers) {
     }
     this.setToolSize = function (size) {
         toolSize = size;
-        if(tool.setSize)
+        if (tool.setSize)
             tool.setSize(toolSize);
     }
     this.getToolColor = function () {
@@ -289,7 +280,7 @@ function Croquis(width, height, makeCheckers) {
     }
     this.setToolColor = function (color) {
         toolColor = color;
-        if(tool.setColor)
+        if (tool.setColor)
             tool.setColor(toolColor);
     }
     this.getToolOpacity = function () {
@@ -311,14 +302,11 @@ function Croquis(width, height, makeCheckers) {
         mergedImage.width = size.width;
         mergedImage.height = size.height;
         var context = mergedImage.getContext("2d");
-        for(var i=0; i<layers.length; ++i)
-        {
+        for (var i=0; i<layers.length; ++i) {
             var layer = layers[i];
-            if(layer.style.visible != "hidden")
-            {
+            if (layer.style.visible != "hidden") {
                 context.globalAlpha = layer.style.opacity;
-                switch(layer.tagName.toLowerCase())
-                {
+                switch (layer.tagName.toLowerCase()) {
                 case "canvas":
                     context.drawImage(layer, 0, 0, size.width, size.height);
                     break;
@@ -332,27 +320,25 @@ function Croquis(width, height, makeCheckers) {
     this.down = function (x, y, pressure) {
         paintingLayer.style.opacity = layers[layerIndex].style.opacity * toolOpacity;
         paintingLayer.style.visibility = layers[layerIndex].style.visibility;
-        if(tool.down)
+        if (tool.down)
             tool.down(x, y, pressure || tabletapi.pressure());
     }
     this.move = function (x, y, pressure) {
-        if(tool.move)
+        if (tool.move)
             tool.move(x, y, pressure || tabletapi.pressure());
     }
     this.up = function (x, y, pressure) {
-        if(tool.up)
+        if (tool.up)
             tool.up(x, y, pressure || tabletapi.pressure());
         var layer = layers[layerIndex];
-        switch(layer.tagName.toLowerCase())
-        {
+        switch (layer.tagName.toLowerCase()) {
         case "canvas":
             /*
             지우개툴이 아니라면 paintingLayer에 그려진 내용이 있으므로
             현재 선택된 레이어에 paintingLayer를 옮겨 그린 뒤
             paintingLayer의 내용을 지운다.
             */
-            if(!eraserTool)
-            {
+            if (!eraserTool) {
                 var context = layer.getContext("2d");
                 context.globalAlpha = toolOpacity;
                 context.drawImage(paintingLayer, 0, 0, size.width, size.height);
@@ -401,11 +387,11 @@ function Drawer() {
     var dead = false;
     draw();
     function draw() {
-        if(queue.length != 0) {
+        if (queue.length != 0) {
             var drawData = queue.shift();
             drawData.getCommand().apply(drawData.getTool(), drawData.getToolArguments());
         }
-        if(!dead)
+        if (!dead)
             window.setTimeout(draw, drawInterval);
     }
     this.addDrawData = function(drawData) {
@@ -455,11 +441,13 @@ function Brush(canvasRenderingContext)
         transformedImageIsDirty = true;
     }
     var knockout = false;
+    var globalCompositeOperation = 'source-over';
     this.getKnockout = function () {
         return knockout;
     }
     this.setKnockout = function (value) {
         knockout = value;
+        globalCompositeOperation = knockout? 'destination-out' : 'source-over';
     }
     var size = 10;
     this.getSize = function () {
@@ -484,7 +472,7 @@ function Brush(canvasRenderingContext)
         return image;
     }
     this.setImage = function (value) {
-        if(value == null) {
+        if (value == null) {
             transformedImage = image = null;
             imageRatio = 1;
             drawFunction = drawCircle;
@@ -523,18 +511,18 @@ function Brush(canvasRenderingContext)
         context.fill();
     }
     function drawImage(size) {
-        if(transformedImageIsDirty)
+        if (transformedImageIsDirty)
             transformImage();
         context.drawImage(transformedImage, 0, 0, size, size * imageRatio);
     }
     this.down = function(x, y, scale) {
         var halfSize = size * scale * 0.5;
         this.delta = 0;
-        if(scale > 0 && context)
-        {
+        if (scale > 0 && context) {
             context.save();
-            context.globalCompositeOperation = knockout ? "destination-out" : "source-over";
-            context.translate(Math.floor(x - halfSize), Math.floor(y - halfSize * imageRatio));
+            context.globalCompositeOperation = globalCompositeOperation;
+            context.translate(Math.floor(x - halfSize),
+                Math.floor(y - halfSize * imageRatio));
             drawFunction(halfSize + halfSize);
             context.restore();
         }
@@ -543,30 +531,34 @@ function Brush(canvasRenderingContext)
         prevScale = scale;
     }
     this.move = function(x, y, scale) {
-        if(scale > 0 && context) {
+        if (scale > 0 && context) {
             var dx = x - prevX;
             var dy = y - prevY;
             delta += Math.sqrt(dx * dx + dy * dy);
-            if(delta == 0)
+            if (delta == 0) //prevent infinite loop
                 return;
             var drawInterval = size * interval * (prevScale + scale) * 0.5;
-            if(drawInterval < 0.5)
+            if (drawInterval < 0.5) //not correct, but performance
                 drawInterval = 0.5;
             var drawStep = drawInterval / delta;
             var xInterval = dx * drawStep;
             var yInterval = dy * drawStep;
             var scaleInterval = (scale - prevScale) * drawStep;
             context.save();
-            context.globalCompositeOperation = knockout ? "destination-out" : "source-over";
+            context.globalCompositeOperation = globalCompositeOperation;
             while(delta > drawInterval) {
-                prevScale += scaleInterval;
-                prevX += xInterval;
-                prevY += yInterval;
+                var currentScale = prevScale + scaleInterval;
+                var currentX = prevX + xInterval;
+                var currentY = prevY + yInterval;
+                var halfSize = size * currentScale * 0.5;
                 context.save();
-                var halfSize = size * prevScale * 0.5;
-                context.translate(Math.floor(prevX - halfSize), Math.floor(prevY - halfSize * imageRatio));
+                context.translate(Math.floor(currentX - halfSize),
+                    Math.floor(currentY - halfSize * imageRatio));
                 drawFunction(halfSize + halfSize);
                 context.restore();
+                prevScale = currentScale;
+                prevX = currentX;
+                prevY = currentY;
                 delta -= drawInterval;
             }
             context.restore();
