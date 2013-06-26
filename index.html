@@ -5,9 +5,44 @@
     <link rel="stylesheet" type="text/css" href="./croquispop.css">
   </head>
   <body>
+    <div id="brush-shelf">
+      <span>브러시 크기: </span>
+      <input id="brush-size-slider" type="range" min="1" max="100">
+      <span>투명도: </span>
+      <input id="brush-opacity-slider" type="range" min="0" max="100">
+      <span>흐름: </span>
+      <input id="brush-flow-slider" type="range" min="0" max="100">
+      <span>간격: </span>
+      <input id="brush-interval-slider" type="range" min="0" max="1000">
+    </div>
     <div id="canvas-area">
       <object id="tablet-api" type="application/x-wacomtabletplugin"></object>
     </div>
     <script src="./croquispop.js"></script>
+    <script>
+    // <![CDATA[
+    var brushSizeSlider = document.getElementById('brush-size-slider');
+    var brushOpacitySlider = document.getElementById('brush-opacity-slider');
+    var brushFlowSlider = document.getElementById('brush-flow-slider');
+    var brushIntervalSlider = document.getElementById('brush-interval-slider');
+    brushSizeSlider.onchange = function () {
+      croquis.setToolSize(brushSizeSlider.value);
+    }
+    brushOpacitySlider.onchange = function () {
+      croquis.setToolOpacity(brushOpacitySlider.value * 0.01);
+    }
+    brushFlowSlider.onchange = function () {
+      croquis.setBrushFlow(brushFlowSlider.value * 0.01);
+    }
+    brushIntervalSlider.onchange = function () {
+      croquis.setBrushInterval(brushIntervalSlider.value * 0.01);
+    }
+    brushSizeSlider.value = croquis.getToolSize();
+    brushOpacitySlider.value = croquis.getToolOpacity() * 100;
+    brushFlowSlider.value = croquis.getBrushFlow() * 100;
+    brushIntervalSlider.value = croquis.getBrushInterval() * 100;
+    // ]]>
+    </script>
+    </script>
   </body>
 </html>
