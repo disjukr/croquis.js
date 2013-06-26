@@ -21,7 +21,6 @@ function init() {
         document.addEventListener("mousemove", onMouseMove);
     }
     function onMouseMove(e) {
-        croquis.setToolColor(new RGBColor(Math.random(), Math.random(), Math.random()));
         var mousePosition = getRelativePosition(e.clientX, e.clientY);
         croquis.move(mousePosition.x, mousePosition.y);
     }
@@ -34,7 +33,7 @@ function init() {
         var rect = croquisDOMElement.getBoundingClientRect();
         return {x: absoluteX - rect.left, y: absoluteY - rect.top};
     }
-    document.body.addEventListener("mousedown", onMouseDown);
+    croquisDOMElement.addEventListener("mousedown", onMouseDown);
     document.addEventListener("mouseup", onMouseUp);
 }
 
@@ -299,6 +298,10 @@ function Croquis(width, height, makeCheckers) {
     this.setToolOpacity = function (opacity) {
         toolOpacity = opacity;
     }
+    this.getBrushFlow = tools.getBrush().getFlow;
+    this.setBrushFlow = tools.getBrush().setFlow;
+    this.getBrushInterval = tools.getBrush().getInterval;
+    this.setBrushInterval = tools.getBrush().setInterval;
     /*
     보이는 모든 레이어를 하나로 합친 이미지 데이터를 반환한다.
     png 파일로 뽑아보기 위해 임시로 만들어졌다.
