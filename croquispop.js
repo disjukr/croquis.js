@@ -9,7 +9,7 @@ function init() {
     croquis.selectLayer(1);
     croquis.setLayerOpacity(1);
     croquis.setLayerVisible(true);
-    croquis.setTool("brush");
+    croquis.setTool('brush');
     croquis.setToolSize(10);
     croquis.setToolColor(new RGBColor(0, 0, 0));
     croquis.setToolOpacity(1);
@@ -18,7 +18,7 @@ function init() {
     function onMouseDown(e) {
         var mousePosition = getRelativePosition(e.clientX, e.clientY);
         croquis.down(mousePosition.x, mousePosition.y);
-        document.addEventListener("mousemove", onMouseMove);
+        document.addEventListener('mousemove', onMouseMove);
     }
     function onMouseMove(e) {
         var mousePosition = getRelativePosition(e.clientX, e.clientY);
@@ -27,19 +27,20 @@ function init() {
     function onMouseUp(e) {
         var mousePosition = getRelativePosition(e.clientX, e.clientY);
         croquis.up(mousePosition.x, mousePosition.y);
-        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener('mousemove', onMouseMove);
     }
     function getRelativePosition(absoluteX, absoluteY) {
         var rect = croquisDOMElement.getBoundingClientRect();
         return {x: absoluteX - rect.left, y: absoluteY - rect.top};
     }
-    croquisDOMElement.addEventListener("mousedown", onMouseDown);
-    document.addEventListener("mouseup", onMouseUp);
+    croquisDOMElement.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('mouseup', onMouseUp);
 }
 
 var tabletPlugin = getTabletPlugin();
 function getTabletPlugin() {
-    return document.querySelector('object[type="application/x-wacomtabletplugin"]');
+    return document.querySelector(
+        'object[type=\'application/x-wacomtabletplugin\']');
 }
 var tabletapi = {
     pressure: function () {
@@ -62,10 +63,10 @@ var tabletapi = {
             }
         }
         else {
-            plugin = document.createElement("object");
-            plugin.type = "application/x-wacomtabletplugin";
-            plugin.style.position = "absolute";
-            plugin.style.top = "-1000px";
+            plugin = document.createElement('object');
+            plugin.type = 'application/x-wacomtabletplugin';
+            plugin.style.position = 'absolute';
+            plugin.style.top = '-1000px';
             document.body.appendChild(plugin);
             pressure = 1;
         }
@@ -74,8 +75,8 @@ var tabletapi = {
 }
 
 function Croquis(width, height, makeCheckers) {
-    var domElement = document.createElement("div");
-    domElement.style.clear = "both";
+    var domElement = document.createElement('div');
+    domElement.style.clear = 'both';
     domElement.style.setProperty('user-select', 'none');
     domElement.style.setProperty('-webkit-user-select', 'none');
     domElement.style.setProperty('-ms-user-select', 'none');
@@ -87,20 +88,20 @@ function Croquis(width, height, makeCheckers) {
     체크무늬의 zIndex를 1로 설정했다.
     */
     if (makeCheckers) {
-        var backgroundCheckers = document.createElement("div");
+        var backgroundCheckers = document.createElement('div');
         (function () {
-            var backgroundImage = document.createElement("canvas");
+            var backgroundImage = document.createElement('canvas');
             backgroundImage.width = backgroundImage.height = 20;
-            var backgroundImageContext = backgroundImage.getContext("2d");
-            backgroundImageContext.fillStyle = "#FFFFFF";
+            var backgroundImageContext = backgroundImage.getContext('2d');
+            backgroundImageContext.fillStyle = '#FFFFFF';
             backgroundImageContext.fillRect(0, 0, 20, 20);
-            backgroundImageContext.fillStyle = "#CCCCCC";
+            backgroundImageContext.fillStyle = '#CCCCCC';
             backgroundImageContext.fillRect(0, 0, 10, 10);
             backgroundImageContext.fillRect(10, 10, 20, 20);
-            backgroundCheckers.style.backgroundImage = "url(" +
-                backgroundImage.toDataURL() + ")";
+            backgroundCheckers.style.backgroundImage = 'url(' +
+                backgroundImage.toDataURL() + ')';
             backgroundCheckers.style.zIndex = 1;
-            backgroundCheckers.style.position = "absolute";
+            backgroundCheckers.style.position = 'absolute';
         })();
         domElement.appendChild(backgroundCheckers);
     }
@@ -120,13 +121,15 @@ function Croquis(width, height, makeCheckers) {
         size.height = height = Math.floor(height);
         paintingLayer.width = width;
         paintingLayer.height = height;
-        domElement.style.width = backgroundCheckers.style.width = width + "px";
-        domElement.style.height = backgroundCheckers.style.height = height + "px";
+        domElement.style.width = backgroundCheckers.style.width =
+            width + 'px';
+        domElement.style.height = backgroundCheckers.style.height =
+            height + 'px';
         for (var i=0; i<layers.length; ++i) {
             switch (layers[i].tagName.toLowerCase()) {
-            case "canvas":
+            case 'canvas':
                 var canvas = layers[i];
-                var context = canvas.getContext("2d");
+                var context = canvas.getContext('2d');
                 var imageData = context.getImageData(0, 0, width, height);
                 canvas.width = width;
                 canvas.height = height;
@@ -156,11 +159,11 @@ function Croquis(width, height, makeCheckers) {
     화면에 그림을 그리는 툴들은 paintingLayer에 먼저 그림을 그린 다음
     마우스를 떼는 순간(up 함수가 호출되는 순간) 레이어 캔버스에 옮겨그린다.
     */
-    var paintingLayer = document.createElement("canvas");
+    var paintingLayer = document.createElement('canvas');
     paintingLayer.style.zIndex = 3;
-    paintingLayer.style.position = "absolute";
+    paintingLayer.style.position = 'absolute';
     domElement.appendChild(paintingLayer);
-    var paintingContext = paintingLayer.getContext("2d");
+    var paintingContext = paintingLayer.getContext('2d');
     this.setCanvasSize(width, height);
     function layersZIndex() {
         /*
@@ -176,20 +179,20 @@ function Croquis(width, height, makeCheckers) {
     }
     this.addLayer = function (layerType) {
         var layer;
-        layerType = layerType || "canvas";
+        layerType = layerType || 'canvas';
         switch (layerType.toLowerCase()) {
-        case "canvas":
-            layer = document.createElement("canvas");
-            layer.style.visibility = "visible";
+        case 'canvas':
+            layer = document.createElement('canvas');
+            layer.style.visibility = 'visible';
             layer.style.opacity = 1;
             layer.width = size.width;
             layer.height = size.height;
             break;
         default:
-            throw "unknown layer type";
+            throw 'unknown layer type';
             return null;
         }
-        layer.style.position = "absolute";
+        layer.style.position = 'absolute';
         domElement.appendChild(layer);
         layers.push(layer);
         if (layers.length == 1)
@@ -198,8 +201,8 @@ function Croquis(width, height, makeCheckers) {
         return layer;
     }
     this.addFilledLayer = function (fillColor) {
-        var layer = this.addLayer("canvas");
-        var context = layer.getContext("2d");
+        var layer = this.addLayer('canvas');
+        var context = layer.getContext('2d');
         context.fillStyle = fillColor.getHTMLColor();
         context.fillRect(0, 0, layer.width, layer.height);
         return layer;
@@ -227,10 +230,10 @@ function Croquis(width, height, makeCheckers) {
         */
         paintingLayer.style.zIndex = index * 2 + 3;
         switch (layers[index].tagName.toLowerCase()) {
-        case "canvas":
+        case 'canvas':
             if (tool.setContext)
                 if (eraserTool)
-                    tool.setContext(layers[index].getContext("2d"));
+                    tool.setContext(layers[index].getContext('2d'));
                 else
                     tool.setContext(paintingContext);
             break;
@@ -242,7 +245,7 @@ function Croquis(width, height, makeCheckers) {
         layers[layerIndex].style.opacity = opacity;
     }
     this.setLayerVisible = function (visible) {
-        layers[layerIndex].style.visibility = visible ? "visible" : "hidden";
+        layers[layerIndex].style.visibility = visible ? 'visible' : 'hidden';
     }
     var tools = new Tools;
     var tool = tools.getBrush();
@@ -256,11 +259,11 @@ function Croquis(width, height, makeCheckers) {
     var toolOpacity = 1;
     this.setTool = function (toolName) {
         switch (toolName.toLowerCase()) {
-        case "brush":
+        case 'brush':
             tool = tools.getBrush();
             eraserTool = false;
             break;
-        case "eraser":
+        case 'eraser':
             tool = tools.getEraser();
             eraserTool = true;
             break;
@@ -302,16 +305,16 @@ function Croquis(width, height, makeCheckers) {
     png 파일로 뽑아보기 위해 임시로 만들어졌다.
     */
     this.getMergedImageData = function () {
-        var mergedImage = document.createElement("canvas");
+        var mergedImage = document.createElement('canvas');
         mergedImage.width = size.width;
         mergedImage.height = size.height;
-        var context = mergedImage.getContext("2d");
+        var context = mergedImage.getContext('2d');
         for (var i=0; i<layers.length; ++i) {
             var layer = layers[i];
-            if (layer.style.visible != "hidden") {
+            if (layer.style.visible != 'hidden') {
                 context.globalAlpha = layer.style.opacity;
                 switch (layer.tagName.toLowerCase()) {
-                case "canvas":
+                case 'canvas':
                     context.drawImage(layer, 0, 0, size.width, size.height);
                     break;
                 default:
@@ -322,7 +325,8 @@ function Croquis(width, height, makeCheckers) {
         return mergedImage.toDataURL();
     }
     this.down = function (x, y, pressure) {
-        paintingLayer.style.opacity = layers[layerIndex].style.opacity * toolOpacity;
+        paintingLayer.style.opacity =
+            layers[layerIndex].style.opacity * toolOpacity;
         paintingLayer.style.visibility = layers[layerIndex].style.visibility;
         if (tool.down)
             tool.down(x, y, pressure || tabletapi.pressure());
@@ -336,14 +340,14 @@ function Croquis(width, height, makeCheckers) {
             tool.up(x, y, pressure || tabletapi.pressure());
         var layer = layers[layerIndex];
         switch (layer.tagName.toLowerCase()) {
-        case "canvas":
+        case 'canvas':
             /*
             지우개툴이 아니라면 paintingLayer에 그려진 내용이 있으므로
             현재 선택된 레이어에 paintingLayer를 옮겨 그린 뒤
             paintingLayer의 내용을 지운다.
             */
             if (!eraserTool) {
-                var context = layer.getContext("2d");
+                var context = layer.getContext('2d');
                 context.globalAlpha = toolOpacity;
                 context.drawImage(paintingLayer, 0, 0, size.width, size.height);
                 paintingContext.clearRect(0, 0, size.width, size.height);
@@ -393,7 +397,8 @@ function Drawer() {
     function draw() {
         if (queue.length != 0) {
             var drawData = queue.shift();
-            drawData.getCommand().apply(drawData.getTool(), drawData.getToolArguments());
+            drawData.getCommand().apply(drawData.getTool(),
+                drawData.getToolArguments());
         }
         if (!dead)
             window.setTimeout(draw, drawInterval);
@@ -484,7 +489,7 @@ function Brush(canvasRenderingContext)
         else {
             image = value;
             imageRatio = image.height / image.width;
-            transformedImage = document.createElement("canvas");
+            transformedImage = document.createElement('canvas');
             drawFunction = drawImage;
             transformedImageIsDirty = true;
         }
@@ -497,13 +502,16 @@ function Brush(canvasRenderingContext)
     function transformImage() {
         transformedImage.width = size;
         transformedImage.height = size * imageRatio;
-        var brushContext = transformedImage.getContext("2d");
-        brushContext.clearRect(0, 0, transformedImage.width, transformedImage.height);
-        brushContext.drawImage(image, 0, 0, transformedImage.width, transformedImage.height);
-        brushContext.globalCompositeOperation = "source-in";
+        var brushContext = transformedImage.getContext('2d');
+        brushContext.clearRect(0, 0,
+            transformedImage.width, transformedImage.height);
+        brushContext.drawImage(image, 0, 0,
+            transformedImage.width, transformedImage.height);
+        brushContext.globalCompositeOperation = 'source-in';
         brushContext.fillStyle = color.getHTMLColor();
         brushContext.globalAlpha = flow;
-        brushContext.fillRect(0, 0, transformedImage.width, transformedImage.height);
+        brushContext.fillRect(0, 0,
+            transformedImage.width, transformedImage.height);
     }
     function drawCircle(size) {
         var halfSize = size * 0.5;
@@ -591,7 +599,7 @@ function Brush(canvasRenderingContext)
 
 function Color() {
     this.getHTMLColor = function () {
-        return "#000";
+        return '#000';
     }
 }
 
@@ -610,10 +618,10 @@ function RGBColor(r, g, b)
         return b;
     }
     this.getHTMLColor = function () {
-        return "rgb(" +
-            Math.round(r * 0xFF) + "," +
-            Math.round(g * 0xFF) + "," +
-            Math.round(b * 0xFF) + ")";
+        return 'rgb(' +
+            Math.round(r * 0xFF) + ',' +
+            Math.round(g * 0xFF) + ',' +
+            Math.round(b * 0xFF) + ')';
     }
 }
 RGBColor.prototype = new Color;
