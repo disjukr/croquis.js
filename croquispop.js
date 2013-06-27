@@ -551,12 +551,18 @@ function Brush(canvasRenderingContext)
             var drawInterval = size * interval * midScale;
             if (drawInterval < 0.5) //not correct, but performance
                 drawInterval = 0.5;
-            context.save();
-            context.globalCompositeOperation = globalCompositeOperation;
             var drawStep = drawInterval / delta;
             var xInterval = dx * drawStep;
             var yInterval = dy * drawStep;
             var scaleInterval = ds * drawStep;
+            if (delta < drawInterval) {
+                prevScale = scale;
+                prevX = x;
+                prevY = y;
+                return;
+            }
+            context.save();
+            context.globalCompositeOperation = globalCompositeOperation;
             while(delta >= drawInterval) {
                 var currentX = prevX + xInterval;
                 var currentY = prevY + yInterval;
@@ -572,9 +578,6 @@ function Brush(canvasRenderingContext)
                 prevY = currentY;
                 delta -= drawInterval;
             }
-            prevScale = scale;
-            prevX = x;
-            prevY = y;
             context.restore();
         }
         else {
