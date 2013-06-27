@@ -534,22 +534,29 @@ function Brush(canvasRenderingContext)
         if (scale > 0 && context) {
             var dx = x - prevX;
             var dy = y - prevY;
-            delta += Math.sqrt(dx * dx + dy * dy);
-            if (delta == 0) //prevent infinite loop
+            var ds = scale - prevScale;
+            var currentDelta = Math.sqrt(dx * dx + dy * dy);
+            if (currentDelta == 0) { //prevent infinite loop
+                prevX = x;
+                prevY = y;
+                prevScale = scale;
                 return;
-            var drawInterval = size * interval * (prevScale + scale) * 0.5;
+            }
+            delta += currentDelta;
+            var midScale = (prevScale + scale) * 0.5;
+            var drawInterval = size * interval * midScale;
             if (drawInterval < 0.5) //not correct, but performance
                 drawInterval = 0.5;
+            context.save();
+            context.globalCompositeOperation = globalCompositeOperation;
             var drawStep = drawInterval / delta;
             var xInterval = dx * drawStep;
             var yInterval = dy * drawStep;
-            var scaleInterval = (scale - prevScale) * drawStep;
-            context.save();
-            context.globalCompositeOperation = globalCompositeOperation;
-            while(delta > drawInterval) {
-                var currentScale = prevScale + scaleInterval;
+            var scaleInterval = ds * drawStep;
+            while(delta >= drawInterval) {
                 var currentX = prevX + xInterval;
                 var currentY = prevY + yInterval;
+                var currentScale = prevScale + scaleInterval;
                 var halfSize = size * currentScale * 0.5;
                 context.save();
                 context.translate(Math.floor(currentX - halfSize),
@@ -561,6 +568,9 @@ function Brush(canvasRenderingContext)
                 prevY = currentY;
                 delta -= drawInterval;
             }
+            prevScale = scale;
+            prevX = x;
+            prevY = y;
             context.restore();
         }
         else {
