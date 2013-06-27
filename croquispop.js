@@ -497,6 +497,8 @@ function Brush(canvasRenderingContext)
     var delta = 0;
     var prevX = 0;
     var prevY = 0;
+    var lastX = 0;
+    var lastY = 0;
     var prevScale = 0;
     var drawFunction = drawCircle;
     function transformImage() {
@@ -527,19 +529,24 @@ function Brush(canvasRenderingContext)
             transformImage();
         context.drawImage(transformedImage, 0, 0, size, size * imageRatio);
     }
+    function drawTo(x, y, size) {
+        var halfSize = size * 0.5;
+        context.save();
+        context.translate(Math.floor(x - halfSize),
+            Math.floor(y - halfSize * imageRatio));
+        drawFunction(size);
+        context.restore();
+    }
     this.down = function(x, y, scale) {
-        var halfSize = size * scale * 0.5;
-        delta = 0;
         if (scale > 0 && context) {
             context.save();
             context.globalCompositeOperation = globalCompositeOperation;
-            context.translate(Math.floor(x - halfSize),
-                Math.floor(y - halfSize * imageRatio));
-            drawFunction(halfSize + halfSize);
+            drawTo(x, y, size * scale);
             context.restore();
         }
-        prevX = x;
-        prevY = y;
+        delta = 0;
+        lastX = prevX = x;
+        lastY = prevY = y;
         prevScale = scale;
     }
     this.move = function(x, y, scale) {
@@ -547,45 +554,49 @@ function Brush(canvasRenderingContext)
             var dx = x - prevX;
             var dy = y - prevY;
             var ds = scale - prevScale;
-            var currentDelta = Math.sqrt(dx * dx + dy * dy);
-            if (currentDelta == 0) { //prevent infinite loop
-                prevX = x;
-                prevY = y;
+            var d = Math.sqrt(dx * dx + dy * dy);
+            prevX = x;
+            prevY = y;
+            if (d == 0) { //prevent infinite loop
                 prevScale = scale;
                 return;
             }
-            delta += currentDelta;
+            delta += d;
             var midScale = (prevScale + scale) * 0.5;
             var drawInterval = size * interval * midScale;
             if (drawInterval < 0.5) //not correct, but performance
                 drawInterval = 0.5;
             if (delta < drawInterval) {
-                prevX = x;
-                prevY = y;
                 prevScale = scale;
                 return;
             }
             context.save();
             context.globalCompositeOperation = globalCompositeOperation;
-            var drawStep = drawInterval / delta;
-            var xInterval = dx * drawStep;
-            var yInterval = dy * drawStep;
-            var scaleInterval = ds * drawStep;
-            while(delta >= drawInterval) {
-                var currentX = prevX + xInterval;
-                var currentY = prevY + yInterval;
-                var currentScale = prevScale + scaleInterval;
-                var halfSize = size * currentScale * 0.5;
-                context.save();
-                context.translate(Math.floor(currentX - halfSize),
-                    Math.floor(currentY - halfSize * imageRatio));
-                drawFunction(halfSize + halfSize);
-                context.restore();
-                prevScale = currentScale;
-                prevX = currentX;
-                prevY = currentY;
+            var scaleInterval = ds * (drawInterval / delta);
+            var ldx = x - lastX;
+            var ldy = y - lastY;
+            var ld = Math.sqrt(ldx * ldx + ldy * ldy);
+            if (ld < drawInterval) {
+                lastX = x;
+                lastY = y;
+                prevScale = scale;
+                drawTo(lastX, lastY, size * prevScale);
                 delta -= drawInterval;
+            } else {
+                while(delta >= drawInterval) {
+                    ldx = x - lastX;
+                    ldy = y - lastY;
+                    var dir = Math.atan2(ldy, ldx);
+                    var tx = Math.cos(dir);
+                    var ty = Math.sin(dir);
+                    lastX += tx * drawInterval;
+                    lastY += ty * drawInterval;
+                    prevScale += scaleInterval;
+                    drawTo(lastX, lastY, size * prevScale);
+                    delta -= drawInterval;
+                }
             }
+            prevScale = scale;
             context.restore();
         }
         else {
