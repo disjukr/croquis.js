@@ -359,58 +359,6 @@ function Croquis(width, height, makeCheckers) {
     }
 }
 
-function DrawData(tool, command, toolArguments) {
-    var tool = tool;
-    this.getTool = function() {
-        return tool;
-    }
-    this.setTool = function(value) {
-        tool = value;
-    }
-    var command = command;
-    this.getCommand = function() {
-        return command;
-    }
-    this.setCommand = function(value) {
-        command = value;
-    }
-    var toolArguments = toolArguments;
-    this.getToolArguments = function() {
-        return toolArguments;
-    }
-    this.setToolArguments = function(value) {
-        toolArguments = value;
-    }
-}
-
-function Drawer() {
-    var drawInterval = 5;
-    this.getDrawInterval = function () {
-        return drawInterval;
-    }
-    this.setDrawInterval = function (value) {
-        drawInterval = value;
-    }
-    var queue = [];
-    var dead = false;
-    draw();
-    function draw() {
-        if (queue.length != 0) {
-            var drawData = queue.shift();
-            drawData.getCommand().apply(drawData.getTool(),
-                drawData.getToolArguments());
-        }
-        if (!dead)
-            window.setTimeout(draw, drawInterval);
-    }
-    this.addDrawData = function(drawData) {
-        queue.push(drawData);
-    }
-    this.kill = function() {
-        dead = true;
-    }
-}
-
 function Tools()
 {
     var brush = new Brush;
