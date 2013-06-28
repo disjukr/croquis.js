@@ -557,16 +557,12 @@ function Brush(canvasRenderingContext)
             var d = Math.sqrt(dx * dx + dy * dy);
             prevX = x;
             prevY = y;
-            if (d == 0) { //prevent infinite loop
-                prevScale = scale;
-                return;
-            }
             delta += d;
             var midScale = (prevScale + scale) * 0.5;
             var drawInterval = size * interval * midScale;
             if (drawInterval < 0.5) //not correct, but performance
                 drawInterval = 0.5;
-            if (delta < drawInterval) {
+            if (delta < drawInterval) { //no need to draw
                 prevScale = scale;
                 return;
             }
