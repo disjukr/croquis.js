@@ -257,6 +257,9 @@ function Croquis(width, height, makeCheckers) {
     var toolSize = 10;
     var toolColor = new Color;
     var toolOpacity = 1;
+    var toolStabilizeLevel = 0;
+    var toolStabilizeWeight = 0.8;
+    var stabilizer = null;
     this.setTool = function (toolName) {
         switch (toolName.toLowerCase()) {
         case 'brush':
@@ -296,6 +299,18 @@ function Croquis(width, height, makeCheckers) {
     this.setToolOpacity = function (opacity) {
         toolOpacity = opacity;
     }
+    this.getToolStabilizeLevel = function () {
+        return toolStabilizeLevel;
+    }
+    this.setToolStabilizeLevel = function (level) {
+        toolStabilizeLevel = level;
+    }
+    this.getToolStabilizeWeight = function () {
+        return toolStabilizeWeight;
+    }
+    this.setToolStabilizeWeight = function (weight) {
+        toolStabilizeWeight = weight;
+    }
     this.getBrushFlow = tools.getBrush().getFlow;
     this.setBrushFlow = tools.getBrush().setFlow;
     this.getBrushInterval = tools.getBrush().getInterval;
@@ -324,20 +339,13 @@ function Croquis(width, height, makeCheckers) {
         }
         return mergedImage.toDataURL();
     }
-    this.down = function (x, y, pressure) {
-        paintingLayer.style.opacity =
-            layers[layerIndex].style.opacity * toolOpacity;
-        paintingLayer.style.visibility = layers[layerIndex].style.visibility;
-        if (tool.down)
-            tool.down(x, y, pressure || tabletapi.pressure());
-    }
-    this.move = function (x, y, pressure) {
+    function _move(x, y, pressure) {
         if (tool.move)
-            tool.move(x, y, pressure || tabletapi.pressure());
+            tool.move(x, y, pressure);
     }
-    this.up = function (x, y, pressure) {
+    function _up(x, y, pressure) {
         if (tool.up)
-            tool.up(x, y, pressure || tabletapi.pressure());
+            tool.up(x, y, pressure);
         var layer = layers[layerIndex];
         switch (layer.tagName.toLowerCase()) {
         case 'canvas':
@@ -357,6 +365,46 @@ function Croquis(width, height, makeCheckers) {
             break;
         }
     }
+    var isDrawing = false;
+    this.down = function (x, y, pressure) {
+        if (isDrawing)
+            return;
+        else
+            isDrawing = true;
+        pressure = pressure || tabletapi.pressure();
+        var down = tool.down;
+        paintingLayer.style.opacity =
+            layers[layerIndex].style.opacity * toolOpacity;
+        paintingLayer.style.visibility = layers[layerIndex].style.visibility;
+        if (toolStabilizeLevel > 0) {
+            stabilizer = new Stabilizer;
+            stabilizer.init(down, _move,
+                toolStabilizeLevel, toolStabilizeWeight, x, y, pressure);
+        }
+        else if (down != null)
+            down(x, y, pressure);
+    }
+    this.move = function (x, y, pressure) {
+        if (!isDrawing)
+            return;
+        pressure = pressure || tabletapi.pressure();
+        if (stabilizer != null)
+            stabilizer.move(x, y, pressure);
+        else
+            _move(x, y, pressure);
+    }
+    this.up = function (x, y, pressure) {
+        if (!isDrawing)
+            return;
+        else
+            isDrawing = false;
+        pressure = pressure || tabletapi.pressure();
+        if (stabilizer != null)
+            stabilizer.up(_up);
+        else
+            _up(x, y, pressure);
+        stabilizer = null;
+    }
 }
 
 function Tools()
@@ -369,6 +417,72 @@ function Tools()
     this.getEraser = function () {
         brush.setKnockout(true);
         return brush;
+    }
+}
+
+function Stabilizer() {
+    var interval = 5;
+    var follow;
+    var first;
+    var last;
+    var paramTable;
+    var current;
+    var moveCallback;
+    var upCallback;
+    this.init = function (down, move, level, weight, x, y, pressure) {
+        follow = weight;
+        paramTable = [];
+        current = { x: x, y: y, pressure: pressure };
+        moveCallback = move;
+        upCallback = null;
+        for (var i = 0; i < level; ++i)
+            paramTable.push({ x: x, y: y, pressure: pressure });
+        first = paramTable[0];
+        last = paramTable[paramTable.length - 1];
+        if (down != null)
+            down(x, y, pressure);
+        window.setTimeout(_move, interval);
+    }
+    this.move = function (x, y, pressure) {
+        current.x = x;
+        current.y = y;
+        current.pressure = pressure;
+    }
+    this.up = function (up) {
+        upCallback = up;
+    }
+    function dlerp(a, d, t) {
+        return a + d * t;
+    }
+    function _move() {
+        var curr;
+        var prev;
+        var dx;
+        var dy;
+        var dp;
+        var delta = 0;
+        first.x = current.x;
+        first.y = current.y;
+        first.pressure = current.pressure;
+        for (var i = 1; i < paramTable.length; ++i) {
+            curr = paramTable[i];
+            prev = paramTable[i - 1];
+            dx = prev.x - curr.x;
+            dy = prev.y - curr.y;
+            dp = prev.pressure - curr.pressure;
+            delta += Math.abs(dx);
+            delta += Math.abs(dy);
+            curr.x = dlerp(curr.x, dx, follow);
+            curr.y = dlerp(curr.y, dy, follow);
+            curr.pressure = dlerp(curr.pressure, dp, follow);
+        }
+        if (upCallback == null || delta > 1) {
+            moveCallback(last.x, last.y, last.pressure);
+            window.setTimeout(_move, interval);
+        }
+        else {
+            upCallback(last.x, last.y, last.pressure);
+        }
     }
 }
 
