@@ -407,7 +407,7 @@ function Drawer() {
         queue.push(drawData);
     }
     this.kill = function() {
-        isDead = true;
+        dead = true;
     }
 }
 
