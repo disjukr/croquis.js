@@ -455,7 +455,7 @@ function Stabilizer() {
     function dlerp(a, d, t) {
         return a + d * t;
     }
-    function _move() {
+    function _move(justCalc) {
         var curr;
         var prev;
         var dx;
@@ -477,12 +477,18 @@ function Stabilizer() {
             curr.y = dlerp(curr.y, dy, follow);
             curr.pressure = dlerp(curr.pressure, dp, follow);
         }
-        if (upCallback == null || delta > 1) {
-            moveCallback(last.x, last.y, last.pressure);
-            window.setTimeout(_move, interval);
+        if (justCalc)
+            return delta;
+        if (upCallback != null) {
+            while(delta > 1) {
+                moveCallback(last.x, last.y, last.pressure);
+                delta = _move(true);
+            }
+            upCallback(last.x, last.y, last.pressure);
         }
         else {
-            upCallback(last.x, last.y, last.pressure);
+            moveCallback(last.x, last.y, last.pressure);
+            window.setTimeout(_move, interval);
         }
     }
 }
