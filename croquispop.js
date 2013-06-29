@@ -339,11 +339,15 @@ function Croquis(width, height, makeCheckers) {
         }
         return mergedImage.toDataURL();
     }
+    var isDrawing = false;
+    var isStabilizing = false;
     function _move(x, y, pressure) {
         if (tool.move)
             tool.move(x, y, pressure);
     }
     function _up(x, y, pressure) {
+        isDrawing = false;
+        isStabilizing = false;
         if (tool.up)
             tool.up(x, y, pressure);
         var layer = layers[layerIndex];
@@ -365,12 +369,10 @@ function Croquis(width, height, makeCheckers) {
             break;
         }
     }
-    var isDrawing = false;
     this.down = function (x, y, pressure) {
         if (isDrawing)
             return;
-        else
-            isDrawing = true;
+        isDrawing = true;
         pressure = pressure || tabletapi.pressure();
         var down = tool.down;
         paintingLayer.style.opacity =
@@ -380,6 +382,7 @@ function Croquis(width, height, makeCheckers) {
             stabilizer = new Stabilizer;
             stabilizer.init(down, _move,
                 toolStabilizeLevel, toolStabilizeWeight, x, y, pressure);
+            isStabilizing = true;
         }
         else if (down != null)
             down(x, y, pressure);
@@ -390,14 +393,12 @@ function Croquis(width, height, makeCheckers) {
         pressure = pressure || tabletapi.pressure();
         if (stabilizer != null)
             stabilizer.move(x, y, pressure);
-        else
+        else if (!isStabilizing)
             _move(x, y, pressure);
     }
     this.up = function (x, y, pressure) {
         if (!isDrawing)
             return;
-        else
-            isDrawing = false;
         pressure = pressure || tabletapi.pressure();
         if (stabilizer != null)
             stabilizer.up(_up);
