@@ -489,6 +489,15 @@ function Stabilizer() {
 function Brush(canvasRenderingContext)
 {
     var context = canvasRenderingContext;
+    this.clone = function () {
+        var clone = new Brush(context);
+        clone.setColor(this.getColor());
+        clone.setFlow(this.getFlow());
+        clone.setKnockout(this.getKnockout());
+        clone.setSize(this.getSize());
+        clone.setInterval(this.getInterval());
+        clone.setImage(this.getImage());
+    }
     this.getContext = function () {
         return context;
     }
