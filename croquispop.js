@@ -4,14 +4,14 @@ var croquis;
 
 function init() {
     croquis = new Croquis(640, 480, true);
-    croquis.addFilledLayer(new RGBColor(1, 1, 1));
+    croquis.addFilledLayer('#fff');
     croquis.addLayer();
     croquis.selectLayer(1);
     croquis.setLayerOpacity(1);
     croquis.setLayerVisible(true);
     croquis.setTool('brush');
     croquis.setToolSize(10);
-    croquis.setToolColor(new RGBColor(0, 0, 0));
+    croquis.setToolColor('#000');
     croquis.setToolOpacity(1);
     croquis.setToolStabilizeLevel(10);
     croquis.setToolStabilizeWeight(0.2);
@@ -197,7 +197,7 @@ function Croquis(width, height, makeCheckers) {
     this.addFilledLayer = function (fillColor) {
         var layer = this.addLayer('canvas');
         var context = layer.getContext('2d');
-        context.fillStyle = fillColor.getHTMLColor();
+        context.fillStyle = fillColor || '#fff';
         context.fillRect(0, 0, layer.width, layer.height);
         return layer;
     }
@@ -249,7 +249,7 @@ function Croquis(width, height, makeCheckers) {
     */
     var eraserTool = false;
     var toolSize = 10;
-    var toolColor = new Color;
+    var toolColor = '#000';
     var toolOpacity = 1;
     var toolStabilizeLevel = 0;
     var toolStabilizeWeight = 0.8;
@@ -514,7 +514,7 @@ function Brush(canvasRenderingContext)
     this.setContext = function (value) {
         context = value;
     }
-    var color = new Color;
+    var color = '#000';
     this.getColor = function () {
         return color;
     }
@@ -605,7 +605,7 @@ function Brush(canvasRenderingContext)
     }
     function drawCircle(size) {
         var halfSize = size * 0.5;
-        context.fillStyle = color.getHTMLColor();
+        context.fillStyle = color;
         context.globalAlpha = flow;
         context.beginPath();
         context.arc(halfSize, halfSize, halfSize, 0, Math.PI * 2);
@@ -694,32 +694,3 @@ function Brush(canvasRenderingContext)
         }
     }
 }
-
-function Color() {
-    this.getHTMLColor = function () {
-        return '#000';
-    }
-}
-
-function RGBColor(r, g, b)
-{
-    var r = r;
-    this.getR = function () {
-        return r;
-    }
-    var g = g;
-    this.getG = function () {
-        return g;
-    }
-    var b = b;
-    this.getB = function () {
-        return b;
-    }
-    this.getHTMLColor = function () {
-        return 'rgb(' +
-            Math.round(r * 0xFF) + ',' +
-            Math.round(g * 0xFF) + ',' +
-            Math.round(b * 0xFF) + ')';
-    }
-}
-RGBColor.prototype = new Color;
