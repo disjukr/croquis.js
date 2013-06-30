@@ -44,35 +44,27 @@ function getTabletPlugin() {
     return document.querySelector(
         'object[type=\'application/x-wacomtabletplugin\']');
 }
+function getPenAPI() {
+    var plugin = tabletPlugin || getTabletPlugin();
+    if (plugin)
+        return plugin.penAPI;
+    else {
+        plugin = document.createElement('object');
+        plugin.type = 'application/x-wacomtabletplugin';
+        plugin.style.position = 'absolute';
+        plugin.style.top = '-1000px';
+        document.body.appendChild(plugin);
+        return null;
+    }
+}
 var tabletapi = {
     pressure: function () {
-        var plugin = tabletPlugin || getTabletPlugin();
-        var pressure;
-        if (plugin) {
-            pressure = plugin.penAPI && plugin.penAPI.pressure;
-            if (pressure) {
-                tabletapi.latestPressure = pressure;
-            }
-            else {
-                if (tabletapi.latestPressure) {
-                    pressure = tabletapi.latestPressure;
-                    tabletapi.latestPressure = null;
-                }
-                else {
-                    tabletapi.latestPressure = null;
-                    pressure = 1;
-                }
-            }
-        }
-        else {
-            plugin = document.createElement('object');
-            plugin.type = 'application/x-wacomtabletplugin';
-            plugin.style.position = 'absolute';
-            plugin.style.top = '-1000px';
-            document.body.appendChild(plugin);
-            pressure = 1;
-        }
-        return pressure;
+        var pen = getPenAPI();
+        return pen? pen.pressure : 1;
+    },
+    isEraser: function () {
+        var pen = getPenAPI();
+        return pen? pen.isEraser : false;
     }
 }
 
