@@ -554,6 +554,13 @@ function Brush(canvasRenderingContext)
     this.setInterval = function (value) {
         interval = value < 0.01 ? 0.01 : value;
     }
+    var snapToPixel = false;
+    this.getSnapToPixel = function () {
+        return sanpToPixel;
+    }
+    this.setSnapToPixel = function (value) {
+        sanpToPixel = value;
+    }
     var image = null;
     var transformedImage = null;
     var transformedImageIsDirty = true;
@@ -613,8 +620,11 @@ function Brush(canvasRenderingContext)
     function drawTo(x, y, size) {
         var halfSize = size * 0.5;
         context.save();
-        context.translate(Math.floor(x - halfSize),
-            Math.floor(y - halfSize * imageRatio));
+        if (snapToPixel)
+            context.translate(Math.floor(x - halfSize),
+                Math.floor(y - halfSize * imageRatio));
+        else
+            context.translate(x - halfSize, y - halfSize * imageRatio);
         drawFunction(size);
         context.restore();
     }
