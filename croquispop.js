@@ -60,7 +60,7 @@ function getPenAPI() {
 var tabletapi = {
     pressure: function () {
         var pen = getPenAPI();
-        return pen? pen.pressure : 1;
+        return (pen && pen.pointerType)? pen.pressure : 1;
     },
     isEraser: function () {
         var pen = getPenAPI();
