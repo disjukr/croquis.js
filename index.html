@@ -1,10 +1,17 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Croquispop</title>
     <link rel="stylesheet" type="text/css" href="./croquispop.css">
   </head>
   <body>
+    <div id="tool-shelf">
+      <span>손떨림 보정 단계: </span>
+      <input id="tool-stabilize-level-slider" type="range" min="3" max="20">
+      <span>무게: </span>
+      <input id="tool-stabilize-weight-slider" type="range" min="20" max="80">
+    </div>
     <div id="brush-shelf">
       <span>지우개: </span>
       <input id="select-eraser-checkbox" type="checkbox">
@@ -23,11 +30,30 @@
     <script src="./croquispop.js"></script>
     <script>
     // <![CDATA[
+    var toolStabilizeLevelSlider = document.getElementById('tool-stabilize-level-slider');
+    var toolStabilizeWeightSlider = document.getElementById('tool-stabilize-weight-slider');
+    toolStabilizeLevelSlider.value = croquis.getToolStabilizeLevel();
+    toolStabilizeWeightSlider.value = croquis.getToolStabilizeWeight() * 100;
+
     var selectEraserCheckbox = document.getElementById('select-eraser-checkbox');
     var brushSizeSlider = document.getElementById('brush-size-slider');
     var brushOpacitySlider = document.getElementById('brush-opacity-slider');
     var brushFlowSlider = document.getElementById('brush-flow-slider');
     var brushIntervalSlider = document.getElementById('brush-interval-slider');
+    brushSizeSlider.value = croquis.getToolSize();
+    brushOpacitySlider.value = croquis.getToolOpacity() * 100;
+    brushFlowSlider.value = croquis.getBrushFlow() * 100;
+    brushIntervalSlider.value = croquis.getBrushInterval() * 100;
+
+    toolStabilizeLevelSlider.onchange = function () {
+      croquis.setToolStabilizeLevel(toolStabilizeLevelSlider.value);
+      toolStabilizeLevelSlider.value = croquis.getToolStabilizeLevel();
+    }
+    toolStabilizeWeightSlider.onchange = function () {
+      croquis.setToolStabilizeWeight(toolStabilizeWeightSlider.value * 0.01);
+      toolStabilizeWeightSlider.value = croquis.getToolStabilizeWeight() * 100;
+    }
+
     selectEraserCheckbox.onchange = function () {
       croquis.setTool(selectEraserCheckbox.checked? 'eraser' : 'brush');
     }
@@ -43,10 +69,6 @@
     brushIntervalSlider.onchange = function () {
       croquis.setBrushInterval(brushIntervalSlider.value * 0.01);
     }
-    brushSizeSlider.value = croquis.getToolSize();
-    brushOpacitySlider.value = croquis.getToolOpacity() * 100;
-    brushFlowSlider.value = croquis.getBrushFlow() * 100;
-    brushIntervalSlider.value = croquis.getBrushInterval() * 100;
     // ]]>
     </script>
     </script>

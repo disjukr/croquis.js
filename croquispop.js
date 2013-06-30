@@ -13,6 +13,8 @@ function init() {
     croquis.setToolSize(10);
     croquis.setToolColor(new RGBColor(0, 0, 0));
     croquis.setToolOpacity(1);
+    croquis.setToolStabilizeLevel(10);
+    croquis.setToolStabilizeWeight(0.2);
     var croquisDOMElement = croquis.getDOMElement();
     document.getElementById('canvas-area').appendChild(croquisDOMElement);
     function onMouseDown(e) {
@@ -299,17 +301,26 @@ function Croquis(width, height, makeCheckers) {
     this.setToolOpacity = function (opacity) {
         toolOpacity = opacity;
     }
+    /*
+    손떨림 보정을 위한 추적 좌표 갯수를 설정한다.
+    단계가 높을 수록 더 부드럽게 따라온다.
+    */
     this.getToolStabilizeLevel = function () {
         return toolStabilizeLevel;
     }
     this.setToolStabilizeLevel = function (level) {
-        toolStabilizeLevel = level;
+        toolStabilizeLevel = level < 0? 0 : level;
     }
+    /*
+    무게(가중치)라고 하면 가벼운 쪽이 숫자가 작은 게 직관적일 것 같아 숫자를 뒤집었다.
+    내부에서는 원래 가중치(0~1)대로 연산한다.
+    보정 무게를 크게 설정할 수록 그림이 늦게 그려진다.
+    */
     this.getToolStabilizeWeight = function () {
-        return toolStabilizeWeight;
+        return 1 - toolStabilizeWeight;
     }
     this.setToolStabilizeWeight = function (weight) {
-        toolStabilizeWeight = weight;
+        toolStabilizeWeight = 1 - Math.min(1, Math.max(0.05, weight));
     }
     this.getBrushFlow = tools.getBrush().getFlow;
     this.setBrushFlow = tools.getBrush().setFlow;
