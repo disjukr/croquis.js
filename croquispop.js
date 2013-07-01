@@ -93,7 +93,7 @@ function Croquis(width, height, makeCheckers) {
     }
     (function () {
         backgroundCheckerImage = document.createElement('canvas');
-        backgroundImage.width = backgroundImage.height = 20;
+        backgroundCheckerImage.width = backgroundCheckerImage.height = 20;
         var backgroundImageContext = backgroundCheckerImage.getContext('2d');
         backgroundImageContext.fillStyle = '#fff';
         backgroundImageContext.fillRect(0, 0, 20, 20);
