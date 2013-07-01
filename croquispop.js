@@ -226,6 +226,11 @@ function Croquis(width, height, makeCheckers) {
         switch (layers[index].tagName.toLowerCase()) {
         case 'canvas':
             if (tool.setContext)
+                /*
+                화면에 내용이 없는 paintingLayer에 지우개질을 하면
+                의미가 없으므로 지우개 툴일 경우에는
+                레이어의 context를 툴에 바로 적용한다.
+                */
                 if (eraserTool)
                     tool.setContext(layers[index].getContext('2d'));
                 else
@@ -243,10 +248,6 @@ function Croquis(width, height, makeCheckers) {
     }
     var tools = new Tools;
     var tool = tools.getBrush();
-    /*
-    화면에 내용이 없는 paintingLayer에 지우개질을 하면 의미가 없으므로
-    지우개 툴일 경우에는 레이어의 context를 툴에 바로 적용한다.
-    */
     var eraserTool = false;
     var toolSize = 10;
     var toolColor = '#000';
@@ -304,7 +305,8 @@ function Croquis(width, height, makeCheckers) {
         toolStabilizeLevel = level < 0? 0 : level;
     }
     /*
-    무게(가중치)라고 하면 가벼운 쪽이 숫자가 작은 게 직관적일 것 같아 숫자를 뒤집었다.
+    무게(가중치)라고 하면 가벼운 쪽이 숫자가 작은 게
+    직관적일 것 같아 숫자를 뒤집었다.
     내부에서는 원래 가중치(0~1)대로 연산한다.
     보정 무게를 크게 설정할 수록 그림이 늦게 그려진다.
     */
