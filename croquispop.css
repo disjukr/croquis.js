@@ -39,14 +39,14 @@ body {
   width: 150px;
   height: 150px;
   margin-top: -150px;
-  background: linear-gradient(to right, rgba(255, 0, 0, 0), red);
+  background-image: linear-gradient(to right, hsla(0, 100%, 50%, 0), red);
 }
 
 #color-picker-brightness {
   width: 150px;
   height: 150px;
   margin-top: -150px;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0), black);
+  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), black);
 }
 
 #color-picker-thumb {
