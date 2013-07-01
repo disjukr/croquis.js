@@ -50,12 +50,12 @@ body {
 }
 
 #color-picker-thumb {
-  margin-top: -157.5px;
+  margin-top: -7.5px;
   margin-left: -7.5px;
   width: 11px;
   height: 11px;
   border-radius: 7.5px;
-  border-color: #000;
+  border-color: #fff;
   border-style: solid;
   border-width: 2px;
 }

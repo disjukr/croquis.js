@@ -31,7 +31,7 @@
         <div id="color-picker-brightness"></div>
         <div id="color-picker-thumb"></div>
       </div>
-      <span>색상: </span>
+      <span>색조: </span>
       <input id="color-picker-hue-slider" type="range" min="0" max="360">
     </div>
     <div id="canvas-area">
@@ -42,15 +42,59 @@
     <script>
     // <![CDATA[
     var colorPickerHueSlider = document.getElementById('color-picker-hue-slider');
+    var colorPickerSb = document.getElementById('color-picker-sb');
     var colorPickerSaturate = document.getElementById('color-picker-saturate');
+    var colorPickerThumb = document.getElementById('color-picker-thumb');
     colorPickerHueSlider.value = tinycolor(croquis.getToolColor()).toHsv().h;
+
+    function setColor() {
+      var halfThumbRadius = 7.5;
+      var sbSize = 150;
+      var h = colorPickerHueSlider.value;
+      var s = parseFloat(colorPickerThumb.style.getPropertyValue('margin-left'));
+      var b = parseFloat(colorPickerThumb.style.getPropertyValue('margin-top'));
+      s = (s + halfThumbRadius) / sbSize;
+      b = 1 - ((b + halfThumbRadius + sbSize) / sbSize);
+      croquis.setToolColor(tinycolor({h: h, s:s, v: b}).toRgbString());
+    }
 
     colorPickerHueSlider.onchange = function () {
       var hue = colorPickerHueSlider.value;
       colorPickerSaturate.style.setProperty('background-image',
         'linear-gradient(to right, hsla(' +
         hue + ', 100%, 50%, 0), hsl(' + hue + ', 100%, 50%))');
+      setColor();
     }
+
+    function colorPickerMouseDown(e) {
+      document.addEventListener('mousemove', colorPickerMouseMove);
+      colorPickerMouseMove(e);
+    }
+    function colorPickerMouseUp(e) {
+      document.removeEventListener('mousemove', colorPickerMouseMove);
+    }
+    function colorPickerMouseMove(e) {
+      var boundRect = colorPickerSb.getBoundingClientRect();
+      var x = (e.clientX - boundRect.left);
+      var y = (e.clientY - boundRect.top);
+      pickColor(x, y);
+    }
+    function minmax(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+    function pickColor(x, y) {
+      var halfThumbRadius = 7.5;
+      var sbSize = 150;
+      colorPickerThumb.style.setProperty('margin-left',
+        (minmax(x, 0, sbSize) - halfThumbRadius) + 'px');
+      colorPickerThumb.style.setProperty('margin-top',
+        (minmax(y, 0, sbSize) - (sbSize + halfThumbRadius)) + 'px');
+      colorPickerThumb.style.setProperty('border-color',
+        (y < sbSize * 0.5)? '#000' : '#fff');
+      setColor();
+    }
+    colorPickerSb.addEventListener('mousedown', colorPickerMouseDown);
+    document.addEventListener('mouseup', colorPickerMouseUp);
 
     var toolStabilizeLevelSlider = document.getElementById('tool-stabilize-level-slider');
     var toolStabilizeWeightSlider = document.getElementById('tool-stabilize-weight-slider');
