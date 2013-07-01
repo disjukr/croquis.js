@@ -1,8 +1,61 @@
 body {
   background-color: #888;
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -moz-user-select: none;
 }
 
 #tablet-api {
   position: absolute;
   top: -1000px;
+}
+
+#canvas-area {
+  display: inline-block;
+}
+
+#color-picker {
+  display: inline-block;
+}
+
+#color-picker:active {
+  cursor: default;
+}
+
+#color-picker-sb {
+  width: 150px;
+  height: 150px;
+  overflow: hidden;
+}
+
+#color-picker-white {
+  width: 150px;
+  height: 150px;
+  background-color: #fff;
+}
+
+#color-picker-saturate {
+  width: 150px;
+  height: 150px;
+  margin-top: -150px;
+  background: linear-gradient(to right, rgba(255, 0, 0, 0), red);
+}
+
+#color-picker-brightness {
+  width: 150px;
+  height: 150px;
+  margin-top: -150px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0), black);
+}
+
+#color-picker-thumb {
+  margin-top: -157.5px;
+  margin-left: -7.5px;
+  width: 11px;
+  height: 11px;
+  border-radius: 7.5px;
+  border-color: #000;
+  border-style: solid;
+  border-width: 2px;
 }
