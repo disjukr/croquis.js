@@ -17,12 +17,13 @@
       <input id="select-eraser-checkbox" type="checkbox">
       <span>브러시 크기: </span>
       <input id="brush-size-slider" type="range" min="1" max="100">
-      <span>투명도: </span>
-      <input id="brush-opacity-slider" type="range" min="0" max="100">
       <span>흐름: </span>
       <input id="brush-flow-slider" type="range" min="0" max="100">
       <span>간격: </span>
       <input id="brush-interval-slider" type="range" min="0" max="1000">
+    </div>
+    <div id="canvas-area">
+      <object id="tablet-api" type="application/x-wacomtabletplugin"></object>
     </div>
     <div id="color-picker">
       <div id="color-picker-sb">
@@ -33,9 +34,14 @@
       </div>
       <span>색조: </span>
       <input id="color-picker-hue-slider" type="range" min="0" max="360">
-    </div>
-    <div id="canvas-area">
-      <object id="tablet-api" type="application/x-wacomtabletplugin"></object>
+      <br>
+      <span>투명도: </span>
+      <input id="brush-opacity-slider" type="range" min="0" max="100">
+      <br>
+      <span>현재 색상: </span>
+      <div id="color-picker-checker">
+        <p id="color-picker-color"></p>
+      </div>
     </div>
     <script src="./TinyColor/tinycolor.js"></script>
     <script src="./croquispop.js"></script>
@@ -56,6 +62,10 @@
       s = (s + halfThumbRadius) / sbSize;
       b = 1 - ((b + halfThumbRadius + sbSize) / sbSize);
       croquis.setToolColor(tinycolor({h: h, s:s, v: b}).toRgbString());
+      var a = croquis.getToolOpacity();
+      var color = tinycolor({h: h, s:s, v: b, a: a});
+      colorPickerColor.style.backgroundColor = color.toRgbString();
+      colorPickerColor.textContent = color.toHexString();
     }
 
     colorPickerHueSlider.onchange = function () {
@@ -96,6 +106,13 @@
     colorPickerSb.addEventListener('mousedown', colorPickerMouseDown);
     document.addEventListener('mouseup', colorPickerMouseUp);
 
+    var colorPickerChecker = document.getElementById('color-picker-checker');
+    colorPickerChecker.style.backgroundImage = 'url(' +
+      croquis.getBackgroundCheckerImage().toDataURL() + ')';
+    var colorPickerColor = document.getElementById('color-picker-color');
+
+    pickColor(0, 150);
+
     var toolStabilizeLevelSlider = document.getElementById('tool-stabilize-level-slider');
     var toolStabilizeWeightSlider = document.getElementById('tool-stabilize-weight-slider');
     toolStabilizeLevelSlider.value = croquis.getToolStabilizeLevel();
@@ -128,6 +145,7 @@
     }
     brushOpacitySlider.onchange = function () {
       croquis.setToolOpacity(brushOpacitySlider.value * 0.01);
+      setColor();
     }
     brushFlowSlider.onchange = function () {
       croquis.setBrushFlow(brushFlowSlider.value * 0.01);

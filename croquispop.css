@@ -17,6 +17,7 @@ body {
 
 #color-picker {
   display: inline-block;
+  vertical-align: top;
 }
 
 #color-picker:active {
@@ -58,4 +59,12 @@ body {
   border-color: #fff;
   border-style: solid;
   border-width: 2px;
+}
+
+#color-picker-checker {
+  display: inline-block;
+}
+
+#color-picker-color {
+  margin: 0;
 }
