@@ -75,32 +75,39 @@ function Croquis(width, height, makeCheckers) {
     domElement.style.setProperty('-webkit-user-select', 'none');
     domElement.style.setProperty('-ms-user-select', 'none');
     domElement.style.setProperty('-moz-user-select', 'none');
+    this.getDOMElement = function () {
+        return domElement;
+    }
     /*
     배경이 투명하다는 것을 인식시키기 위한 체크무늬를 바닥에 붙인다.
     인터넷 익스플로러에서 zIndex가 0일 경우 제대로 작동하지 않으므로:
     http://brenelz.com/blog/squish-the-internet-explorer-z-index-bug/
     체크무늬의 zIndex를 1로 설정했다.
     */
+    var backgroundCheckers = document.createElement('div');
+    var backgroundCheckerImage;
     if (makeCheckers) {
-        var backgroundCheckers = document.createElement('div');
-        (function () {
-            var backgroundImage = document.createElement('canvas');
-            backgroundImage.width = backgroundImage.height = 20;
-            var backgroundImageContext = backgroundImage.getContext('2d');
-            backgroundImageContext.fillStyle = '#FFFFFF';
-            backgroundImageContext.fillRect(0, 0, 20, 20);
-            backgroundImageContext.fillStyle = '#CCCCCC';
-            backgroundImageContext.fillRect(0, 0, 10, 10);
-            backgroundImageContext.fillRect(10, 10, 20, 20);
-            backgroundCheckers.style.backgroundImage = 'url(' +
-                backgroundImage.toDataURL() + ')';
-            backgroundCheckers.style.zIndex = 1;
-            backgroundCheckers.style.position = 'absolute';
-        })();
+        backgroundCheckers.style.zIndex = 1;
+        backgroundCheckers.style.position = 'absolute';
         domElement.appendChild(backgroundCheckers);
     }
-    this.getDOMElement = function () {
-        return domElement;
+    (function () {
+        backgroundCheckerImage = document.createElement('canvas');
+        backgroundImage.width = backgroundImage.height = 20;
+        var backgroundImageContext = backgroundCheckerImage.getContext('2d');
+        backgroundImageContext.fillStyle = '#fff';
+        backgroundImageContext.fillRect(0, 0, 20, 20);
+        backgroundImageContext.fillStyle = '#ccc';
+        backgroundImageContext.fillRect(0, 0, 10, 10);
+        backgroundImageContext.fillRect(10, 10, 20, 20);
+    })();
+    this.getBackgroundCheckerImage = function () {
+        return backgroundCheckerImage;
+    }
+    this.setBackgroundCheckerImage = function (image) {
+        backgroundCheckerImage = image;
+        backgroundCheckers.style.backgroundImage = 'url(' +
+            backgroundCheckerImage.toDataURL() + ')';
     }
     /*
     외부에서 임의로 내부 상태를 바꾸면 안되므로
