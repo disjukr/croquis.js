@@ -638,7 +638,12 @@ function Brush(canvasRenderingContext)
     function drawImage(size) {
         if (transformedImageIsDirty)
             transformImage();
-        context.drawImage(transformedImage, 0, 0, size, size * imageRatio);
+        try {
+            context.drawImage(transformedImage, 0, 0, size, size * imageRatio);
+        }
+        catch (e) {
+            drawCircle(size);
+        }
     }
     function drawTo(x, y, size) {
         var halfSize = size * 0.5;
