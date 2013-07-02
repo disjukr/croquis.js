@@ -18,16 +18,6 @@
         무게를 높일수록 천천히 그려집니다)</span>
     </div>
     <br>
-    <div id="brush-shelf">
-      <span>지우개: </span>
-      <input id="select-eraser-checkbox" type="checkbox">
-      <span>브러시 크기: </span>
-      <input id="brush-size-slider" type="range" min="1" max="100">
-      <span>흐름: </span>
-      <input id="brush-flow-slider" type="range" min="0" max="100">
-      <span>간격: </span>
-      <input id="brush-interval-slider" type="range" min="0" max="1000">
-    </div>
     <div id="brush-image-shelf">
       <div class="brush-image on" id="circle-brush"></div>
       <img src="./img/brush/b0.png" class="brush-image"></img>
@@ -58,7 +48,21 @@
           <p id="color-picker-color"></p>
         </div>
       </div>
-      <br>
+      <hr>
+      <div id="brush-shelf">
+        <span>지우개: </span>
+        <input id="select-eraser-checkbox" type="checkbox">
+        <hr>
+        <span>브러시 크기: </span>
+        <input id="brush-size-slider" type="range" min="1" max="100">
+        <br>
+        <span>흐름: </span>
+        <input id="brush-flow-slider" type="range" min="0" max="100">
+        <br>
+        <span>간격: </span>
+        <input id="brush-interval-slider" type="range" min="0" max="1000">
+      </div>
+      <hr>
       <button type="button" id="clear-button">모두 지우기</button>
       <br>
       <button type="button" id="fill-button">현재 색상으로 채우기</button>
