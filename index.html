@@ -12,7 +12,8 @@
       <span>무게: </span>
       <input id="tool-stabilize-weight-slider" type="range" min="20" max="80">
       <br>
-      <span>(보정 단계를 높일수록 선이 부드러워지고 무게를 높일수록 천천히 그려집니다)</span>
+      <span>(보정 단계를 높일수록 선이 부드러워지고
+        무게를 높일수록 천천히 그려집니다)</span>
     </div>
     <br>
     <div id="brush-shelf">
@@ -61,7 +62,8 @@
       <button type="button" id="fill-button">현재 색상으로 채우기</button>
     </div>
     <p>필압이 적용되지 않는다면
-      <a href="http://www.wacomkorea.com/download/wacom_download1.php" target="_blank">
+      <a href="http://www.wacomkorea.com/download/wacom_download1.php"
+         target="_blank">
         최신 버전의 타블렛 드라이버</a>를 설치해보시기 바랍니다.</p>
     <script src="./TinyColor/tinycolor.js"></script>
     <script src="./croquispop.js"></script>
@@ -96,7 +98,8 @@
       croquis.setBrushImage(image);
     }
 
-    var colorPickerHueSlider = document.getElementById('color-picker-hue-slider');
+    var colorPickerHueSlider =
+      document.getElementById('color-picker-hue-slider');
     var colorPickerSb = document.getElementById('color-picker-sb');
     var colorPickerSaturate = document.getElementById('color-picker-saturate');
     var colorPickerThumb = document.getElementById('color-picker-thumb');
@@ -106,8 +109,10 @@
       var halfThumbRadius = 7.5;
       var sbSize = 150;
       var h = colorPickerHueSlider.value;
-      var s = parseFloat(colorPickerThumb.style.getPropertyValue('margin-left'));
-      var b = parseFloat(colorPickerThumb.style.getPropertyValue('margin-top'));
+      var s = parseFloat(
+        colorPickerThumb.style.getPropertyValue('margin-left'));
+      var b = parseFloat(
+        colorPickerThumb.style.getPropertyValue('margin-top'));
       s = (s + halfThumbRadius) / sbSize;
       b = 1 - ((b + halfThumbRadius + sbSize) / sbSize);
       croquis.setToolColor(tinycolor({h: h, s:s, v: b}).toRgbString());
@@ -162,12 +167,15 @@
 
     pickColor(0, 150);
 
-    var toolStabilizeLevelSlider = document.getElementById('tool-stabilize-level-slider');
-    var toolStabilizeWeightSlider = document.getElementById('tool-stabilize-weight-slider');
+    var toolStabilizeLevelSlider =
+      document.getElementById('tool-stabilize-level-slider');
+    var toolStabilizeWeightSlider =
+      document.getElementById('tool-stabilize-weight-slider');
     toolStabilizeLevelSlider.value = croquis.getToolStabilizeLevel();
     toolStabilizeWeightSlider.value = croquis.getToolStabilizeWeight() * 100;
 
-    var selectEraserCheckbox = document.getElementById('select-eraser-checkbox');
+    var selectEraserCheckbox =
+      document.getElementById('select-eraser-checkbox');
     var brushSizeSlider = document.getElementById('brush-size-slider');
     var brushOpacitySlider = document.getElementById('brush-opacity-slider');
     var brushFlowSlider = document.getElementById('brush-flow-slider');
