@@ -94,3 +94,13 @@ body {
 .brush-image.on {
   opacity: 1;
 }
+
+span {
+  font-size: 12pt;
+  font-family: 'Nanum Gothic';
+}
+
+.comment {
+  font-size: 9pt;
+  font-family: 'Nanum Gothic';
+}
