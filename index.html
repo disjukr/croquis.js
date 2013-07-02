@@ -75,6 +75,39 @@
     <script src="./croquispop.js"></script>
     <script>
     // <![CDATA[
+    var croquis = new Croquis(640, 480, true);
+    croquis.addFilledLayer('#fff');
+    croquis.addLayer();
+    croquis.selectLayer(1);
+    croquis.setTool('brush');
+    croquis.setToolSize(40);
+    croquis.setToolColor('#000');
+    croquis.setToolStabilizeLevel(10);
+    croquis.setToolStabilizeWeight(0.5);
+    croquis.setBrushInterval(0);
+    var croquisDOMElement = croquis.getDOMElement();
+    document.getElementById('canvas-area').appendChild(croquisDOMElement);
+    function canvasMouseDown(e) {
+        var mousePosition = getRelativePosition(e.clientX, e.clientY);
+        croquis.down(mousePosition.x, mousePosition.y);
+        document.addEventListener('mousemove', canvasMouseMove);
+    }
+    function canvasMouseMove(e) {
+        var mousePosition = getRelativePosition(e.clientX, e.clientY);
+        croquis.move(mousePosition.x, mousePosition.y);
+    }
+    function canvasMouseUp(e) {
+        var mousePosition = getRelativePosition(e.clientX, e.clientY);
+        croquis.up(mousePosition.x, mousePosition.y);
+        document.removeEventListener('mousemove', canvasMouseMove);
+    }
+    function getRelativePosition(absoluteX, absoluteY) {
+        var rect = croquisDOMElement.getBoundingClientRect();
+        return {x: absoluteX - rect.left, y: absoluteY - rect.top};
+    }
+    croquisDOMElement.addEventListener('mousedown', canvasMouseDown);
+    document.addEventListener('mouseup', canvasMouseUp);
+
     var clearButton = document.getElementById('clear-button');
     clearButton.onclick = function () {
       croquis.clearLayer();
