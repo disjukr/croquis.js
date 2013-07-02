@@ -75,6 +75,7 @@
     <script src="./croquispop.js"></script>
     <script>
     // <![CDATA[
+    // Initialize croquis
     var croquis = new Croquis(640, 480, true);
     croquis.addFilledLayer('#fff');
     croquis.addLayer();
@@ -108,6 +109,7 @@
     croquisDOMElement.addEventListener('mousedown', canvasMouseDown);
     document.addEventListener('mouseup', canvasMouseUp);
 
+    //clear & fill button ui
     var clearButton = document.getElementById('clear-button');
     clearButton.onclick = function () {
       croquis.clearLayer();
@@ -119,6 +121,7 @@
         a: croquis.getToolOpacity()}).toRgbString());
     }
 
+    //brush images
     var circleBrush = document.getElementById('circle-brush');
     var brushImages = document.getElementsByClassName('brush-image');
     var currentBrush = circleBrush;
@@ -137,6 +140,7 @@
       croquis.setBrushImage(image);
     }
 
+    //color picker
     var colorPickerHueSlider =
       document.getElementById('color-picker-hue-slider');
     var colorPickerSb = document.getElementById('color-picker-sb');
@@ -206,6 +210,7 @@
 
     pickColor(0, 150);
 
+    //stabilizer shelf
     var toolStabilizeLevelSlider =
       document.getElementById('tool-stabilize-level-slider');
     var toolStabilizeWeightSlider =
@@ -213,6 +218,7 @@
     toolStabilizeLevelSlider.value = croquis.getToolStabilizeLevel();
     toolStabilizeWeightSlider.value = croquis.getToolStabilizeWeight() * 100;
 
+    //brush shelf
     var selectEraserCheckbox =
       document.getElementById('select-eraser-checkbox');
     var brushSizeSlider = document.getElementById('brush-size-slider');
