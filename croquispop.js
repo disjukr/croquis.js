@@ -327,6 +327,8 @@ function Croquis(width, height, makeCheckers) {
     this.setBrushFlow = tools.getBrush().setFlow;
     this.getBrushInterval = tools.getBrush().getInterval;
     this.setBrushInterval = tools.getBrush().setInterval;
+    this.getBrushImage = tools.getBrush().getImage;
+    this.setBrushImage = tools.getBrush().setImage;
     /*
     보이는 모든 레이어를 하나로 합친 이미지 데이터를 반환한다.
     png 파일로 뽑아보기 위해 임시로 만들어졌다.
@@ -607,7 +609,7 @@ function Brush(canvasRenderingContext)
         brushContext.drawImage(image, 0, 0,
             transformedImage.width, transformedImage.height);
         brushContext.globalCompositeOperation = 'source-in';
-        brushContext.fillStyle = color.getHTMLColor();
+        brushContext.fillStyle = color;
         brushContext.globalAlpha = flow;
         brushContext.fillRect(0, 0,
             transformedImage.width, transformedImage.height);

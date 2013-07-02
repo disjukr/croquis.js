@@ -61,6 +61,24 @@
     <script src="./croquispop.js"></script>
     <script>
     // <![CDATA[
+    var circleBrush = document.getElementById('circle-brush');
+    var brushImages = document.getElementsByClassName('brush-image');
+    var currentBrush = circleBrush;
+
+    Array.prototype.map.call(brushImages, function (brush) {
+      brush.addEventListener('mousedown', brushImageMouseDown);
+    });
+
+    function brushImageMouseDown(e) {
+      var image = e.currentTarget;
+      currentBrush.className = 'brush-image';
+      image.className = 'brush-image on';
+      currentBrush = image;
+      if (image == circleBrush)
+        image = null;
+      croquis.setBrushImage(image);
+    }
+
     var colorPickerHueSlider = document.getElementById('color-picker-hue-slider');
     var colorPickerSb = document.getElementById('color-picker-sb');
     var colorPickerSaturate = document.getElementById('color-picker-saturate');
