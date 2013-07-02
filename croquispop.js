@@ -247,6 +247,18 @@ function Croquis(width, height, makeCheckers) {
             break;
         }
     }
+    this.clearLayer = function () {
+        var layer = layers[layerIndex];
+        var context = layer.getContext('2d');
+        context.clearRect(0, 0, size.width, size.height);
+    }
+    this.fillLayer = function (fillColor) {
+        var layer = layers[layerIndex];
+        var context = layer.getContext('2d');
+        context.fillStyle = fillColor || toolColor;
+        console.log(context.fillStyle);
+        context.fillRect(0, 0, layer.width, layer.height);
+    }
     this.setLayerOpacity = function (opacity) {
         layers[layerIndex].style.opacity = opacity;
     }

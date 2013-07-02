@@ -36,23 +36,29 @@
     <div id="canvas-area">
       <object id="tablet-api" type="application/x-wacomtabletplugin"></object>
     </div>
-    <div id="color-picker">
-      <div id="color-picker-sb">
-        <div id="color-picker-white"></div>
-        <div id="color-picker-saturate"></div>
-        <div id="color-picker-brightness"></div>
-        <div id="color-picker-thumb"></div>
+    <div id="right-side">
+      <div id="color-picker">
+        <div id="color-picker-sb">
+          <div id="color-picker-white"></div>
+          <div id="color-picker-saturate"></div>
+          <div id="color-picker-brightness"></div>
+          <div id="color-picker-thumb"></div>
+        </div>
+        <span>색조: </span>
+        <input id="color-picker-hue-slider" type="range" min="0" max="360">
+        <br>
+        <span>투명도: </span>
+        <input id="brush-opacity-slider" type="range" min="0" max="100">
+        <br>
+        <span>현재 색상: </span>
+        <div id="color-picker-checker">
+          <p id="color-picker-color"></p>
+        </div>
       </div>
-      <span>색조: </span>
-      <input id="color-picker-hue-slider" type="range" min="0" max="360">
       <br>
-      <span>투명도: </span>
-      <input id="brush-opacity-slider" type="range" min="0" max="100">
+      <button type="button" id="clear-button">모두 지우기</button>
       <br>
-      <span>현재 색상: </span>
-      <div id="color-picker-checker">
-        <p id="color-picker-color"></p>
-      </div>
+      <button type="button" id="fill-button">현재 색상으로 채우기</button>
     </div>
     <p>필압이 적용되지 않는다면
       <a href="http://www.wacomkorea.com/download/wacom_download1.php" target="_blank">
@@ -61,6 +67,17 @@
     <script src="./croquispop.js"></script>
     <script>
     // <![CDATA[
+    var clearButton = document.getElementById('clear-button');
+    clearButton.onclick = function () {
+      croquis.clearLayer();
+    }
+    var fillButton = document.getElementById('fill-button');
+    fillButton.onclick = function () {
+      var rgb = tinycolor(croquis.getToolColor()).toRgb();
+      croquis.fillLayer(tinycolor({r: rgb.r, g: rgb.g, b: rgb.b,
+        a: croquis.getToolOpacity()}).toRgbString());
+    }
+
     var circleBrush = document.getElementById('circle-brush');
     var brushImages = document.getElementsByClassName('brush-image');
     var currentBrush = circleBrush;

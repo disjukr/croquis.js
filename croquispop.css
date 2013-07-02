@@ -15,9 +15,12 @@ body {
   display: inline-block;
 }
 
-#color-picker {
+#right-side {
   display: inline-block;
   vertical-align: top;
+}
+
+#color-picker {
 }
 
 #color-picker:active {
