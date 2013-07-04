@@ -69,6 +69,89 @@ function Croquis(width, height, makeCheckers) {
             backgroundCheckerImage.toDataURL() + ')';
     }
     /*
+    undo와 redo는 실제 레이어의 내용물 및 속성에 영향을 주는 명령에 대해서만
+    되돌리기, 다시실행을 한다.
+    예를 들면 레이어 추가, 제거, 크기변경, 투명도 변경 등에 대해서는
+    undo, redo가 가능하지만
+    레이어 선택, 손떨림 보정, 툴 색상, 크기변경 등에 대해서는
+    undo, redo가 불가능하다.
+    undoStack와 redoStack에는 undo, redo 시에 호출 될 함수가 들어간다.
+    undoStack에 들어있는 함수는 호출 시에 redoStack에 들어갈 함수를 반환한다.
+    redoStack에 들어있는 함수 역시 호출 시에 undoStack에 들어갈 함수를 반환한다.
+    pushUndo는 레이어 상태에 조작을 가하기 직전에 호출해야 한다.
+    */
+    var undoStack = [];
+    var redoStack = [];
+    var undoLimit = 10;
+    function pushUndo(undoFunction) {
+        redoStack = [];
+        undoStack.push(undoFunction);
+        while (undoStack.length > undoLimit)
+            undoStack.shift();
+    }
+    this.undo = function () {
+        if (isDrawing || isStabilizing)
+            throw 'still drawing';
+        try {
+            redoStack.push(undoStack.pop()());
+        }
+        catch (e) {
+            throw 'no more undo data';
+        }
+    }
+    this.redo = function () {
+        if (isDrawing || isStabilizing)
+            throw 'still drawing';
+        try {
+            undoStack.push(redoStack.pop()());
+        }
+        catch (e) {
+            throw 'no more redo data';
+        }
+    }
+    function pushLayerOpacityUndo() {
+        //TODO
+    }
+    function pushLayerVisibleUndo() {
+        //TODO
+    }
+    function pushSwapLayerUndo() {
+        //TODO
+    }
+    function pushAddLayerUndo() {
+        //TODO
+    }
+    function pushRemoveLayerUndo() {
+        //TODO
+    }
+    function pushLayerContextUndo(layerIndex) {
+        var layer = layers[layerIndex];
+        var layerContext = layer.getContext('2d');
+        var snapshot = document.createElement('canvas');
+        var snapshotContext = snapshot.getContext('2d');
+        var w = layer.width;
+        var h = layer.height;
+        snapshot.width = w;
+        snapshot.height = h;
+        snapshotContext.drawImage(layer, 0, 0);
+        var swap = function () {
+            var temp = document.createElement('canvas');
+            var tempContext = temp.getContext('2d');
+            temp.width = w;
+            temp.height = h;
+            tempContext.drawImage(layer, 0, 0);
+            layerContext.clearRect(0, 0, w, h);
+            layerContext.drawImage(snapshot, 0, 0);
+            snapshotContext.clearRect(0, 0, w, h);
+            snapshotContext.drawImage(temp, 0, 0);
+            return swap;
+        }
+        pushUndo(swap);
+    }
+    function pushAllLayerContextUndo() {
+        //TODO
+    }
+    /*
     외부에서 임의로 내부 상태를 바꾸면 안되므로
     getCanvasSize는 읽기전용 값을 새로 만들어서 반환한다.
     */
@@ -77,6 +160,7 @@ function Croquis(width, height, makeCheckers) {
         return {width: sizw.width, height: size.height};
     }
     this.setCanvasSize = function (width, height) {
+        pushAllLayerContextUndo();
         size.width = width = Math.floor(width);
         size.height = height = Math.floor(height);
         paintingLayer.width = width;
@@ -138,6 +222,7 @@ function Croquis(width, height, makeCheckers) {
         return layers.concat();
     }
     this.addLayer = function (layerType) {
+        pushAddLayerUndo();
         var layer;
         layerType = layerType || 'canvas';
         switch (layerType.toLowerCase()) {
@@ -168,6 +253,7 @@ function Croquis(width, height, makeCheckers) {
         return layer;
     }
     this.removeLayer = function (index) {
+        pushRemoveLayerUndo();
         domElement.removeChild(layers[index]);
         layers.splice(index, 1);
         if (layerIndex == layers.length)
@@ -175,6 +261,7 @@ function Croquis(width, height, makeCheckers) {
         layersZIndex();
     }
     this.swapLayer = function (index1, index2) {
+        pushSwapLayerUndo();
         var layer = layers[index1];
         layers[index1] = layers[index2];
         layers[index2] = layer;
@@ -207,11 +294,13 @@ function Croquis(width, height, makeCheckers) {
         }
     }
     this.clearLayer = function () {
+        pushLayerContextUndo(layerIndex);
         var layer = layers[layerIndex];
         var context = layer.getContext('2d');
         context.clearRect(0, 0, size.width, size.height);
     }
     this.fillLayer = function (fillColor) {
+        pushLayerContextUndo(layerIndex);
         var layer = layers[layerIndex];
         var context = layer.getContext('2d');
         context.fillStyle = fillColor || toolColor;
@@ -219,9 +308,11 @@ function Croquis(width, height, makeCheckers) {
         context.fillRect(0, 0, layer.width, layer.height);
     }
     this.setLayerOpacity = function (opacity) {
+        pushLayerOpacityUndo();
         layers[layerIndex].style.opacity = opacity;
     }
     this.setLayerVisible = function (visible) {
+        pushLayerVisibleUndo();
         layers[layerIndex].style.visibility = visible ? 'visible' : 'hidden';
     }
     var tools = new Tools;
@@ -358,6 +449,7 @@ function Croquis(width, height, makeCheckers) {
         if (isDrawing)
             return;
         isDrawing = true;
+        pushLayerContextUndo(layerIndex);
         pressure = pressure || tabletapi.pressure();
         var down = tool.down;
         paintingLayer.style.opacity =
