@@ -127,23 +127,13 @@ function Croquis(width, height, makeCheckers) {
     function pushLayerContextUndo(layerIndex) {
         var layer = layers[layerIndex];
         var layerContext = layer.getContext('2d');
-        var snapshot = document.createElement('canvas');
-        var snapshotContext = snapshot.getContext('2d');
         var w = layer.width;
         var h = layer.height;
-        snapshot.width = w;
-        snapshot.height = h;
-        snapshotContext.drawImage(layer, 0, 0);
+        var snapshotData = layerContext.getImageData(0, 0, w, h);
         var swap = function () {
-            var temp = document.createElement('canvas');
-            var tempContext = temp.getContext('2d');
-            temp.width = w;
-            temp.height = h;
-            tempContext.drawImage(layer, 0, 0);
-            layerContext.clearRect(0, 0, w, h);
-            layerContext.drawImage(snapshot, 0, 0);
-            snapshotContext.clearRect(0, 0, w, h);
-            snapshotContext.drawImage(temp, 0, 0);
+            var tempData = layerContext.getImageData(0, 0, w, h);
+            layerContext.putImageData(snapshotData, 0, 0);
+            snapshotData = tempData;
             return swap;
         }
         pushUndo(swap);
