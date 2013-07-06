@@ -191,7 +191,7 @@ function documentKeyDown(e) {
             croquis.redo();
             break;
         case 90: //ctrl + z
-            croquis.undo();
+            croquis[e.shiftKey ? 'redo' : 'undo']();
             break;
         }
     }
