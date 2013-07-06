@@ -1,5 +1,3 @@
-var eventQueue = [];
-
 var tabletPlugin = getTabletPlugin();
 function getTabletPlugin() {
     return document.querySelector(
@@ -29,7 +27,7 @@ var tabletapi = {
     }
 }
 
-function Croquis(width, height, makeCheckers) {
+function Croquis(width, height) {
     var domElement = document.createElement('div');
     domElement.style.clear = 'both';
     domElement.style.setProperty('user-select', 'none');
@@ -39,108 +37,63 @@ function Croquis(width, height, makeCheckers) {
     this.getDOMElement = function () {
         return domElement;
     }
-    /*
-    배경이 투명하다는 것을 인식시키기 위한 체크무늬를 바닥에 붙인다.
-    인터넷 익스플로러에서 zIndex가 0일 경우 제대로 작동하지 않으므로:
-    http://brenelz.com/blog/squish-the-internet-explorer-z-index-bug/
-    체크무늬의 zIndex를 1로 설정했다.
-    */
-    var backgroundCheckers = document.createElement('div');
-    var backgroundCheckerImage;
-    if (makeCheckers) {
-        backgroundCheckers.style.zIndex = 1;
-        backgroundCheckers.style.position = 'absolute';
-        domElement.appendChild(backgroundCheckers);
+    var currentPosition = 0; //새로 이벤트가 쌓일 때 이 뒤에 있는 것은 다 날림.
+    var eventQueue = {};
+    var snapshotQueue = {};
+    eventQueue.length = 0;
+    eventQueue.push = function (value) {
+        eventQueue[eventQueue.length++] = value;
     }
-    (function () {
-        backgroundCheckerImage = document.createElement('canvas');
-        backgroundCheckerImage.width = backgroundCheckerImage.height = 20;
-        var backgroundImageContext = backgroundCheckerImage.getContext('2d');
-        backgroundImageContext.fillStyle = '#fff';
-        backgroundImageContext.fillRect(0, 0, 20, 20);
-        backgroundImageContext.fillStyle = '#ccc';
-        backgroundImageContext.fillRect(0, 0, 10, 10);
-        backgroundImageContext.fillRect(10, 10, 20, 20);
-    })();
-    this.getBackgroundCheckerImage = function () {
-        return backgroundCheckerImage;
+    snapshotQueue.length = 0;
+    snapshotQueue.push = function (value) {
+        snapshotQueue[snapshotQueue.length++] = value;
     }
-    this.setBackgroundCheckerImage = function (image) {
-        backgroundCheckerImage = image;
-        backgroundCheckers.style.backgroundImage = 'url(' +
-            backgroundCheckerImage.toDataURL() + ')';
-    }
-    /*
-    undo와 redo는 실제 레이어의 내용물 및 속성에 영향을 주는 명령에 대해서만
-    되돌리기, 다시실행을 한다.
-    예를 들면 레이어 추가, 제거, 크기변경, 투명도 변경 등에 대해서는
-    undo, redo가 가능하지만
-    레이어 선택, 손떨림 보정, 툴 색상, 크기변경 등에 대해서는
-    undo, redo가 불가능하다.
-    undoStack와 redoStack에는 undo, redo 시에 호출 될 함수가 들어간다.
-    undoStack에 들어있는 함수는 호출 시에 redoStack에 들어갈 함수를 반환한다.
-    redoStack에 들어있는 함수 역시 호출 시에 undoStack에 들어갈 함수를 반환한다.
-    pushUndo는 레이어 상태에 조작을 가하기 직전에 호출해야 한다.
-    */
-    var undoStack = [];
-    var redoStack = [];
-    var undoLimit = 10;
-    function pushUndo(undoFunction) {
-        redoStack = [];
-        undoStack.push(undoFunction);
-        while (undoStack.length > undoLimit)
-            undoStack.shift();
+    this.eventQueue = eventQueue;
+    this.snapshotQueue = snapshotQueue;
+    var commitCount = 0;
+    this.commit = function () { //undo, redo 시에 도착할 위치 지정
+        eventQueue.push({op: 'commit'});
+        ++commitCount;
+        if (commitCount > 10) { //적당히 커밋이 쌓이면 스냅샷 캡쳐
+            takeSnapshot();
+            commitCount = 0;
+        }
     }
     this.undo = function () {
-        if (isDrawing || isStabilizing)
-            throw 'still drawing';
-        try {
-            redoStack.push(undoStack.pop()());
-        }
-        catch (e) {
-            throw 'no more undo data';
-        }
+        //TODO: 일단 최근의 스냅샷으로 이동 후, 순서대로 이벤트 실행
     }
     this.redo = function () {
-        if (isDrawing || isStabilizing)
-            throw 'still drawing';
-        try {
-            undoStack.push(redoStack.pop()());
+        //TODO: 순서대로 이벤트 실행
+    }
+    function takeSnapshot() {
+        var snapshot = {};
+        snapshot.position = currentPosition;
+        snapshot.size = this.getCanvasSize();
+        snapshot.layers = [];
+        for (var i = 0; i < layers.length; ++i) {
+            this.selectLayer(i);
+            var canvas = layers[i];
+            var context = canvas.getContext('2d');
+            var imageData = context.getImageData(0, 0, width, height);
+            snapshot.layers.push({
+                imageData: imageData,
+                opacity: this.getLayerOpacity(),
+                visible: this.getLayerVisible()
+            });
         }
-        catch (e) {
-            throw 'no more redo data';
-        }
+        snapshot.tool = this.getTool();
+        snapshot.toolSize = this.getToolSize();
+        snapshot.toolColor = this.getToolColor();
+        snapshot.toolOpacity = this.getToolOpacity();
+        snapshot.toolStabilizeLevel = this.getToolStabilizeLevel();
+        snapshot.toolStabilizeWeight = this.getToolStabilizeWeight();
+        snapshot.brushFlow = this.getBrushFlow();
+        snapshot.brushInterval = this.getBrushInterval();
+        snapshot.brushImage = this.getBrushImage();
+        snapshotQueue.push(snapshot);
     }
-    function pushLayerOpacityUndo() {
-        //TODO
-    }
-    function pushLayerVisibleUndo() {
-        //TODO
-    }
-    function pushSwapLayerUndo() {
-        //TODO
-    }
-    function pushAddLayerUndo() {
-        //TODO
-    }
-    function pushRemoveLayerUndo() {
-        //TODO
-    }
-    function pushLayerContextUndo(layerIndex) {
-        var layer = layers[layerIndex];
-        var layerContext = layer.getContext('2d');
-        var w = layer.width;
-        var h = layer.height;
-        var snapshotData = layerContext.getImageData(0, 0, w, h);
-        var swap = function () {
-            var tempData = layerContext.getImageData(0, 0, w, h);
-            layerContext.putImageData(snapshotData, 0, 0);
-            snapshotData = tempData;
-            return swap;
-        }
-        pushUndo(swap);
-    }
-    function pushAllLayerContextUndo() {
+    takeSnapshot = takeSnapshot.bind(this);
+    function applySnapshot(snapshot) {
         //TODO
     }
     /*
@@ -149,18 +102,15 @@ function Croquis(width, height, makeCheckers) {
     */
     var size = {width: width, height: height};
     this.getCanvasSize = function () {
-        return {width: sizw.width, height: size.height};
+        return {width: size.width, height: size.height};
     }
     this.setCanvasSize = function (width, height) {
-        pushAllLayerContextUndo();
         size.width = width = Math.floor(width);
         size.height = height = Math.floor(height);
         paintingLayer.width = width;
         paintingLayer.height = height;
-        domElement.style.width = backgroundCheckers.style.width =
-            width + 'px';
-        domElement.style.height = backgroundCheckers.style.height =
-            height + 'px';
+        domElement.style.width = width + 'px';
+        domElement.style.height = height + 'px';
         for (var i=0; i<layers.length; ++i) {
             switch (layers[i].tagName.toLowerCase()) {
             case 'canvas':
@@ -214,7 +164,6 @@ function Croquis(width, height, makeCheckers) {
         return layers.concat();
     }
     this.addLayer = function (layerType) {
-        pushAddLayerUndo();
         var layer;
         layerType = layerType || 'canvas';
         switch (layerType.toLowerCase()) {
@@ -245,7 +194,6 @@ function Croquis(width, height, makeCheckers) {
         return layer;
     }
     this.removeLayer = function (index) {
-        pushRemoveLayerUndo();
         domElement.removeChild(layers[index]);
         layers.splice(index, 1);
         if (layerIndex == layers.length)
@@ -253,7 +201,6 @@ function Croquis(width, height, makeCheckers) {
         layersZIndex();
     }
     this.swapLayer = function (index1, index2) {
-        pushSwapLayerUndo();
         var layer = layers[index1];
         layers[index1] = layers[index2];
         layers[index2] = layer;
@@ -286,29 +233,35 @@ function Croquis(width, height, makeCheckers) {
         }
     }
     this.clearLayer = function () {
-        pushLayerContextUndo(layerIndex);
         var layer = layers[layerIndex];
         var context = layer.getContext('2d');
         context.clearRect(0, 0, size.width, size.height);
     }
     this.fillLayer = function (fillColor) {
-        pushLayerContextUndo(layerIndex);
         var layer = layers[layerIndex];
         var context = layer.getContext('2d');
         context.fillStyle = fillColor || toolColor;
         console.log(context.fillStyle);
         context.fillRect(0, 0, layer.width, layer.height);
     }
+    this.getLayerOpacity = function () {
+        var opacity = parseFloat(
+            layers[layerIndex].style.getPropertyValue('opacity'));
+        return Number.isNaN(opacity)? 1 : opacity;
+    }
     this.setLayerOpacity = function (opacity) {
-        pushLayerOpacityUndo();
         layers[layerIndex].style.opacity = opacity;
     }
+    this.getLayerVisible = function () {
+        var visible = layers[layerIndex].style.getPropertyValue('visibility');
+        return visible != 'hidden';
+    }
     this.setLayerVisible = function (visible) {
-        pushLayerVisibleUndo();
         layers[layerIndex].style.visibility = visible ? 'visible' : 'hidden';
     }
     var tools = new Tools;
     var tool = tools.getBrush();
+    var toolName = 'brush';
     var eraserTool = false;
     var toolSize = 10;
     var toolColor = '#000';
@@ -316,8 +269,12 @@ function Croquis(width, height, makeCheckers) {
     var toolStabilizeLevel = 0;
     var toolStabilizeWeight = 0.8;
     var stabilizer = null;
-    this.setTool = function (toolName) {
-        switch (toolName.toLowerCase()) {
+    this.getTool = function () {
+        return toolName;
+    }
+    this.setTool = function (name) {
+        toolName = name.toLowerCase();
+        switch (toolName) {
         case 'brush':
             tool = tools.getBrush();
             eraserTool = false;
@@ -332,7 +289,7 @@ function Croquis(width, height, makeCheckers) {
         this.setToolSize(toolSize);
         this.setToolColor(toolColor);
         this.selectLayer(layerIndex);
-        eventQueue.push({op: 'tool', toolName: toolName});
+        eventQueue.push({op: 'tool', name: name});
     }
     this.getToolSize = function () {
         return toolSize;
@@ -368,6 +325,7 @@ function Croquis(width, height, makeCheckers) {
     }
     this.setToolStabilizeLevel = function (level) {
         toolStabilizeLevel = level < 0? 0 : level;
+        eventQueue.push({op: 'stabilizeLevel', level: level});
     }
     /*
     무게(가중치)라고 하면 가벼운 쪽이 숫자가 작은 게
@@ -380,36 +338,22 @@ function Croquis(width, height, makeCheckers) {
     }
     this.setToolStabilizeWeight = function (weight) {
         toolStabilizeWeight = 1 - Math.min(1, Math.max(0.05, weight));
+        eventQueue.push({op: 'stabilizeWeight', weight: weight});
     }
     this.getBrushFlow = tools.getBrush().getFlow;
-    this.setBrushFlow = tools.getBrush().setFlow;
+    this.setBrushFlow = function (flow) {
+        tools.getBrush().setFlow(flow);
+        eventQueue.push({op: 'brushFlow', flow: flow});
+    }
     this.getBrushInterval = tools.getBrush().getInterval;
-    this.setBrushInterval = tools.getBrush().setInterval;
+    this.setBrushInterval = function (interval) {
+        tools.getBrush().setInterval(interval);
+        eventQueue.push({op: 'brushInterval', interval: interval});
+    }
     this.getBrushImage = tools.getBrush().getImage;
-    this.setBrushImage = tools.getBrush().setImage;
-    /*
-    보이는 모든 레이어를 하나로 합친 이미지 데이터를 반환한다.
-    png 파일로 뽑아보기 위해 임시로 만들어졌다.
-    */
-    this.getMergedImageData = function () {
-        var mergedImage = document.createElement('canvas');
-        mergedImage.width = size.width;
-        mergedImage.height = size.height;
-        var context = mergedImage.getContext('2d');
-        for (var i=0; i<layers.length; ++i) {
-            var layer = layers[i];
-            if (layer.style.visible != 'hidden') {
-                context.globalAlpha = layer.style.opacity;
-                switch (layer.tagName.toLowerCase()) {
-                case 'canvas':
-                    context.drawImage(layer, 0, 0, size.width, size.height);
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-        return mergedImage.toDataURL();
+    this.setBrushImage = function (image) {
+        tools.getBrush().setImage(image);
+        eventQueue.push({op: 'brushImage', image: image});
     }
     var isDrawing = false;
     var isStabilizing = false;
@@ -447,7 +391,6 @@ function Croquis(width, height, makeCheckers) {
         if (isDrawing)
             return;
         isDrawing = true;
-        pushLayerContextUndo(layerIndex);
         pressure = pressure || tabletapi.pressure();
         var down = tool.down;
         paintingLayer.style.opacity =

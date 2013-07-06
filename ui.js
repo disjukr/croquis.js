@@ -9,6 +9,7 @@ croquis.setToolColor('#000');
 croquis.setToolStabilizeLevel(10);
 croquis.setToolStabilizeWeight(0.5);
 croquis.setBrushInterval(0);
+croquis.commit();
 var croquisDOMElement = croquis.getDOMElement();
 document.getElementById('canvas-area').appendChild(croquisDOMElement);
 function canvasMouseDown(e) {
@@ -23,6 +24,7 @@ function canvasMouseMove(e) {
 function canvasMouseUp(e) {
     var mousePosition = getRelativePosition(e.clientX, e.clientY);
     croquis.up(mousePosition.x, mousePosition.y);
+    croquis.commit();
     document.removeEventListener('mousemove', canvasMouseMove);
 }
 function getRelativePosition(absoluteX, absoluteY) {
@@ -36,12 +38,14 @@ document.addEventListener('mouseup', canvasMouseUp);
 var clearButton = document.getElementById('clear-button');
 clearButton.onclick = function () {
     croquis.clearLayer();
+    croquis.commit();
 }
 var fillButton = document.getElementById('fill-button');
 fillButton.onclick = function () {
     var rgb = tinycolor(croquis.getToolColor()).toRgb();
     croquis.fillLayer(tinycolor({r: rgb.r, g: rgb.g, b: rgb.b,
         a: croquis.getToolOpacity()}).toRgbString());
+    croquis.commit();
 }
 
 //brush images
@@ -126,9 +130,21 @@ function pickColor(x, y) {
 colorPickerSb.addEventListener('mousedown', colorPickerMouseDown);
 document.addEventListener('mouseup', colorPickerMouseUp);
 
+var backgroundCheckerImage;
+(function () {
+    backgroundCheckerImage = document.createElement('canvas');
+    backgroundCheckerImage.width = backgroundCheckerImage.height = 20;
+    var backgroundImageContext = backgroundCheckerImage.getContext('2d');
+    backgroundImageContext.fillStyle = '#fff';
+    backgroundImageContext.fillRect(0, 0, 20, 20);
+    backgroundImageContext.fillStyle = '#ccc';
+    backgroundImageContext.fillRect(0, 0, 10, 10);
+    backgroundImageContext.fillRect(10, 10, 20, 20);
+})();
+
 var colorPickerChecker = document.getElementById('color-picker-checker');
 colorPickerChecker.style.backgroundImage = 'url(' +
-    croquis.getBackgroundCheckerImage().toDataURL() + ')';
+    backgroundCheckerImage.toDataURL() + ')';
 var colorPickerColor = document.getElementById('color-picker-color');
 
 pickColor(0, 150);
