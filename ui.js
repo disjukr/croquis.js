@@ -179,16 +179,19 @@ brushIntervalSlider.onchange = function () {
     croquis.setBrushInterval(brushIntervalSlider.value * 0.01);
 }
 
+// Platform variables
+var mac = navigator.platform.indexOf('Mac') >= 0;
+
 //keyboard
 document.addEventListener('keydown', documentKeyDown);
 function documentKeyDown(e) {
-    if (e.ctrlKey) {
+    if (mac ? e.metaKey : e.ctrlKey) {
         switch (e.keyCode) {
         case 89: //ctrl + y
             croquis.redo();
             break;
         case 90: //ctrl + z
-            croquis.undo();
+            croquis[e.shiftKey ? 'redo' : 'undo']();
             break;
         }
     }
