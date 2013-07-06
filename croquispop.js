@@ -1,3 +1,5 @@
+var eventQueue = [];
+
 var tabletPlugin = getTabletPlugin();
 function getTabletPlugin() {
     return document.querySelector(
@@ -330,6 +332,7 @@ function Croquis(width, height, makeCheckers) {
         this.setToolSize(toolSize);
         this.setToolColor(toolColor);
         this.selectLayer(layerIndex);
+        eventQueue.push({op: 'tool', toolName: toolName});
     }
     this.getToolSize = function () {
         return toolSize;
@@ -338,6 +341,7 @@ function Croquis(width, height, makeCheckers) {
         toolSize = size;
         if (tool.setSize)
             tool.setSize(toolSize);
+        eventQueue.push({op: 'toolSize', size: size});
     }
     this.getToolColor = function () {
         return toolColor;
@@ -346,12 +350,14 @@ function Croquis(width, height, makeCheckers) {
         toolColor = color;
         if (tool.setColor)
             tool.setColor(toolColor);
+        eventQueue.push({op: 'toolColor', color: color});
     }
     this.getToolOpacity = function () {
         return toolOpacity;
     }
     this.setToolOpacity = function (opacity) {
         toolOpacity = opacity;
+        eventQueue.push({op: 'toolOpacity', opacity: opacity});
     }
     /*
     손떨림 보정을 위한 추적 좌표 갯수를 설정한다.
@@ -410,6 +416,7 @@ function Croquis(width, height, makeCheckers) {
     function _move(x, y, pressure) {
         if (tool.move)
             tool.move(x, y, pressure);
+        eventQueue.push({op: 'move', x: x, y: y, pressure: pressure});
     }
     function _up(x, y, pressure) {
         isDrawing = false;
@@ -434,6 +441,7 @@ function Croquis(width, height, makeCheckers) {
         default:
             break;
         }
+        eventQueue.push({op: 'up', x: x, y: y, pressure: pressure});
     }
     this.down = function (x, y, pressure) {
         if (isDrawing)
@@ -453,6 +461,7 @@ function Croquis(width, height, makeCheckers) {
         }
         else if (down != null)
             down(x, y, pressure);
+        eventQueue.push({op: 'down', x: x, y: y, pressure: pressure});
     }
     this.move = function (x, y, pressure) {
         if (!isDrawing)
