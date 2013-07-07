@@ -27,7 +27,7 @@ var tabletapi = {
     }
 }
 
-function Croquis(width, height) {
+function Croquis() {
     var domElement = document.createElement('div');
     domElement.style.clear = 'both';
     domElement.style.setProperty('user-select', 'none');
@@ -52,7 +52,7 @@ function Croquis(width, height) {
     this.snapshotQueue = snapshotQueue;
     var commitCount = 0;
     this.commit = function () { //undo, redo 시에 도착할 위치 지정
-        eventQueue.push({op: 'commit'});
+        pushEvent('commit', null);
         ++commitCount;
         if (commitCount > 10) { //적당히 커밋이 쌓이면 스냅샷 캡쳐
             takeSnapshot();
@@ -69,6 +69,23 @@ function Croquis(width, height) {
             throw 'still drawing';
         //TODO: 순서대로 이벤트 실행
     }
+    function pushEvent(op, params) {
+        var evt = {op: op, params: params};
+        var status = {};
+        status.layerIndex = this.getCurrentLayerIndex();
+        status.tool = this.getTool();
+        status.toolSize = this.getToolSize();
+        status.toolColor = this.getToolColor();
+        status.toolOpacity = this.getToolOpacity();
+        status.toolStabilizeLevel = this.getToolStabilizeLevel();
+        status.toolStabilizeWeight = this.getToolStabilizeWeight();
+        status.brushFlow = this.getBrushFlow();
+        status.brushInterval = this.getBrushInterval();
+        status.brushImage = this.getBrushImage();
+        evt.status = status;
+        eventQueue.push(evt);
+    }
+    pushEvent = pushEvent.bind(this);
     function takeSnapshot() {
         var snapshot = {};
         snapshot.position = currentPosition;
@@ -78,33 +95,25 @@ function Croquis(width, height) {
             this.selectLayer(i);
             var canvas = layers[i];
             var context = canvas.getContext('2d');
-            var imageData = context.getImageData(0, 0, width, height);
+            var imageData = context.getImageData(0, 0, size.width, size.height);
             snapshot.layers.push({
                 imageData: imageData,
                 opacity: this.getLayerOpacity(),
                 visible: this.getLayerVisible()
             });
         }
-        snapshot.tool = this.getTool();
-        snapshot.toolSize = this.getToolSize();
-        snapshot.toolColor = this.getToolColor();
-        snapshot.toolOpacity = this.getToolOpacity();
-        snapshot.toolStabilizeLevel = this.getToolStabilizeLevel();
-        snapshot.toolStabilizeWeight = this.getToolStabilizeWeight();
-        snapshot.brushFlow = this.getBrushFlow();
-        snapshot.brushInterval = this.getBrushInterval();
-        snapshot.brushImage = this.getBrushImage();
         snapshotQueue.push(snapshot);
     }
     takeSnapshot = takeSnapshot.bind(this);
     function applySnapshot(snapshot) {
         //TODO
     }
+    applySnapshot = applySnapshot.bind(this);
     /*
     외부에서 임의로 내부 상태를 바꾸면 안되므로
     getCanvasSize는 읽기전용 값을 새로 만들어서 반환한다.
     */
-    var size = {width: width, height: height};
+    var size = {width: 640, height: 480};
     this.getCanvasSize = function () {
         return {width: size.width, height: size.height};
     }
@@ -129,6 +138,7 @@ function Croquis(width, height) {
                 continue;
             }
         }
+        pushEvent('canvasSize', {width: width, height: height});
     }
     this.getCanvasWidth = function () {
         return size.width;
@@ -154,7 +164,6 @@ function Croquis(width, height) {
     paintingLayer.style.position = 'absolute';
     domElement.appendChild(paintingLayer);
     var paintingContext = paintingLayer.getContext('2d');
-    this.setCanvasSize(width, height);
     function layersZIndex() {
         /*
         paintingLayer가 들어갈 자리를 만들기 위해
@@ -166,34 +175,20 @@ function Croquis(width, height) {
     this.getLayers = function () {
         return layers.concat();
     }
-    this.addLayer = function (layerType) {
+    this.addLayer = function () {
         var layer;
-        layerType = layerType || 'canvas';
-        switch (layerType.toLowerCase()) {
-        case 'canvas':
-            layer = document.createElement('canvas');
-            layer.style.visibility = 'visible';
-            layer.style.opacity = 1;
-            layer.width = size.width;
-            layer.height = size.height;
-            break;
-        default:
-            throw 'unknown layer type';
-            return null;
-        }
+        layer = document.createElement('canvas');
+        layer.style.visibility = 'visible';
+        layer.style.opacity = 1;
+        layer.width = size.width;
+        layer.height = size.height;
         layer.style.position = 'absolute';
         domElement.appendChild(layer);
         layers.push(layer);
         if (layers.length == 1)
             this.selectLayer(0);
         layersZIndex();
-        return layer;
-    }
-    this.addFilledLayer = function (fillColor) {
-        var layer = this.addLayer('canvas');
-        var context = layer.getContext('2d');
-        context.fillStyle = fillColor || '#fff';
-        context.fillRect(0, 0, layer.width, layer.height);
+        pushEvent('addLayer', null);
         return layer;
     }
     this.removeLayer = function (index) {
@@ -202,12 +197,17 @@ function Croquis(width, height) {
         if (layerIndex == layers.length)
             this.selectLayer(--layerIndex);
         layersZIndex();
+        pushEvent('removeLayer', {index: index});
     }
-    this.swapLayer = function (index1, index2) {
-        var layer = layers[index1];
-        layers[index1] = layers[index2];
-        layers[index2] = layer;
+    this.swapLayer = function (layerA, layerB) {
+        var layer = layers[layerA];
+        layers[layerA] = layers[layerB];
+        layers[layerB] = layer;
         layersZIndex();
+        pushEvent('swapLayer', {layerA: layerA, layerB: layerB});
+    }
+    this.getCurrentLayerIndex = function () {
+        return layerIndex;
     }
     this.selectLayer = function (index) {
         if (tool.setContext)
@@ -218,34 +218,29 @@ function Croquis(width, height) {
         현재 선택된 레이어보다 zIndex를 1만큼 크게 설정한다.
         */
         paintingLayer.style.zIndex = index * 2 + 3;
-        switch (layers[index].tagName.toLowerCase()) {
-        case 'canvas':
-            if (tool.setContext)
-                /*
-                화면에 내용이 없는 paintingLayer에 지우개질을 하면
-                의미가 없으므로 지우개 툴일 경우에는
-                레이어의 context를 툴에 바로 적용한다.
-                */
-                if (eraserTool)
-                    tool.setContext(layers[index].getContext('2d'));
-                else
-                    tool.setContext(paintingContext);
-            break;
-        default:
-            break;
-        }
+        if (tool.setContext)
+            /*
+            화면에 내용이 없는 paintingLayer에 지우개질을 하면
+            의미가 없으므로 지우개 툴일 경우에는
+            레이어의 context를 툴에 바로 적용한다.
+            */
+            if (eraserTool)
+                tool.setContext(layers[index].getContext('2d'));
+            else
+                tool.setContext(paintingContext);
     }
     this.clearLayer = function () {
         var layer = layers[layerIndex];
         var context = layer.getContext('2d');
         context.clearRect(0, 0, size.width, size.height);
+        pushEvent('clearLayer', null);
     }
     this.fillLayer = function (fillColor) {
         var layer = layers[layerIndex];
         var context = layer.getContext('2d');
         context.fillStyle = fillColor || toolColor;
-        console.log(context.fillStyle);
         context.fillRect(0, 0, layer.width, layer.height);
+        pushEvent('fillLayer', null);
     }
     this.getLayerOpacity = function () {
         var opacity = parseFloat(
@@ -254,6 +249,7 @@ function Croquis(width, height) {
     }
     this.setLayerOpacity = function (opacity) {
         layers[layerIndex].style.opacity = opacity;
+        pushEvent('layerOpacity', {opacity: opacity});
     }
     this.getLayerVisible = function () {
         var visible = layers[layerIndex].style.getPropertyValue('visibility');
@@ -261,6 +257,7 @@ function Croquis(width, height) {
     }
     this.setLayerVisible = function (visible) {
         layers[layerIndex].style.visibility = visible ? 'visible' : 'hidden';
+        pushEvent('layerVisible', {visible: visible});
     }
     var tools = new Tools;
     var brush = tools.getBrush();
@@ -293,7 +290,6 @@ function Croquis(width, height) {
         this.setToolSize(toolSize);
         this.setToolColor(toolColor);
         this.selectLayer(layerIndex);
-        eventQueue.push({op: 'tool', name: name});
     }
     this.getToolSize = function () {
         return toolSize;
@@ -302,7 +298,6 @@ function Croquis(width, height) {
         toolSize = size;
         if (tool.setSize)
             tool.setSize(toolSize);
-        eventQueue.push({op: 'toolSize', size: size});
     }
     this.getToolColor = function () {
         return toolColor;
@@ -311,14 +306,12 @@ function Croquis(width, height) {
         toolColor = color;
         if (tool.setColor)
             tool.setColor(toolColor);
-        eventQueue.push({op: 'toolColor', color: color});
     }
     this.getToolOpacity = function () {
         return toolOpacity;
     }
     this.setToolOpacity = function (opacity) {
         toolOpacity = opacity;
-        eventQueue.push({op: 'toolOpacity', opacity: opacity});
     }
     /*
     손떨림 보정을 위한 추적 좌표 갯수를 설정한다.
@@ -329,7 +322,6 @@ function Croquis(width, height) {
     }
     this.setToolStabilizeLevel = function (level) {
         toolStabilizeLevel = level < 0? 0 : level;
-        eventQueue.push({op: 'stabilizeLevel', level: level});
     }
     /*
     무게(가중치)라고 하면 가벼운 쪽이 숫자가 작은 게
@@ -342,29 +334,25 @@ function Croquis(width, height) {
     }
     this.setToolStabilizeWeight = function (weight) {
         toolStabilizeWeight = 1 - Math.min(1, Math.max(0.05, weight));
-        eventQueue.push({op: 'stabilizeWeight', weight: weight});
     }
     this.getBrushFlow = brush.getFlow;
     this.setBrushFlow = function (flow) {
         brush.setFlow(flow);
-        eventQueue.push({op: 'brushFlow', flow: flow});
     }
     this.getBrushInterval = brush.getInterval;
     this.setBrushInterval = function (interval) {
         brush.setInterval(interval);
-        eventQueue.push({op: 'brushInterval', interval: interval});
     }
     this.getBrushImage = brush.getImage;
     this.setBrushImage = function (image) {
         brush.setImage(image);
-        eventQueue.push({op: 'brushImage', image: image});
     }
     var isDrawing = false;
     var isStabilizing = false;
     function _move(x, y, pressure) {
         if (tool.move)
             tool.move(x, y, pressure);
-        eventQueue.push({op: 'move', x: x, y: y, pressure: pressure});
+        pushEvent('move', {x: x, y: y, pressure: pressure});
     }
     function _up(x, y, pressure) {
         isDrawing = false;
@@ -389,7 +377,7 @@ function Croquis(width, height) {
         default:
             break;
         }
-        eventQueue.push({op: 'up', x: x, y: y, pressure: pressure});
+        pushEvent('up', {x: x, y: y, pressure: pressure});
     }
     this.down = function (x, y, pressure) {
         if (isDrawing)
@@ -408,7 +396,7 @@ function Croquis(width, height) {
         }
         else if (down != null)
             down(x, y, pressure);
-        eventQueue.push({op: 'down', x: x, y: y, pressure: pressure});
+        pushEvent('down', {x: x, y: y, pressure: pressure});
     }
     this.move = function (x, y, pressure) {
         if (!isDrawing)

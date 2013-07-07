@@ -1,6 +1,8 @@
 // Initialize croquis
-var croquis = new Croquis(640, 480, true);
-croquis.addFilledLayer('#fff');
+var croquis = new Croquis();
+croquis.setCanvasSize(640, 480);
+croquis.addLayer();
+croquis.fillLayer('#fff');
 croquis.addLayer();
 croquis.selectLayer(1);
 croquis.setTool('brush');
