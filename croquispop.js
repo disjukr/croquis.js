@@ -60,9 +60,13 @@ function Croquis(width, height) {
         }
     }
     this.undo = function () {
+        if (isDrawing || isStabilizing)
+            throw 'still drawing';
         //TODO: 일단 최근의 스냅샷으로 이동 후, 순서대로 이벤트 실행
     }
     this.redo = function () {
+        if (isDrawing || isStabilizing)
+            throw 'still drawing';
         //TODO: 순서대로 이벤트 실행
     }
     function takeSnapshot() {
@@ -154,8 +158,7 @@ function Croquis(width, height) {
     function layersZIndex() {
         /*
         paintingLayer가 들어갈 자리를 만들기 위해
-        레이어의 zIndex는 2 간격으로 설정한다.
-        zIndex 1은 체크무늬가 사용하고 있으므로 2부터 시작한다.
+        레이어의 zIndex는 2부터 시작해서 2 간격으로 설정한다.
         */
         for (var i=0; i<layers.length; ++i)
             layers[i].style.zIndex = i * 2 + 2;
@@ -260,7 +263,8 @@ function Croquis(width, height) {
         layers[layerIndex].style.visibility = visible ? 'visible' : 'hidden';
     }
     var tools = new Tools;
-    var tool = tools.getBrush();
+    var brush = tools.getBrush();
+    var tool = brush;
     var toolName = 'brush';
     var eraserTool = false;
     var toolSize = 10;
@@ -340,19 +344,19 @@ function Croquis(width, height) {
         toolStabilizeWeight = 1 - Math.min(1, Math.max(0.05, weight));
         eventQueue.push({op: 'stabilizeWeight', weight: weight});
     }
-    this.getBrushFlow = tools.getBrush().getFlow;
+    this.getBrushFlow = brush.getFlow;
     this.setBrushFlow = function (flow) {
-        tools.getBrush().setFlow(flow);
+        brush.setFlow(flow);
         eventQueue.push({op: 'brushFlow', flow: flow});
     }
-    this.getBrushInterval = tools.getBrush().getInterval;
+    this.getBrushInterval = brush.getInterval;
     this.setBrushInterval = function (interval) {
-        tools.getBrush().setInterval(interval);
+        brush.setInterval(interval);
         eventQueue.push({op: 'brushInterval', interval: interval});
     }
-    this.getBrushImage = tools.getBrush().getImage;
+    this.getBrushImage = brush.getImage;
     this.setBrushImage = function (image) {
-        tools.getBrush().setImage(image);
+        brush.setImage(image);
         eventQueue.push({op: 'brushImage', image: image});
     }
     var isDrawing = false;
@@ -642,8 +646,8 @@ function Brush(canvasRenderingContext)
         var halfSize = size * 0.5;
         context.save();
         if (snapToPixel)
-            context.translate(Math.floor(x - halfSize),
-                Math.floor(y - halfSize * imageRatio));
+            context.translate((x - halfSize) | 0,
+                (y - halfSize * imageRatio) | 0);
         else
             context.translate(x - halfSize, y - halfSize * imageRatio);
         drawFunction(size);
