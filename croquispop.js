@@ -28,96 +28,223 @@ var tabletapi = {
 }
 
 function Croquis() {
+    var self = this;
     var domElement = document.createElement('div');
     domElement.style.clear = 'both';
     domElement.style.setProperty('user-select', 'none');
     domElement.style.setProperty('-webkit-user-select', 'none');
     domElement.style.setProperty('-ms-user-select', 'none');
     domElement.style.setProperty('-moz-user-select', 'none');
-    this.getDOMElement = function () {
+    self.getDOMElement = function () {
         return domElement;
     }
-    var currentPosition = 0; //새로 이벤트가 쌓일 때 이 뒤에 있는 것은 다 날림.
-    var eventQueue = {};
-    var snapshotQueue = {};
-    eventQueue.length = 0;
-    eventQueue.push = function (value) {
-        eventQueue[eventQueue.length++] = value;
+    var currentPosition = -1; //새로 이벤트가 쌓일 때 이 뒤에 있는 것은 다 날림.
+    var latestCommitPosition = 0;
+    var eventLine = {};
+    var snapshotLine = {};
+    eventLine.length = 0;
+    eventLine.push = function (value) {
+        var lastestPosition = currentPosition + 1;
+        var sweep = lastestPosition;
+        while (eventLine[sweep] != null)
+            delete eventLine[sweep++];
+        eventLine[currentPosition] = value;
+        eventLine.length = lastestPosition;
     }
-    snapshotQueue.length = 0;
-    snapshotQueue.push = function (value) {
-        snapshotQueue[snapshotQueue.length++] = value;
+    snapshotLine.length = 0;
+    snapshotLine.push = function (value) {
+        snapshotLine[snapshotLine.length++] = value;
+        //TODO: sweep
     }
-    this.eventQueue = eventQueue;
-    this.snapshotQueue = snapshotQueue;
+    self.eventLine = eventLine;
+    self.snapshotLine = snapshotLine;
+    self.getCurrentPosition = function () {
+        return currentPosition;
+    }
+    self.setCurrentPosition = function (value) {
+        currentPosition = value;
+    }
     var commitCount = 0;
-    this.commit = function () { //undo, redo 시에 도착할 위치 지정
+    self.commit = function () { //undo, redo 시에 도착할 위치 지정
         pushEvent('commit', null);
+        latestCommitPosition = currentPosition;
         ++commitCount;
         if (commitCount > 10) { //적당히 커밋이 쌓이면 스냅샷 캡쳐
             takeSnapshot();
             commitCount = 0;
         }
     }
-    this.undo = function () {
-        if (isDrawing || isStabilizing)
-            throw 'still drawing';
-        //TODO: 일단 최근의 스냅샷으로 이동 후, 순서대로 이벤트 실행
+    function aheadSnapshot(position) {
+        var i = snapshotLine.length - 1;
+        var snapshot;
+        var prevSnapshot;
+        do {
+            snapshot = snapshotLine[i--];
+            prevSnapshot = snapshotLine[i];
+        } while ((prevSnapshot != null) && (prevSnapshot.position > position));
+        return snapshot;
     }
-    this.redo = function () {
+    function _redo() {
+        var evt;
+        do {
+            evt = eventLine[currentPosition + 1];
+            if (evt != null) {
+                executeEvent(evt);
+                ++currentPosition;
+            }
+        } while ((evt != null) && (evt.op != 'commit'));
+    }
+    self.undo = function () {
         if (isDrawing || isStabilizing)
             throw 'still drawing';
-        //TODO: 순서대로 이벤트 실행
+        var evt = eventLine[currentPosition];
+        var latestCommitPosition = (evt != null)? evt.latestCommitPosition : 0;
+        applySnapshot(aheadSnapshot(currentPosition));
+        while (currentPosition < latestCommitPosition)
+            _redo();
+    }
+    self.redo = function () {
+        if (isDrawing || isStabilizing)
+            throw 'still drawing';
+        _redo();
+    }
+    var preventPushEvent = false;
+    function currentStatus() {
+        var status = {};
+        status.layerIndex = self.getCurrentLayerIndex();
+        status.tool = self.getTool();
+        status.toolSize = self.getToolSize();
+        status.toolColor = self.getToolColor();
+        status.toolOpacity = self.getToolOpacity();
+        status.toolStabilizeLevel = self.getToolStabilizeLevel();
+        status.toolStabilizeWeight = self.getToolStabilizeWeight();
+        status.brushFlow = self.getBrushFlow();
+        status.brushInterval = self.getBrushInterval();
+        status.brushImage = self.getBrushImage();
+        return status;
+    }
+    function applyStatus(status) {
+        preventPushEvent = true;
+        self.setTool(status.tool);
+        self.setToolSize(status.toolSize);
+        self.setToolColor(status.toolColor);
+        self.setToolOpacity(status.toolOpacity);
+        self.setToolStabilizeLevel(status.toolStabilizeLevel);
+        self.setToolStabilizeWeight(status.toolStabilizeWeight);
+        self.setBrushFlow(status.brushFlow);
+        self.setBrushInterval(status.brushInterval);
+        self.setBrushImage(status.brushImage);
+        preventPushEvent = false;
     }
     function pushEvent(op, params) {
-        var evt = {op: op, params: params};
-        var status = {};
-        status.layerIndex = this.getCurrentLayerIndex();
-        status.tool = this.getTool();
-        status.toolSize = this.getToolSize();
-        status.toolColor = this.getToolColor();
-        status.toolOpacity = this.getToolOpacity();
-        status.toolStabilizeLevel = this.getToolStabilizeLevel();
-        status.toolStabilizeWeight = this.getToolStabilizeWeight();
-        status.brushFlow = this.getBrushFlow();
-        status.brushInterval = this.getBrushInterval();
-        status.brushImage = this.getBrushImage();
-        evt.status = status;
-        eventQueue.push(evt);
+        if (preventPushEvent)
+            return;
+        var evt = {
+            op: op,
+            params: params,
+            latestCommitPosition: latestCommitPosition,
+            status: currentStatus()
+        };
+        ++currentPosition;
+        eventLine.push(evt);
     }
-    pushEvent = pushEvent.bind(this);
+    function executeEvent(evt) {
+        preventPushEvent = true;
+        var op = evt.op;
+        var params = evt.params;
+        var status = evt.status;
+        var latestStatus = currentStatus();
+        applyStatus(status);
+        switch (op) {
+        case 'down':
+            self.down(params.x, params.y, params.pressure);
+            break;
+        case 'move':
+            _move(params.x, params.y, params.pressure);
+            break;
+        case 'up':
+            _up(params.x, params.y, params.pressure);
+            break;
+        case 'canvasSize':
+            self.setCanvasSize(params.width, params.height);
+            break;
+        case 'addLayer':
+            self.addLayer();
+            break;
+        case 'removeLayer':
+            self.removeLayer(params.index);
+            break;
+        case 'swapLayer':
+            self.swapLayer(params.layerA, params.layerB);
+            break;
+        case 'clearLayer':
+            self.clearLayer();
+            break;
+        case 'fillLayer':
+            self.fillLayer(params.fillColor);
+            break;
+        case 'layerOpacity':
+            self.setLayerOpacity(params.opacity);
+            break;
+        case 'layerVisible':
+            self.setLayerVisible(params.visible);
+            break;
+        }
+        applyStatus(latestStatus);
+        preventPushEvent = false;
+    }
     function takeSnapshot() {
+        preventPushEvent = true;
         var snapshot = {};
         snapshot.position = currentPosition;
-        snapshot.size = this.getCanvasSize();
+        snapshot.size = self.getCanvasSize();
         snapshot.layers = [];
         for (var i = 0; i < layers.length; ++i) {
-            this.selectLayer(i);
+            self.selectLayer(i);
             var canvas = layers[i];
             var context = canvas.getContext('2d');
             var imageData = context.getImageData(0, 0, size.width, size.height);
             snapshot.layers.push({
                 imageData: imageData,
-                opacity: this.getLayerOpacity(),
-                visible: this.getLayerVisible()
+                opacity: self.getLayerOpacity(),
+                visible: self.getLayerVisible()
             });
         }
-        snapshotQueue.push(snapshot);
+        snapshotLine.push(snapshot);
+        preventPushEvent = false;
     }
-    takeSnapshot = takeSnapshot.bind(this);
     function applySnapshot(snapshot) {
-        //TODO
+        preventPushEvent = true;
+        var latestLayerIndex = self.getCurrentLayerIndex();
+        self.removeAllLayer();
+        if (snapshot != null) {
+            for (var i = 0; i < snapshot.layers.length; ++i) {
+                self.addLayer();
+                self.selectLayer(i);
+                var layer = layers[i];
+                var layerData = snapshot.layers[i];
+                var context = layer.getContext('2d');
+                context.putImageData(layerData.imageData, 0, 0);
+                self.setLayerOpacity(layerData.opacity);
+                self.setLayerVisible(layerData.visible);
+            }
+            currentPosition = snapshot.position;
+        }
+        else {
+            currentPosition = 0;
+        }
+        self.selectLayer(latestLayerIndex);
+        preventPushEvent = false;
     }
-    applySnapshot = applySnapshot.bind(this);
     /*
     외부에서 임의로 내부 상태를 바꾸면 안되므로
     getCanvasSize는 읽기전용 값을 새로 만들어서 반환한다.
     */
     var size = {width: 640, height: 480};
-    this.getCanvasSize = function () {
+    self.getCanvasSize = function () {
         return {width: size.width, height: size.height};
     }
-    this.setCanvasSize = function (width, height) {
+    self.setCanvasSize = function (width, height) {
         size.width = width = Math.floor(width);
         size.height = height = Math.floor(height);
         paintingLayer.width = width;
@@ -125,32 +252,26 @@ function Croquis() {
         domElement.style.width = width + 'px';
         domElement.style.height = height + 'px';
         for (var i=0; i<layers.length; ++i) {
-            switch (layers[i].tagName.toLowerCase()) {
-            case 'canvas':
-                var canvas = layers[i];
-                var context = canvas.getContext('2d');
-                var imageData = context.getImageData(0, 0, width, height);
-                canvas.width = width;
-                canvas.height = height;
-                context.putImageData(imageData, 0, 0);
-                break;
-            default:
-                continue;
-            }
+            var canvas = layers[i];
+            var context = canvas.getContext('2d');
+            var imageData = context.getImageData(0, 0, width, height);
+            canvas.width = width;
+            canvas.height = height;
+            context.putImageData(imageData, 0, 0);
         }
         pushEvent('canvasSize', {width: width, height: height});
     }
-    this.getCanvasWidth = function () {
+    self.getCanvasWidth = function () {
         return size.width;
     }
-    this.setCanvasWidth = function (width) {
-        setCanvasSize(width, size.height);
+    self.setCanvasWidth = function (width) {
+        self.setCanvasSize(width, size.height);
     }
-    this.getCanvasHeight = function () {
+    self.getCanvasHeight = function () {
         return size.height;
     }
-    this.setCanvasHeight = function (height) {
-        setCanvasSize(size.width, height);
+    self.setCanvasHeight = function (height) {
+        self.setCanvasSize(size.width, height);
     }
     var layers = [];
     var layerIndex = 0;
@@ -172,10 +293,10 @@ function Croquis() {
         for (var i=0; i<layers.length; ++i)
             layers[i].style.zIndex = i * 2 + 2;
     }
-    this.getLayers = function () {
+    self.getLayers = function () {
         return layers.concat();
     }
-    this.addLayer = function () {
+    self.addLayer = function () {
         var layer;
         layer = document.createElement('canvas');
         layer.style.visibility = 'visible';
@@ -185,33 +306,41 @@ function Croquis() {
         layer.style.position = 'absolute';
         domElement.appendChild(layer);
         layers.push(layer);
-        if (layers.length == 1)
-            this.selectLayer(0);
         layersZIndex();
         pushEvent('addLayer', null);
+        preventPushEvent = true;
+        self.selectLayer(layerIndex);
+        preventPushEvent = false;
         return layer;
     }
-    this.removeLayer = function (index) {
+    self.removeLayer = function (index) {
         domElement.removeChild(layers[index]);
         layers.splice(index, 1);
         if (layerIndex == layers.length)
-            this.selectLayer(--layerIndex);
+            self.selectLayer(--layerIndex);
         layersZIndex();
         pushEvent('removeLayer', {index: index});
     }
-    this.swapLayer = function (layerA, layerB) {
+    self.removeAllLayer = function () {
+        while (layers.length)
+            self.removeLayer(0);
+    }
+    self.swapLayer = function (layerA, layerB) {
         var layer = layers[layerA];
         layers[layerA] = layers[layerB];
         layers[layerB] = layer;
         layersZIndex();
         pushEvent('swapLayer', {layerA: layerA, layerB: layerB});
     }
-    this.getCurrentLayerIndex = function () {
+    self.getCurrentLayerIndex = function () {
         return layerIndex;
     }
-    this.selectLayer = function (index) {
+    self.selectLayer = function (index) {
         if (tool.setContext)
             tool.setContext(null);
+        var lastestLayerIndex = layers.length - 1;
+        if (index > lastestLayerIndex)
+            index = lastestLayerIndex;
         layerIndex = index;
         /*
         paintingLayer는 현재 선택된 레이어의 바로 위에 보여야 하므로
@@ -229,33 +358,33 @@ function Croquis() {
             else
                 tool.setContext(paintingContext);
     }
-    this.clearLayer = function () {
+    self.clearLayer = function () {
         var layer = layers[layerIndex];
         var context = layer.getContext('2d');
         context.clearRect(0, 0, size.width, size.height);
         pushEvent('clearLayer', null);
     }
-    this.fillLayer = function (fillColor) {
+    self.fillLayer = function (fillColor) {
         var layer = layers[layerIndex];
         var context = layer.getContext('2d');
         context.fillStyle = fillColor || toolColor;
         context.fillRect(0, 0, layer.width, layer.height);
-        pushEvent('fillLayer', null);
+        pushEvent('fillLayer', {fillColor: fillColor});
     }
-    this.getLayerOpacity = function () {
+    self.getLayerOpacity = function () {
         var opacity = parseFloat(
             layers[layerIndex].style.getPropertyValue('opacity'));
         return Number.isNaN(opacity)? 1 : opacity;
     }
-    this.setLayerOpacity = function (opacity) {
+    self.setLayerOpacity = function (opacity) {
         layers[layerIndex].style.opacity = opacity;
         pushEvent('layerOpacity', {opacity: opacity});
     }
-    this.getLayerVisible = function () {
+    self.getLayerVisible = function () {
         var visible = layers[layerIndex].style.getPropertyValue('visibility');
         return visible != 'hidden';
     }
-    this.setLayerVisible = function (visible) {
+    self.setLayerVisible = function (visible) {
         layers[layerIndex].style.visibility = visible ? 'visible' : 'hidden';
         pushEvent('layerVisible', {visible: visible});
     }
@@ -270,10 +399,10 @@ function Croquis() {
     var toolStabilizeLevel = 0;
     var toolStabilizeWeight = 0.8;
     var stabilizer = null;
-    this.getTool = function () {
+    self.getTool = function () {
         return toolName;
     }
-    this.setTool = function (name) {
+    self.setTool = function (name) {
         toolName = name.toLowerCase();
         switch (toolName) {
         case 'brush':
@@ -287,40 +416,40 @@ function Croquis() {
         default:
             break;
         }
-        this.setToolSize(toolSize);
-        this.setToolColor(toolColor);
-        this.selectLayer(layerIndex);
+        self.setToolSize(toolSize);
+        self.setToolColor(toolColor);
+        self.selectLayer(layerIndex);
     }
-    this.getToolSize = function () {
+    self.getToolSize = function () {
         return toolSize;
     }
-    this.setToolSize = function (size) {
+    self.setToolSize = function (size) {
         toolSize = size;
         if (tool.setSize)
             tool.setSize(toolSize);
     }
-    this.getToolColor = function () {
+    self.getToolColor = function () {
         return toolColor;
     }
-    this.setToolColor = function (color) {
+    self.setToolColor = function (color) {
         toolColor = color;
         if (tool.setColor)
             tool.setColor(toolColor);
     }
-    this.getToolOpacity = function () {
+    self.getToolOpacity = function () {
         return toolOpacity;
     }
-    this.setToolOpacity = function (opacity) {
+    self.setToolOpacity = function (opacity) {
         toolOpacity = opacity;
     }
     /*
     손떨림 보정을 위한 추적 좌표 갯수를 설정한다.
     단계가 높을 수록 더 부드럽게 따라온다.
     */
-    this.getToolStabilizeLevel = function () {
+    self.getToolStabilizeLevel = function () {
         return toolStabilizeLevel;
     }
-    this.setToolStabilizeLevel = function (level) {
+    self.setToolStabilizeLevel = function (level) {
         toolStabilizeLevel = level < 0? 0 : level;
     }
     /*
@@ -329,22 +458,22 @@ function Croquis() {
     내부에서는 원래 가중치(0~1)대로 연산한다.
     보정 무게를 크게 설정할 수록 그림이 늦게 그려진다.
     */
-    this.getToolStabilizeWeight = function () {
+    self.getToolStabilizeWeight = function () {
         return 1 - toolStabilizeWeight;
     }
-    this.setToolStabilizeWeight = function (weight) {
+    self.setToolStabilizeWeight = function (weight) {
         toolStabilizeWeight = 1 - Math.min(1, Math.max(0.05, weight));
     }
-    this.getBrushFlow = brush.getFlow;
-    this.setBrushFlow = function (flow) {
+    self.getBrushFlow = brush.getFlow;
+    self.setBrushFlow = function (flow) {
         brush.setFlow(flow);
     }
-    this.getBrushInterval = brush.getInterval;
-    this.setBrushInterval = function (interval) {
+    self.getBrushInterval = brush.getInterval;
+    self.setBrushInterval = function (interval) {
         brush.setInterval(interval);
     }
-    this.getBrushImage = brush.getImage;
-    this.setBrushImage = function (image) {
+    self.getBrushImage = brush.getImage;
+    self.setBrushImage = function (image) {
         brush.setImage(image);
     }
     var isDrawing = false;
@@ -360,34 +489,30 @@ function Croquis() {
         if (tool.up)
             tool.up(x, y, pressure);
         var layer = layers[layerIndex];
-        switch (layer.tagName.toLowerCase()) {
-        case 'canvas':
-            /*
-            지우개툴이 아니라면 paintingLayer에 그려진 내용이 있으므로
-            현재 선택된 레이어에 paintingLayer를 옮겨 그린 뒤
-            paintingLayer의 내용을 지운다.
-            */
-            if (!eraserTool) {
-                var context = layer.getContext('2d');
-                context.globalAlpha = toolOpacity;
-                context.drawImage(paintingLayer, 0, 0, size.width, size.height);
-                paintingContext.clearRect(0, 0, size.width, size.height);
-            }
-            break;
-        default:
-            break;
+        /*
+        지우개툴이 아니라면 paintingLayer에 그려진 내용이 있으므로
+        현재 선택된 레이어에 paintingLayer를 옮겨 그린 뒤
+        paintingLayer의 내용을 지운다.
+        */
+        if (!eraserTool) {
+            var context = layer.getContext('2d');
+            context.globalAlpha = toolOpacity;
+            context.drawImage(paintingLayer, 0, 0, size.width, size.height);
+            paintingContext.clearRect(0, 0, size.width, size.height);
         }
         pushEvent('up', {x: x, y: y, pressure: pressure});
+        if (self.onUp)
+            self.onUp();
     }
-    this.down = function (x, y, pressure) {
+    self.down = function (x, y, pressure) {
         if (isDrawing)
             return;
         isDrawing = true;
         pressure = pressure || tabletapi.pressure();
         var down = tool.down;
-        paintingLayer.style.opacity =
-            layers[layerIndex].style.opacity * toolOpacity;
-        paintingLayer.style.visibility = layers[layerIndex].style.visibility;
+        var layer = layers[layerIndex];
+        paintingLayer.style.opacity = layer.style.opacity * toolOpacity;
+        paintingLayer.style.visibility = layer.style.visibility;
         if (toolStabilizeLevel > 0) {
             stabilizer = new Stabilizer;
             stabilizer.init(down, _move,
@@ -398,7 +523,7 @@ function Croquis() {
             down(x, y, pressure);
         pushEvent('down', {x: x, y: y, pressure: pressure});
     }
-    this.move = function (x, y, pressure) {
+    self.move = function (x, y, pressure) {
         if (!isDrawing)
             return;
         pressure = pressure || tabletapi.pressure();
@@ -407,7 +532,7 @@ function Croquis() {
         else if (!isStabilizing)
             _move(x, y, pressure);
     }
-    this.up = function (x, y, pressure) {
+    self.up = function (x, y, pressure) {
         if (!isDrawing)
             return;
         pressure = pressure || tabletapi.pressure();
@@ -417,6 +542,8 @@ function Croquis() {
             _up(x, y, pressure);
         stabilizer = null;
     }
+    //first commit
+    self.commit();
 }
 
 function Tools()
@@ -504,8 +631,7 @@ function Stabilizer() {
     }
 }
 
-function Brush(canvasRenderingContext)
-{
+function Brush(canvasRenderingContext) {
     var context = canvasRenderingContext;
     this.clone = function () {
         var clone = new Brush(context);
@@ -582,7 +708,7 @@ function Brush(canvasRenderingContext)
             imageRatio = 1;
             drawFunction = drawCircle;
         }
-        else {
+        else if (value != image) {
             image = value;
             imageRatio = image.height / image.width;
             transformedImage = document.createElement('canvas');

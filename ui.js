@@ -1,5 +1,8 @@
 // Initialize croquis
 var croquis = new Croquis();
+croquis.onUp = function () {
+    croquis.commit();
+}
 croquis.setCanvasSize(640, 480);
 croquis.addLayer();
 croquis.fillLayer('#fff');
@@ -26,7 +29,6 @@ function canvasMouseMove(e) {
 function canvasMouseUp(e) {
     var mousePosition = getRelativePosition(e.clientX, e.clientY);
     croquis.up(mousePosition.x, mousePosition.y);
-    croquis.commit();
     document.removeEventListener('mousemove', canvasMouseMove);
 }
 function getRelativePosition(absoluteX, absoluteY) {
