@@ -1,5 +1,6 @@
 // Initialize croquis
 var croquis = new Croquis();
+croquis.lockHistory();
 croquis.setCanvasSize(640, 480);
 croquis.addLayer();
 croquis.fillLayer('#fff');
@@ -11,6 +12,7 @@ croquis.setToolColor('#000');
 croquis.setToolStabilizeLevel(10);
 croquis.setToolStabilizeWeight(0.5);
 croquis.setBrushInterval(0);
+croquis.unlockHistory();
 var croquisDOMElement = croquis.getDOMElement();
 document.getElementById('canvas-area').appendChild(croquisDOMElement);
 function canvasMouseDown(e) {

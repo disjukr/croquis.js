@@ -87,21 +87,77 @@ function Croquis() {
         }
     }
     function pushLayerOpacityUndo() {
-        //
+        var snapshotIndex = layerIndex;
+        var snapshotOpacity = self.getLayerOpacity();
+        var swap = function () {
+            self.lockHistory();
+            var currentIndex = layerIndex;
+            self.selectLayer(snapshotIndex);
+            var temp = self.getLayerOpacity();
+            self.setLayerOpacity(snapshotOpacity);
+            snapshotOpacity = temp;
+            self.selectLayer(currentIndex);
+            self.unlockHistory();
+            return swap;
+        }
+        pushUndo(swap);
     }
     function pushLayerVisibleUndo() {
-        //
+        var snapshotIndex = layerIndex;
+        var snapshotVisible = self.getLayerVisible();
+        var swap = function () {
+            self.lockHistory();
+            var currentIndex = layerIndex;
+            self.selectLayer(snapshotIndex);
+            var temp = self.getLayerVisible();
+            self.setLayerVisible(snapshotVisible);
+            snapshotVisible = temp;
+            self.selectLayer(currentIndex);
+            self.unlockHistory();
+            return swap;
+        }
+        pushUndo(swap);
     }
-    function pushSwapLayerUndo() {
-        //
+    function pushSwapLayerUndo(layerA, layerB) {
+        var swap = function () {
+            self.lockHistory();
+            self.swapLayer(layerA, layerB);
+            self.unlockHistory();
+            return swap;
+        }
+        pushUndo(swap);
     }
     function pushAddLayerUndo() {
-        //
+        var add = function () {
+            self.lockHistory();
+            self.addLayer();
+            self.unlockHistory();
+            return remove;
+        }
+        var remove = function () {
+            self.lockHistory();
+            self.removeLayer();
+            self.unlockHistory();
+            return add;
+        }
+        pushUndo(remove);
     }
     function pushRemoveLayerUndo() {
-        //
+        var add = function () {
+            self.lockHistory();
+            self.addLayer();
+            self.unlockHistory();
+            return remove;
+        }
+        var remove = function () {
+            self.lockHistory();
+            self.removeLayer();
+            self.unlockHistory();
+            return add;
+        }
+        pushUndo(add);
     }
-    function pushDirtyRectUndo(layerIndex, x, y, width, height) {
+    function pushDirtyRectUndo(x, y, width, height) {
         var layer = layers[layerIndex];
         var w = layer.width;
         var h = layer.height;
@@ -122,9 +178,9 @@ function Croquis() {
         }
         pushUndo(((width == 0) || (height == 0))? doNothing : swap);
     }
-    function pushContextUndo(layerIndex) {
+    function pushContextUndo() {
         var layer = layers[layerIndex];
-        pushDirtyRectUndo(layerIndex, 0, 0, layer.width, layer.height);
+        pushDirtyRectUndo(0, 0, layer.width, layer.height);
     }
     /*
     외부에서 임의로 내부 상태를 바꾸면 안되므로
@@ -201,6 +257,7 @@ function Croquis() {
         return layer;
     }
     self.removeLayer = function (index) {
+        index = index || layerIndex;
         pushRemoveLayerUndo();
         domElement.removeChild(layers[index]);
         layers.splice(index, 1);
@@ -213,7 +270,7 @@ function Croquis() {
             self.removeLayer(0);
     }
     self.swapLayer = function (layerA, layerB) {
-        pushSwapLayerUndo();
+        pushSwapLayerUndo(layerA, layerB);
         var layer = layers[layerA];
         layers[layerA] = layers[layerB];
         layers[layerB] = layer;
@@ -388,7 +445,7 @@ function Croquis() {
     self.down = function (x, y, pressure) {
         if (isDrawing)
             return;
-        pushContextUndo(layerIndex);
+        pushContextUndo();
         isDrawing = true;
         pressure = pressure || tabletapi.pressure();
         var down = tool.down;
