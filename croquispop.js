@@ -41,13 +41,30 @@ function Croquis() {
     var undoStack = [];
     var redoStack = [];
     var undoLimit = 10;
+    var preventPushUndo = false;
+    self.getUndoLimit = function () {
+        return undoLimit;
+    }
+    self.setUndoLimit = function (limit) {
+        undoLimit = limit;
+    }
+    self.lockHistory = function () {
+        preventPushUndo = true;
+    }
+    self.unlockHistory = function () {
+        preventPushUndo = false;
+    }
     function pushUndo(undoFunction) {
+        if (preventPushUndo)
+            return;
         redoStack = [];
         undoStack.push(undoFunction);
         while (undoStack.length > undoLimit)
             undoStack.shift();
     }
     self.undo = function () {
+        if (preventPushUndo)
+            throw 'history is locked';
         if (isDrawing || isStabilizing)
             throw 'still drawing';
         try {
@@ -58,6 +75,8 @@ function Croquis() {
         }
     }
     self.redo = function () {
+        if (preventPushUndo)
+            throw 'history is locked';
         if (isDrawing || isStabilizing)
             throw 'still drawing';
         try {
