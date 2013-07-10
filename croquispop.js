@@ -127,31 +127,31 @@ function Croquis() {
         }
         pushUndo(swap);
     }
-    function pushAddLayerUndo() {
+    function pushAddLayerUndo(index) {
         var add = function () {
             self.lockHistory();
-            self.addLayer();
+            self.addLayer(index);
             self.unlockHistory();
             return remove;
         }
         var remove = function () {
             self.lockHistory();
-            self.removeLayer();
+            self.removeLayer(index);
             self.unlockHistory();
             return add;
         }
         pushUndo(remove);
     }
-    function pushRemoveLayerUndo() {
+    function pushRemoveLayerUndo(index) {
         var add = function () {
             self.lockHistory();
-            self.addLayer();
+            self.addLayer(index);
             self.unlockHistory();
             return remove;
         }
         var remove = function () {
             self.lockHistory();
-            self.removeLayer();
+            self.removeLayer(index);
             self.unlockHistory();
             return add;
         }
@@ -241,8 +241,9 @@ function Croquis() {
     self.getLayers = function () {
         return layers.concat();
     }
-    self.addLayer = function () {
-        pushAddLayerUndo();
+    self.addLayer = function (index) {
+        index = index || layers.length;
+        pushAddLayerUndo(index);
         var layer;
         layer = document.createElement('canvas');
         layer.style.visibility = 'visible';
@@ -251,19 +252,23 @@ function Croquis() {
         layer.height = size.height;
         layer.style.position = 'absolute';
         domElement.appendChild(layer);
-        layers.push(layer);
+        layers.splice(index, 0, layer);
         layersZIndex();
         self.selectLayer(layerIndex);
+        if (self.onLayerAdd)
+            self.onLayerAdd(index);
         return layer;
     }
     self.removeLayer = function (index) {
         index = index || layerIndex;
-        pushRemoveLayerUndo();
+        pushRemoveLayerUndo(index);
         domElement.removeChild(layers[index]);
         layers.splice(index, 1);
         if (layerIndex == layers.length)
             self.selectLayer(layerIndex - 1);
         layersZIndex();
+        if (self.onLayerRemove)
+            self.onLayerRemove(index);
     }
     self.removeAllLayer = function () {
         while (layers.length)
@@ -275,6 +280,8 @@ function Croquis() {
         layers[layerA] = layers[layerB];
         layers[layerB] = layer;
         layersZIndex();
+        if (self.onLayerSwap)
+            self.onLayerSwap(layerA, layerB);
     }
     self.getCurrentLayerIndex = function () {
         return layerIndex;
