@@ -255,8 +255,8 @@ function Croquis() {
         layers.splice(index, 0, layer);
         layersZIndex();
         self.selectLayer(layerIndex);
-        if (self.onLayerAdd)
-            self.onLayerAdd(index);
+        if (self.onLayerAdded)
+            self.onLayerAdded(index);
         return layer;
     }
     self.removeLayer = function (index) {
@@ -267,8 +267,8 @@ function Croquis() {
         if (layerIndex == layers.length)
             self.selectLayer(layerIndex - 1);
         layersZIndex();
-        if (self.onLayerRemove)
-            self.onLayerRemove(index);
+        if (self.onLayerRemoved)
+            self.onLayerRemoved(index);
     }
     self.removeAllLayer = function () {
         while (layers.length)
@@ -280,8 +280,8 @@ function Croquis() {
         layers[layerA] = layers[layerB];
         layers[layerB] = layer;
         layersZIndex();
-        if (self.onLayerSwap)
-            self.onLayerSwap(layerA, layerB);
+        if (self.onLayerSwapped)
+            self.onLayerSwapped(layerA, layerB);
     }
     self.getCurrentLayerIndex = function () {
         return layerIndex;
@@ -308,6 +308,8 @@ function Croquis() {
                 tool.setContext(layers[index].getContext('2d'));
             else
                 tool.setContext(paintingContext);
+        if (self.onLayerSelected)
+            self.onLayerSelected(index);
     }
     self.clearLayer = function () {
         var layer = layers[layerIndex];
