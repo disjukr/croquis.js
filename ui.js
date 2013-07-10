@@ -1,8 +1,5 @@
 // Initialize croquis
 var croquis = new Croquis();
-croquis.onUp = function () {
-    croquis.commit();
-}
 croquis.setCanvasSize(640, 480);
 croquis.addLayer();
 croquis.fillLayer('#fff');
@@ -14,7 +11,6 @@ croquis.setToolColor('#000');
 croquis.setToolStabilizeLevel(10);
 croquis.setToolStabilizeWeight(0.5);
 croquis.setBrushInterval(0);
-croquis.commit();
 var croquisDOMElement = croquis.getDOMElement();
 document.getElementById('canvas-area').appendChild(croquisDOMElement);
 function canvasMouseDown(e) {
@@ -42,14 +38,12 @@ document.addEventListener('mouseup', canvasMouseUp);
 var clearButton = document.getElementById('clear-button');
 clearButton.onclick = function () {
     croquis.clearLayer();
-    croquis.commit();
 }
 var fillButton = document.getElementById('fill-button');
 fillButton.onclick = function () {
     var rgb = tinycolor(croquis.getToolColor()).toRgb();
     croquis.fillLayer(tinycolor({r: rgb.r, g: rgb.g, b: rgb.b,
         a: croquis.getToolOpacity()}).toRgbString());
-    croquis.commit();
 }
 
 //brush images
@@ -208,10 +202,10 @@ function documentKeyDown(e) {
     if (mac ? e.metaKey : e.ctrlKey) {
         switch (e.keyCode) {
         case 89: //ctrl + y
-            croquis.redo();
+            //croquis.redo();
             break;
         case 90: //ctrl + z
-            croquis[e.shiftKey ? 'redo' : 'undo']();
+            //croquis[e.shiftKey ? 'redo' : 'undo']();
             break;
         }
     }
