@@ -202,10 +202,10 @@ function documentKeyDown(e) {
     if (mac ? e.metaKey : e.ctrlKey) {
         switch (e.keyCode) {
         case 89: //ctrl + y
-            //croquis.redo();
+            croquis.redo();
             break;
         case 90: //ctrl + z
-            //croquis[e.shiftKey ? 'redo' : 'undo']();
+            croquis[e.shiftKey ? 'redo' : 'undo']();
             break;
         }
     }

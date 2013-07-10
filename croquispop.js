@@ -38,6 +38,75 @@ function Croquis() {
     self.getDOMElement = function () {
         return domElement;
     }
+    var undoStack = [];
+    var redoStack = [];
+    var undoLimit = 10;
+    function pushUndo(undoFunction) {
+        redoStack = [];
+        undoStack.push(undoFunction);
+        while (undoStack.length > undoLimit)
+            undoStack.shift();
+    }
+    self.undo = function () {
+        if (isDrawing || isStabilizing)
+            throw 'still drawing';
+        try {
+            redoStack.push(undoStack.pop()());
+        }
+        catch (e) {
+            throw 'no more undo data';
+        }
+    }
+    self.redo = function () {
+        if (isDrawing || isStabilizing)
+            throw 'still drawing';
+        try {
+            undoStack.push(redoStack.pop()());
+        }
+        catch (e) {
+            throw 'no more redo data';
+        }
+    }
+    function pushLayerOpacityUndo() {
+        //
+    }
+    function pushLayerVisibleUndo() {
+        //
+    }
+    function pushSwapLayerUndo() {
+        //
+    }
+    function pushAddLayerUndo() {
+        //
+    }
+    function pushRemoveLayerUndo() {
+        //
+    }
+    function pushDirtyRectUndo(layerIndex, x, y, width, height) {
+        var layer = layers[layerIndex];
+        var w = layer.width;
+        var h = layer.height;
+        x = Math.min(w, Math.max(0, x));
+        y = Math.min(h, Math.max(0, y));
+        width = Math.min(w, Math.max(0, width));
+        height = Math.min(h, Math.max(0, height));
+        var layerContext = layer.getContext('2d');
+        var snapshotData = layerContext.getImageData(x, y, width, height);
+        var doNothing = function () {
+            return doNothing;
+        }
+        var swap = function () {
+            var tempData = layerContext.getImageData(x, y, width, height);
+            layerContext.putImageData(snapshotData, x, y);
+            snapshotData = tempData;
+            return swap;
+        }
+        pushUndo(((width == 0) || (height == 0))? doNothing : swap);
+    }
+    function pushContextUndo(layerIndex) {
+        var layer = layers[layerIndex];
+        pushDirtyRectUndo(layerIndex, 0, 0, layer.width, layer.height);
+    }
     /*
     외부에서 임의로 내부 상태를 바꾸면 안되므로
     getCanvasSize는 읽기전용 값을 새로 만들어서 반환한다.
@@ -98,6 +167,7 @@ function Croquis() {
         return layers.concat();
     }
     self.addLayer = function () {
+        pushAddLayerUndo();
         var layer;
         layer = document.createElement('canvas');
         layer.style.visibility = 'visible';
@@ -112,10 +182,11 @@ function Croquis() {
         return layer;
     }
     self.removeLayer = function (index) {
+        pushRemoveLayerUndo();
         domElement.removeChild(layers[index]);
         layers.splice(index, 1);
         if (layerIndex == layers.length)
-            self.selectLayer(--layerIndex);
+            self.selectLayer(layerIndex - 1);
         layersZIndex();
     }
     self.removeAllLayer = function () {
@@ -123,6 +194,7 @@ function Croquis() {
             self.removeLayer(0);
     }
     self.swapLayer = function (layerA, layerB) {
+        pushSwapLayerUndo();
         var layer = layers[layerA];
         layers[layerA] = layers[layerB];
         layers[layerB] = layer;
@@ -171,6 +243,7 @@ function Croquis() {
         return Number.isNaN(opacity)? 1 : opacity;
     }
     self.setLayerOpacity = function (opacity) {
+        pushLayerOpacityUndo();
         layers[layerIndex].style.opacity = opacity;
     }
     self.getLayerVisible = function () {
@@ -178,6 +251,7 @@ function Croquis() {
         return visible != 'hidden';
     }
     self.setLayerVisible = function (visible) {
+        pushLayerVisibleUndo();
         layers[layerIndex].style.visibility = visible ? 'visible' : 'hidden';
     }
     var tools = new Tools;
@@ -295,6 +369,7 @@ function Croquis() {
     self.down = function (x, y, pressure) {
         if (isDrawing)
             return;
+        pushContextUndo(layerIndex);
         isDrawing = true;
         pressure = pressure || tabletapi.pressure();
         var down = tool.down;
