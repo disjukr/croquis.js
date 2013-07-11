@@ -254,6 +254,15 @@ function Croquis() {
         for (var i=0; i<layers.length; ++i)
             layers[i].style.zIndex = i * 2 + 2;
     }
+    self.getLayerThumbnail = function (index, width, height) {
+        var layer = layers[index];
+        var thumbnail = document.createElement('canvas');
+        var thumbnailContext = thumbnail.getContext('2d');
+        thumbnail.width = width;
+        thumbnail.height = height;
+        thumbnailContext.drawImage(layer, 0, 0, width, height);
+        return thumbnail;
+    }
     self.getLayers = function () {
         return layers.concat();
     }
