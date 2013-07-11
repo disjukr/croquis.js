@@ -166,25 +166,33 @@ function Croquis() {
         pushUndo(add);
     }
     function pushDirtyRectUndo(x, y, width, height) {
-        var layer = layers[layerIndex];
+        var index = layerIndex;
+        var layer = layers[index];
+        var layerContext = layer.getContext('2d');
         var w = layer.width;
         var h = layer.height;
         x = Math.min(w, Math.max(0, x));
         y = Math.min(h, Math.max(0, y));
         width = Math.min(w, Math.max(0, width));
         height = Math.min(h, Math.max(0, height));
-        var layerContext = layer.getContext('2d');
-        var snapshotData = layerContext.getImageData(x, y, width, height);
-        var doNothing = function () {
-            return doNothing;
+        if ((width == 0) || (height == 0)) {
+            var doNothing = function () {
+                return doNothing;
+            }
+            pushUndo(doNothing);
         }
-        var swap = function () {
-            var tempData = layerContext.getImageData(x, y, width, height);
-            layerContext.putImageData(snapshotData, x, y);
-            snapshotData = tempData;
-            return swap;
+        else {
+            var swap = function () {
+                layer = layers[index];
+                layerContext = layer.getContext('2d');
+                var tempData = layerContext.getImageData(x, y, width, height);
+                layerContext.putImageData(snapshotData, x, y);
+                snapshotData = tempData;
+                return swap;
+            }
+            var snapshotData = layerContext.getImageData(x, y, width, height);
+            pushUndo(swap);
         }
-        pushUndo(((width == 0) || (height == 0))? doNothing : swap);
     }
     function pushContextUndo() {
         var layer = layers[layerIndex];
@@ -320,11 +328,13 @@ function Croquis() {
             self.onLayerSelected(index);
     }
     self.clearLayer = function () {
+        pushContextUndo();
         var layer = layers[layerIndex];
         var context = layer.getContext('2d');
         context.clearRect(0, 0, size.width, size.height);
     }
     self.fillLayer = function (fillColor) {
+        pushContextUndo();
         var layer = layers[layerIndex];
         var context = layer.getContext('2d');
         context.fillStyle = fillColor || toolColor;
