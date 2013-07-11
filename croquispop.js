@@ -459,6 +459,8 @@ function Croquis() {
     function _move(x, y, pressure) {
         if (tool.move)
             tool.move(x, y, pressure);
+        if (self.onMoved)
+            self.onMoved(x, y, pressure);
     }
     function _up(x, y, pressure) {
         isDrawing = false;
@@ -477,6 +479,8 @@ function Croquis() {
             context.drawImage(paintingLayer, 0, 0, size.width, size.height);
             paintingContext.clearRect(0, 0, size.width, size.height);
         }
+        if (self.onUpped)
+            self.onUpped(x, y, pressure);
     }
     self.down = function (x, y, pressure) {
         if (isDrawing)
@@ -496,6 +500,8 @@ function Croquis() {
         }
         else if (down != null)
             down(x, y, pressure);
+        if (self.onDowned)
+            self.onDowned(x, y, pressure);
     }
     self.move = function (x, y, pressure) {
         if (!isDrawing)
