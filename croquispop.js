@@ -143,9 +143,17 @@ function Croquis() {
         pushUndo(remove);
     }
     function pushRemoveLayerUndo(index) {
+        var layer = layers[index];
+        var layerContext = layer.getContext('2d');
+        var w = layer.width;
+        var h = layer.height;
+        var snapshotData = layerContext.getImageData(0, 0, w, h);
         var add = function () {
             self.lockHistory();
             self.addLayer(index);
+            var layer = layers[index];
+            var layerContext = layer.getContext('2d');
+            layerContext.putImageData(snapshotData, 0, 0);
             self.unlockHistory();
             return remove;
         }
