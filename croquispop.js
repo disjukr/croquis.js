@@ -524,17 +524,34 @@ function Croquis() {
     }
 }
 Croquis.getBrushPointer = function (brushImage, brushSize, threshold) {
+    brushSize = brushSize | 0;
     threshold = threshold || 0x80;
-    if ((brushImage.width == 0) || (brushImage.height == 0))
-        return null;
-    var imageRatio = brushImage.height / brushImage.width;
-    var width = brushSize;
-    var height = brushSize * imageRatio;
     var pointer = document.createElement('canvas');
     var pointerContext = pointer.getContext('2d');
-    pointer.width = width;
-    pointer.height = height;
-    pointerContext.drawImage(brushImage, 0, 0, width, height);
+    var width;
+    var height;
+    if (brushSize == 0) {
+        pointer.width = 1;
+        pointer.height = 1;
+        return pointer;
+    }
+    if (brushImage == null) {
+        var halfSize = (brushSize * 0.5) | 0;
+        pointer.width = width = brushSize;
+        pointer.height = height = brushSize;
+        pointerContext.fillStyle = '#000';
+        pointerContext.beginPath();
+        pointerContext.arc(halfSize, halfSize, halfSize, 0, Math.PI * 2);
+        pointerContext.closePath();
+        pointerContext.fill();
+    }
+    else {
+        width = brushSize;
+        height = brushSize * (brushImage.height / brushImage.width);
+        pointer.width = width;
+        pointer.height = height;
+        pointerContext.drawImage(brushImage, 0, 0, width, height);
+    }
     var pointerData = pointerContext.getImageData(0, 0, width, height);
     var d = pointerData.data;
     function getAlphaIndex(index) {
