@@ -13,6 +13,7 @@ body {
 
 #canvas-area {
   display: inline-block;
+  cursor: crosshair;
 }
 
 #right-side {
@@ -78,6 +79,13 @@ body {
   display: inline-block;
   border-radius: 15px;
   background-color: #000;
+}
+
+.brush-pointer {
+  position: absolute;
+  font-size: 0;
+  pointer-events: none;
+  z-index: 9999;
 }
 
 .brush-image {

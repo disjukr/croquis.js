@@ -65,7 +65,50 @@ function brushImageMouseDown(e) {
     if (image == circleBrush)
         image = null;
     croquis.setBrushImage(image);
+    updatePointer();
 }
+
+//brush pointer
+var brushPointerContainer = document.createElement('div');
+brushPointerContainer.className = 'brush-pointer';
+
+croquisDOMElement.addEventListener('mouseover', function () {
+    croquisDOMElement.addEventListener('mousemove', croquisMouseMove);
+    document.body.appendChild(brushPointerContainer);
+});
+croquisDOMElement.addEventListener('mouseout', function () {
+    croquisDOMElement.removeEventListener('mousemove', croquisMouseMove);
+    brushPointerContainer.remove();
+});
+
+function croquisMouseMove(e) {
+    var x = e.clientX + window.pageXOffset;
+    var y = e.clientY + window.pageYOffset;
+    brushPointerContainer.style.setProperty('left', x + 'px');
+    brushPointerContainer.style.setProperty('top', y + 'px');
+}
+
+function updatePointer() {
+    var image = currentBrush;
+    var threshold;
+    if (currentBrush == circleBrush)
+    {
+        image = null;
+        threshold = 0xff;
+    }
+    else {
+        threshold = 0x30;
+    }
+    var brushPointer = Croquis.getBrushPointer(
+        image, croquis.getToolSize(), threshold);
+    brushPointer.style.setProperty('margin-left',
+        '-' + (brushPointer.width * 0.5) + 'px');
+    brushPointer.style.setProperty('margin-top',
+        '-' + (brushPointer.height * 0.5) + 'px');
+    brushPointerContainer.innerHTML = '';
+    brushPointerContainer.appendChild(brushPointer);
+}
+updatePointer();
 
 //color picker
 var colorPickerHueSlider =
@@ -183,6 +226,7 @@ selectEraserCheckbox.onchange = function () {
 }
 brushSizeSlider.onchange = function () {
     croquis.setToolSize(brushSizeSlider.value);
+    updatePointer();
 }
 brushOpacitySlider.onchange = function () {
     croquis.setToolOpacity(brushOpacitySlider.value * 0.01);
