@@ -523,6 +523,71 @@ function Croquis() {
         stabilizer = null;
     }
 }
+Croquis.getBrushPointer = function (brushImage, brushSize, threshold) {
+    threshold = threshold || 0x80;
+    if ((brushImage.width == 0) || (brushImage.height == 0))
+        return null;
+    var imageRatio = brushImage.height / brushImage.width;
+    var width = brushSize;
+    var height = brushSize * imageRatio;
+    var pointer = document.createElement('canvas');
+    var pointerContext = pointer.getContext('2d');
+    pointer.width = width;
+    pointer.height = height;
+    pointerContext.drawImage(brushImage, 0, 0, width, height);
+    var pointerData = pointerContext.getImageData(0, 0, width, height);
+    var d = pointerData.data;
+    function getAlphaIndex(index) {
+        return d[index * 4 + 3];
+    }
+    function setRedIndex(index, red) {
+        d[index * 4] = red;
+    }
+    function getRedXY(x, y) {
+        var red = d[((y * width) + x) * 4];
+        return red? red : 0;
+    }
+    function setColorXY(x, y, red, alpha) {
+        var i = ((y * width) + x) * 4;
+        d[i] = red;
+        d[i + 1] = 0;
+        d[i + 2] = 0;
+        d[i + 3] = alpha;
+    }
+    //threshold
+    var pixelCount = (d.length * 0.25) | 0;
+    for (var i = 0; i < pixelCount; ++i)
+        setRedIndex(i, (getAlphaIndex(i) < threshold)? 0 : 1);
+    //outline
+    for (var x = 0; x < width; ++x) {
+        for (var y = 0; y < height; ++y) {
+            if (!getRedXY(x, y)) {
+                setColorXY(x, y, 0, 0);
+            }
+            else {
+                var redCount = 0;
+                var left = x - 1;
+                var right = x + 1;
+                var up = y - 1;
+                var down = y + 1;
+                redCount += getRedXY(left, up);
+                redCount += getRedXY(left, y);
+                redCount += getRedXY(left, down);
+                redCount += getRedXY(right, up);
+                redCount += getRedXY(right, y);
+                redCount += getRedXY(right, down);
+                redCount += getRedXY(x, up);
+                redCount += getRedXY(x, down);
+                if (redCount != 8)
+                    setColorXY(x, y, 1, 255);
+                else
+                    setColorXY(x, y, 1, 0);
+            }
+        }
+    }
+    pointerContext.putImageData(pointerData, 0, 0);
+    return pointer;
+}
 
 function Tools()
 {
