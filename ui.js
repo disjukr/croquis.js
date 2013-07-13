@@ -103,7 +103,7 @@ function updatePointer() {
         threshold = 0x30;
     }
     var brushPointer = Croquis.getBrushPointer(
-        image, croquis.getToolSize(), threshold);
+        image, croquis.getToolSize(), threshold, true);
     brushPointer.style.setProperty('margin-left',
         '-' + (brushPointer.width * 0.5) + 'px');
     brushPointer.style.setProperty('margin-top',

@@ -53,7 +53,7 @@
       var alphaThreshold = alphaThresholdSlider.value;
       var pointerImage = Croquis.getBrushPointer(
         (currentBrush == circleBrush)? null : currentBrush,
-        size, alphaThreshold);
+        size, alphaThreshold, true);
       pointerContainer.innerHTML = '';
       pointerContainer.appendChild(pointerImage);
     }

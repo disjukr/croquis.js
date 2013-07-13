@@ -523,7 +523,8 @@ function Croquis() {
         stabilizer = null;
     }
 }
-Croquis.getBrushPointer = function (brushImage, brushSize, threshold) {
+Croquis.getBrushPointer = function (brushImage, brushSize,
+                                    threshold, antialias) {
     brushSize = brushSize | 0;
     threshold = threshold || 0x80;
     var pointer = document.createElement('canvas');
@@ -564,10 +565,14 @@ Croquis.getBrushPointer = function (brushImage, brushSize, threshold) {
         var red = d[((y * width) + x) * 4];
         return red? red : 0;
     }
-    function setColorXY(x, y, red, alpha) {
+    function getGreenXY(x, y) {
+        var green = d[((y * width) + x) * 4 + 1];
+        return green;
+    }
+    function setColorXY(x, y, red, green, alpha) {
         var i = ((y * width) + x) * 4;
         d[i] = red;
-        d[i + 1] = 0;
+        d[i + 1] = green;
         d[i + 2] = 0;
         d[i + 3] = alpha;
     }
@@ -576,10 +581,12 @@ Croquis.getBrushPointer = function (brushImage, brushSize, threshold) {
     for (var i = 0; i < pixelCount; ++i)
         setRedIndex(i, (getAlphaIndex(i) < threshold)? 0 : 1);
     //outline
-    for (var x = 0; x < width; ++x) {
-        for (var y = 0; y < height; ++y) {
+    var x;
+    var y;
+    for (x = 0; x < width; ++x) {
+        for (y = 0; y < height; ++y) {
             if (!getRedXY(x, y)) {
-                setColorXY(x, y, 0, 0);
+                setColorXY(x, y, 0, 0, 0);
             }
             else {
                 var redCount = 0;
@@ -596,9 +603,23 @@ Croquis.getBrushPointer = function (brushImage, brushSize, threshold) {
                 redCount += getRedXY(x, up);
                 redCount += getRedXY(x, down);
                 if (redCount != 8)
-                    setColorXY(x, y, 1, 255);
+                    setColorXY(x, y, 1, 1, 255);
                 else
-                    setColorXY(x, y, 1, 0);
+                    setColorXY(x, y, 1, 0, 0);
+            }
+        }
+    }
+    //antialias
+    if (antialias) {
+        for (x = 0; x < width; ++x) {
+            for (y = 0; y < height; ++y) {
+                if (getGreenXY(x, y)) {
+                    var alpha = 0;
+                    if (getGreenXY(x - 1, y) != getGreenXY(x + 1, y))
+                        setColorXY(x, y, 1, 1, alpha += 0x40);
+                    if (getGreenXY(x, y - 1) != getGreenXY(x, y + 1))
+                        setColorXY(x, y, 1, 1, alpha + 0x50);
+                }
             }
         }
     }
