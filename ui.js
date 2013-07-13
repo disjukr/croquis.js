@@ -14,9 +14,11 @@ croquis.setToolStabilizeWeight(0.5);
 croquis.setBrushInterval(0);
 croquis.unlockHistory();
 var croquisDOMElement = croquis.getDOMElement();
-document.getElementById('canvas-area').appendChild(croquisDOMElement);
+var canvasArea = document.getElementById('canvas-area');
+canvasArea.appendChild(croquisDOMElement);
 function canvasMouseDown(e) {
     var mousePosition = getRelativePosition(e.clientX, e.clientY);
+    canvasArea.style.setProperty('cursor', 'none');
     croquis.down(mousePosition.x, mousePosition.y);
     document.addEventListener('mousemove', canvasMouseMove);
 }
@@ -26,6 +28,7 @@ function canvasMouseMove(e) {
 }
 function canvasMouseUp(e) {
     var mousePosition = getRelativePosition(e.clientX, e.clientY);
+    canvasArea.style.setProperty('cursor', 'crosshair');
     croquis.up(mousePosition.x, mousePosition.y);
     document.removeEventListener('mousemove', canvasMouseMove);
 }
