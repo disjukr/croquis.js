@@ -528,8 +528,6 @@ Croquis.createBrushPointer = function (brushImage, brushSize,
     brushSize = brushSize | 0;
     var pointer = document.createElement('canvas');
     var pointerContext = pointer.getContext('2d');
-    var width;
-    var height;
     if (brushSize == 0) {
         pointer.width = 1;
         pointer.height = 1;
@@ -537,8 +535,8 @@ Croquis.createBrushPointer = function (brushImage, brushSize,
     }
     if (brushImage == null) {
         var halfSize = (brushSize * 0.5) | 0;
-        pointer.width = width = brushSize;
-        pointer.height = height = brushSize;
+        pointer.width = brushSize;
+        pointer.height = brushSize;
         pointerContext.fillStyle = '#000';
         pointerContext.beginPath();
         pointerContext.arc(halfSize, halfSize, halfSize, 0, Math.PI * 2);
@@ -546,13 +544,13 @@ Croquis.createBrushPointer = function (brushImage, brushSize,
         pointerContext.fill();
     }
     else {
-        width = brushSize;
-        height = brushSize * (brushImage.height / brushImage.width);
+        var width = brushSize;
+        var height = brushSize * (brushImage.height / brushImage.width);
         pointer.width = width;
         pointer.height = height;
         pointerContext.drawImage(brushImage, 0, 0, width, height);
     }
-    return Croquis.createAlphaThresholdBorder(pointer);
+    return Croquis.createAlphaThresholdBorder(pointer, threshold, antialias);
 };
 Croquis.createAlphaThresholdBorder = function (image, threshold, antialias) {
     threshold = threshold || 0x80;
@@ -560,6 +558,7 @@ Croquis.createAlphaThresholdBorder = function (image, threshold, antialias) {
     var height = image.height;
     var canvas = document.createElement('canvas');
     var context = canvas.getContext('2d');
+    context.drawImage(image, 0, 0, width, height);
     var imageData = context.getImageData(0, 0, width, height);
     var d = imageData.data;
     function getAlphaIndex(index) {
