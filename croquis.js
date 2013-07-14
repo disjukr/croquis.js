@@ -556,9 +556,11 @@ Croquis.createBrushPointer = function (brushImage, brushSize,
 };
 Croquis.createAlphaThresholdBorder = function (image, threshold, antialias) {
     threshold = threshold || 0x80;
+    var width = image.width;
+    var height = image.height;
     var canvas = document.createElement('canvas');
     var context = canvas.getContext('2d');
-    var imageData = context.getImageData(0, 0, image.width, image.height);
+    var imageData = context.getImageData(0, 0, width, height);
     var d = imageData.data;
     function getAlphaIndex(index) {
         return d[index * 4 + 3];
