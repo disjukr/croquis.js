@@ -552,6 +552,7 @@ Croquis.createBrushPointer = function (brushImage, brushSize,
         pointer.height = height;
         pointerContext.drawImage(brushImage, 0, 0, width, height);
     }
+    return createAlphaThresholdBorder(pointer);
 };
 Croquis.createAlphaThresholdBorder = function (image, threshold, antialias) {
     threshold = threshold || 0x80;
