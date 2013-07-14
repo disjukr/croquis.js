@@ -558,6 +558,8 @@ Croquis.createAlphaThresholdBorder = function (image, threshold, antialias) {
     var height = image.height;
     var canvas = document.createElement('canvas');
     var context = canvas.getContext('2d');
+    canvas.width = width;
+    canvas.height = height;
     context.drawImage(image, 0, 0, width, height);
     var imageData = context.getImageData(0, 0, width, height);
     var d = imageData.data;
