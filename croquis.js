@@ -523,10 +523,9 @@ function Croquis() {
         stabilizer = null;
     }
 }
-Croquis.createAlphaThresholdBorder = function (brushImage, brushSize,
-                                               threshold, antialias) {
+Croquis.createBrushPointer = function (brushImage, brushSize,
+                                       threshold, antialias) {
     brushSize = brushSize | 0;
-    threshold = threshold || 0x80;
     var pointer = document.createElement('canvas');
     var pointerContext = pointer.getContext('2d');
     var width;
@@ -553,8 +552,13 @@ Croquis.createAlphaThresholdBorder = function (brushImage, brushSize,
         pointer.height = height;
         pointerContext.drawImage(brushImage, 0, 0, width, height);
     }
-    var pointerData = pointerContext.getImageData(0, 0, width, height);
-    var d = pointerData.data;
+};
+Croquis.createAlphaThresholdBorder = function (image, threshold, antialias) {
+    threshold = threshold || 0x80;
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+    var imageData = context.getImageData(0, 0, image.width, image.height);
+    var d = imageData.data;
     function getAlphaIndex(index) {
         return d[index * 4 + 3];
     }
@@ -623,8 +627,8 @@ Croquis.createAlphaThresholdBorder = function (brushImage, brushSize,
             }
         }
     }
-    pointerContext.putImageData(pointerData, 0, 0);
-    return pointer;
+    context.putImageData(imageData, 0, 0);
+    return canvas;
 }
 
 function Tools()
