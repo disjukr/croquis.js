@@ -523,8 +523,8 @@ function Croquis() {
         stabilizer = null;
     }
 }
-Croquis.getBrushPointer = function (brushImage, brushSize,
-                                    threshold, antialias) {
+Croquis.createAlphaThresholdBorder = function (brushImage, brushSize,
+                                               threshold, antialias) {
     brushSize = brushSize | 0;
     threshold = threshold || 0x80;
     var pointer = document.createElement('canvas');
