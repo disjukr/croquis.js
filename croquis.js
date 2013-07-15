@@ -446,9 +446,9 @@ function Croquis() {
     self.setBrushFlow = function (flow) {
         brush.setFlow(flow);
     }
-    self.getBrushInterval = brush.getInterval;
-    self.setBrushInterval = function (interval) {
-        brush.setInterval(interval);
+    self.getBrushSpacing = brush.getSpacing;
+    self.setBrushSpacing = function (spacing) {
+        brush.setSpacing(spacing);
     }
     self.getBrushImage = brush.getImage;
     self.setBrushImage = function (image) {
@@ -728,7 +728,7 @@ function Brush(canvasRenderingContext) {
         clone.setFlow(this.getFlow());
         clone.setKnockout(this.getKnockout());
         clone.setSize(this.getSize());
-        clone.setInterval(this.getInterval());
+        clone.setSpacing(this.getSpacing());
         clone.setImage(this.getImage());
     }
     this.getContext = function () {
@@ -770,12 +770,12 @@ function Brush(canvasRenderingContext) {
         size = value < 1 ? 1 : value;
         transformedImageIsDirty = true;
     }
-    var interval = 0.05;
-    this.getInterval = function () {
-        return interval;
+    var spacing = 0.05;
+    this.getSpacing = function () {
+        return spacing;
     }
-    this.setInterval = function (value) {
-        interval = value < 0.01 ? 0.01 : value;
+    this.setSpacing = function (value) {
+        spacing = value < 0.01 ? 0.01 : value;
     }
     var snapToPixel = false;
     this.getSnapToPixel = function () {
@@ -878,37 +878,37 @@ function Brush(canvasRenderingContext) {
             prevY = y;
             delta += d;
             var midScale = (prevScale + scale) * 0.5;
-            var drawInterval = size * interval * midScale;
-            if (drawInterval < 0.5) //not correct, but performance
-                drawInterval = 0.5;
-            if (delta < drawInterval) { //no need to draw
+            var drawSpacing = size * spacing * midScale;
+            if (drawSpacing < 0.5) //not correct, but performance
+                drawSpacing = 0.5;
+            if (delta < drawSpacing) { //no need to draw
                 prevScale = scale;
                 return;
             }
             context.save();
             context.globalCompositeOperation = globalCompositeOperation;
-            var scaleInterval = ds * (drawInterval / delta);
+            var scaleSpacing = ds * (drawSpacing / delta);
             var ldx = x - lastX;
             var ldy = y - lastY;
             var ld = Math.sqrt(ldx * ldx + ldy * ldy);
-            if (ld < drawInterval) {
+            if (ld < drawSpacing) {
                 lastX = x;
                 lastY = y;
                 prevScale = scale;
                 drawTo(lastX, lastY, size * prevScale);
-                delta -= drawInterval;
+                delta -= drawSpacing;
             } else {
-                while(delta >= drawInterval) {
+                while(delta >= drawSpacing) {
                     ldx = x - lastX;
                     ldy = y - lastY;
                     var dir = Math.atan2(ldy, ldx);
                     var tx = Math.cos(dir);
                     var ty = Math.sin(dir);
-                    lastX += tx * drawInterval;
-                    lastY += ty * drawInterval;
-                    prevScale += scaleInterval;
+                    lastX += tx * drawSpacing;
+                    lastY += ty * drawSpacing;
+                    prevScale += scaleSpacing;
                     drawTo(lastX, lastY, size * prevScale);
-                    delta -= drawInterval;
+                    delta -= drawSpacing;
                 }
             }
             prevScale = scale;
