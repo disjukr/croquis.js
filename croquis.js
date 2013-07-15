@@ -487,7 +487,7 @@ function Croquis() {
             return;
         pushContextUndo();
         isDrawing = true;
-        pressure = pressure || tabletapi.pressure();
+        pressure = (pressure == null)? tabletapi.pressure() : pressure;
         var down = tool.down;
         var layer = layers[layerIndex];
         paintingLayer.style.opacity = layer.style.opacity * toolOpacity;
@@ -506,7 +506,7 @@ function Croquis() {
     self.move = function (x, y, pressure) {
         if (!isDrawing)
             return;
-        pressure = pressure || tabletapi.pressure();
+        pressure = (pressure == null)? tabletapi.pressure() : pressure;
         if (stabilizer != null)
             stabilizer.move(x, y, pressure);
         else if (!isStabilizing)
@@ -515,7 +515,7 @@ function Croquis() {
     self.up = function (x, y, pressure) {
         if (!isDrawing)
             return;
-        pressure = pressure || tabletapi.pressure();
+        pressure = (pressure == null)? tabletapi.pressure() : pressure;
         if (stabilizer != null)
             stabilizer.up(_up);
         else
