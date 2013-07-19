@@ -67,24 +67,20 @@ function Croquis() {
             throw 'history is locked';
         if (isDrawing || isStabilizing)
             throw 'still drawing';
-        try {
-            redoStack.push(undoStack.pop()());
-        }
-        catch (e) {
+        var undoFunction = undoStack.pop();
+        if (undoFunction === undefined)
             throw 'no more undo data';
-        }
+        redoStack.push(undoFunction());
     }
     self.redo = function () {
         if (preventPushUndo)
             throw 'history is locked';
         if (isDrawing || isStabilizing)
             throw 'still drawing';
-        try {
-            undoStack.push(redoStack.pop()());
-        }
-        catch (e) {
+        var redoFunction = redoStack.pop();
+        if (redoFunction === undefined)
             throw 'no more redo data';
-        }
+        undoStack.push(redoFunction());
     }
     function pushLayerOpacityUndo() {
         var snapshotIndex = layerIndex;
@@ -168,13 +164,12 @@ function Croquis() {
     function pushDirtyRectUndo(x, y, width, height) {
         var index = layerIndex;
         var layer = layers[index];
-        var layerContext = layer.getContext('2d');
         var w = layer.width;
         var h = layer.height;
         x = Math.min(w, Math.max(0, x));
         y = Math.min(h, Math.max(0, y));
-        width = Math.min(w, Math.max(0, width));
-        height = Math.min(h, Math.max(0, height));
+        width = Math.min(w - x, Math.max(0, width));
+        height = Math.min(h - y, Math.max(0, height));
         if ((width == 0) || (height == 0)) {
             var doNothing = function () {
                 return doNothing;
@@ -182,8 +177,11 @@ function Croquis() {
             pushUndo(doNothing);
         }
         else {
+            var layerContext = layer.getContext('2d');
             var snapshotData = layerContext.getImageData(x, y, width, height);
             var swap = function () {
+                var layer = layers[index];
+                var layerContext = layer.getContext('2d');
                 var tempData = layerContext.getImageData(x, y, width, height);
                 layerContext.putImageData(snapshotData, x, y);
                 snapshotData = tempData;
@@ -196,20 +194,18 @@ function Croquis() {
         pushDirtyRectUndo(0, 0, size.width, size.height);
     }
     function pushAllContextUndo() {
-        var layerContexts = [];
         var snapshotDatas = [];
         var i;
         var w = size.width;
         var h = size.height;
         for (i = 0; i < layers.length; ++i) {
             var layerContext = layers[i].getContext('2d');
-            layerContexts.push(layerContext);
             snapshotDatas.push(layerContext.getImageData(0, 0, w, h));
         }
         var swap = function (index) {
-            var layerContext = layerContexts[i];
+            var layerContext = layers[index].getContext('2d');
             var tempData = layerContext.getImageData(0, 0, w, h);
-            layerContext.putImageData(snapshotDatas[index], x, y);
+            layerContext.putImageData(snapshotDatas[index], 0, 0);
             snapshotDatas[index] = tempData;
         }
         var swapAll = function () {
@@ -218,6 +214,44 @@ function Croquis() {
             return swapAll;
         }
         pushUndo(swapAll);
+    }
+    function pushCanvasSizeUndo() {
+        var snapshotSize = self.getCanvasSize();
+        var snapshotDatas = [];
+        var w = snapshotSize.width;
+        var h = snapshotSize.height;
+        for (var i = 0; i < layers.length; ++i) {
+            var layerContext = layers[i].getContext('2d');
+            snapshotDatas[i] = layerContext.getImageData(0, 0, w, h);
+        }
+        var setSize = function (width, height) {
+            console.log('setSize');
+            self.lockHistory();
+            self.setCanvasSize(width, height);
+            self.unlockHistory();
+        }
+        var sizeUp = function (width, height) {
+            console.log('sizeUp');
+            setSize(width, height);
+            for (var i = 0; i < layers.length; ++i) {
+                var layerContext = layers[i].getContext('2d');
+                layerContext.putImageData(snapshotDatas[i], 0, 0);
+            }
+        }
+        var swap = function () {
+            var size = self.getCanvasSize();
+            if (size.width == snapshotSize.width)
+                if (size.height == snapshotSize.height)
+                    return swap;
+            if ((size.width < snapshotSize.width) ||
+                (size.height < snapshotSize.height))
+                sizeUp(snapshotSize.width, snapshotSize.height);
+            else
+                setSize(snapshotSize.width, snapshotSize.height);
+            snapshotSize = size;
+            return swap;
+        }
+        pushUndo(swap);
     }
     /*
     외부에서 임의로 내부 상태를 바꾸면 안되므로
@@ -228,6 +262,7 @@ function Croquis() {
         return {width: size.width, height: size.height};
     }
     self.setCanvasSize = function (width, height) {
+        pushCanvasSizeUndo();
         size.width = width = Math.floor(width);
         size.height = height = Math.floor(height);
         paintingLayer.width = width;
