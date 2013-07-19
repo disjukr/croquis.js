@@ -225,13 +225,11 @@ function Croquis() {
             snapshotDatas[i] = layerContext.getImageData(0, 0, w, h);
         }
         var setSize = function (width, height) {
-            console.log('setSize');
             self.lockHistory();
             self.setCanvasSize(width, height);
             self.unlockHistory();
         }
         var sizeUp = function (width, height) {
-            console.log('sizeUp');
             setSize(width, height);
             for (var i = 0; i < layers.length; ++i) {
                 var layerContext = layers[i].getContext('2d');
