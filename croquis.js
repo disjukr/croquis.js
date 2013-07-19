@@ -182,21 +182,42 @@ function Croquis() {
             pushUndo(doNothing);
         }
         else {
+            var snapshotData = layerContext.getImageData(x, y, width, height);
             var swap = function () {
-                layer = layers[index];
-                layerContext = layer.getContext('2d');
                 var tempData = layerContext.getImageData(x, y, width, height);
                 layerContext.putImageData(snapshotData, x, y);
                 snapshotData = tempData;
                 return swap;
             }
-            var snapshotData = layerContext.getImageData(x, y, width, height);
             pushUndo(swap);
         }
     }
     function pushContextUndo() {
-        var layer = layers[layerIndex];
-        pushDirtyRectUndo(0, 0, layer.width, layer.height);
+        pushDirtyRectUndo(0, 0, size.width, size.height);
+    }
+    function pushAllContextUndo() {
+        var layerContexts = [];
+        var snapshotDatas = [];
+        var i;
+        var w = size.width;
+        var h = size.height;
+        for (i = 0; i < layers.length; ++i) {
+            var layerContext = layers[i].getContext('2d');
+            layerContexts.push(layerContext);
+            snapshotDatas.push(layerContext.getImageData(0, 0, w, h));
+        }
+        var swap = function (index) {
+            var layerContext = layerContexts[i];
+            var tempData = layerContext.getImageData(0, 0, w, h);
+            layerContext.putImageData(snapshotDatas[index], x, y);
+            snapshotDatas[index] = tempData;
+        }
+        var swapAll = function () {
+            for (var i = 0; i < layers.length; ++i)
+                swap(i);
+            return swapAll;
+        }
+        pushUndo(swapAll);
     }
     /*
     외부에서 임의로 내부 상태를 바꾸면 안되므로
