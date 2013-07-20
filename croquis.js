@@ -1,32 +1,3 @@
-var tabletPlugin = getTabletPlugin();
-function getTabletPlugin() {
-    return document.querySelector(
-        'object[type=\'application/x-wacomtabletplugin\']');
-}
-function getPenAPI() {
-    var plugin = tabletPlugin || getTabletPlugin();
-    if (plugin)
-        return plugin.penAPI;
-    else {
-        plugin = document.createElement('object');
-        plugin.type = 'application/x-wacomtabletplugin';
-        plugin.style.position = 'absolute';
-        plugin.style.top = '-1000px';
-        document.body.appendChild(plugin);
-        return null;
-    }
-}
-var tabletapi = {
-    pressure: function () {
-        var pen = getPenAPI();
-        return (pen && pen.pointerType)? pen.pressure : 1;
-    },
-    isEraser: function () {
-        var pen = getPenAPI();
-        return pen? pen.isEraser : false;
-    }
-}
-
 function Croquis() {
     var self = this;
     var domElement = document.createElement('div');
@@ -541,7 +512,7 @@ function Croquis() {
             return;
         pushContextUndo();
         isDrawing = true;
-        pressure = (pressure == null)? tabletapi.pressure() : pressure;
+        pressure = (pressure == null)? Croquis.Tablet.pressure() : pressure;
         var down = tool.down;
         var layer = layers[layerIndex];
         paintingLayer.style.opacity = layer.style.opacity * toolOpacity;
@@ -560,7 +531,7 @@ function Croquis() {
     self.move = function (x, y, pressure) {
         if (!isDrawing)
             return;
-        pressure = (pressure == null)? tabletapi.pressure() : pressure;
+        pressure = (pressure == null)? Croquis.Tablet.pressure() : pressure;
         if (stabilizer != null)
             stabilizer.move(x, y, pressure);
         else if (!isStabilizing)
@@ -569,7 +540,7 @@ function Croquis() {
     self.up = function (x, y, pressure) {
         if (!isDrawing)
             return;
-        pressure = (pressure == null)? tabletapi.pressure() : pressure;
+        pressure = (pressure == null)? Croquis.Tablet.pressure() : pressure;
         if (stabilizer != null)
             stabilizer.up(_up);
         else
@@ -687,6 +658,32 @@ Croquis.createAlphaThresholdBorder = function (image, threshold, antialias) {
     }
     context.putImageData(imageData, 0, 0);
     return canvas;
+}
+
+Croquis.Tablet = {};
+Croquis.Tablet.plugin = function () {
+    var plugin = document.querySelector(
+        'object[type=\'application/x-wacomtabletplugin\']');
+    if (!plugin) {
+        plugin = document.createElement('object');
+        plugin.type = 'application/x-wacomtabletplugin';
+        plugin.style.position = 'absolute';
+        plugin.style.top = '-1000px';
+        document.body.appendChild(plugin);
+    }
+    return plugin;
+}
+Croquis.Tablet.pen = function () {
+    var plugin = Croquis.Tablet.plugin();
+    return plugin.penAPI;
+}
+Croquis.Tablet.pressure = function () {
+    var pen = Croquis.Tablet.pen();
+    return (pen && pen.pointerType)? pen.pressure : 1;
+}
+Croquis.Tablet.isEraser = function () {
+    var pen = Croquis.Tablet.pen();
+    return pen? pen.isEraser : false;
 }
 
 function Tools()
