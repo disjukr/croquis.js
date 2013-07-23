@@ -8,6 +8,7 @@ Features
 --------
 
  * Layer
+ * History
  * Stabilizer
  * Brush pointer
  * Tablet pressure
