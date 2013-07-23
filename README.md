@@ -17,8 +17,7 @@ Features
 Projects using croquis.js
 -------------------------
 
-__[Crosspop croquis](https://crosspop.in/croquis/)__
-
+### [Crosspop croquis](https://crosspop.in/croquis/)
 [![Crosspop croquis](http://i.imgur.com/I9fFZMs.png)](https://crosspop.in/croquis/)
 
 License
