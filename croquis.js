@@ -352,6 +352,59 @@ function Croquis() {
         context.fillStyle = fillColor;
         context.fillRect(0, 0, size.width, size.height);
     }
+    self.floodFill = function (x, y, r, g, b, a) {
+        pushContextUndo();
+        var context = getLayerContext(layerIndex);
+        var w = size.width;
+        var h = size.height;
+        if ((x < 0) || (x >= w) || (y < 0) || (y >= h))
+            return;
+        var imageData = context.getImageData(0, 0, w, h);
+        var d = imageData.data;
+        var targetColor = getColor(x, y);
+        var replacementColor = (r << 24) | (g << 16) | (b << 8) | a;
+        if (targetColor === replacementColor)
+            return;
+        function getColor(x, y) {
+            var index = ((y * w) + x) * 4;
+            return ((d[index] << 24) | (d[index + 1] << 16) |
+                (d[index + 2] << 8) | d[index + 3]);
+        }
+        function setColor(x, y) {
+            var index = ((y * w) + x) * 4;
+            d[index] = r;
+            d[index + 1] = g;
+            d[index + 2] = b;
+            d[index + 3] = a;
+        }
+        var queue = [];
+        queue.push(x, y);
+        while (queue.length) {
+            var nx = queue.shift();
+            var ny = queue.shift();
+            if ((nx < 0) || (nx >= w) || (ny < 0) || (ny >= h) ||
+                (getColor(nx, ny) !== targetColor))
+                continue;
+            var west, east;
+            west = east = nx;
+            do {
+                var wc = getColor(--west, ny);
+            } while ((west >= 0) && (wc === targetColor));
+            do {
+                var ec = getColor(++east, ny);
+            } while ((east < w) && (ec === targetColor));
+            for (var i = west + 1; i < east; ++i) {
+                setColor(i, ny);
+                var north = ny - 1;
+                var south = ny + 1;
+                if (getColor(i, north) === targetColor)
+                    queue.push(i, north);
+                if (getColor(i, south) === targetColor)
+                    queue.push(i, south);
+            }
+        }
+        context.putImageData(imageData, 0, 0);
+    }
     self.getLayerOpacity = function () {
         var opacity = parseFloat(
             layers[layerIndex].style.getPropertyValue('opacity'));
@@ -615,7 +668,7 @@ Croquis.createFloodFill = function (canvas, x, y, r, g, b, a) {
     var result = document.createElement('canvas');
     var w = result.width = canvas.width;
     var h = result.height = canvas.height;
-    if ((x < 0) || (x > w) || (y < 0) || (y > h) || !(r || g || b || a))
+    if ((x < 0) || (x >= w) || (y < 0) || (y >= h) || !(r || g || b || a))
         return result;
     var originalContext = canvas.getContext('2d');
     var originalData = originalContext.getImageData(0, 0, w, h);
