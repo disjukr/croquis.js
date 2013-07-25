@@ -622,20 +622,19 @@ Croquis.createFloodFill = function (canvas, x, y, r, g, b, a) {
     var od = originalData.data;
     var resultContext = result.getContext('2d');
     var resultData = resultContext.getImageData(0, 0, w, h);
+    var filledRegion = resultContext.getImageData(0, 0, w, h);
     var rd = resultData.data;
     function getColor(x, y) {
         var index = ((y * w) + x) * 4;
-        var rr = rd[index];
-        var rg = rd[index + 1];
-        var rb = rd[index + 2];
-        var ra = rd[index + 3];
-        return ((rr || rg || rb || ra) ?
-            {r: rr, g: rg, b: rb, a: ra} :
-            {r: od[index], g: od[index + 1],
-             b: od[index + 2], a: od[index + 3]});
+        return (filledRegion[index] ?
+            {r: r, g: g, b: b, a: a} : {
+                r: od[index], g: od[index + 1],
+                b: od[index + 2], a: od[index + 3]
+            });
     }
     function setColor(x, y, color) {
         var index = ((y * w) + x) * 4;
+        filledRegion[index] = 1;
         rd[index] = color.r;
         rd[index + 1] = color.g;
         rd[index + 2] = color.b;
