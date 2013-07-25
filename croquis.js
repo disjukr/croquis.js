@@ -622,25 +622,14 @@ Croquis.createFloodFill = function (canvas, x, y, r, g, b, a) {
     var od = originalData.data;
     var resultContext = result.getContext('2d');
     var resultData = resultContext.getImageData(0, 0, w, h);
-    var filledRegion = resultContext.getImageData(0, 0, w, h);
     var rd = resultData.data;
-    var fd = filledRegion.data;
     var targetColor = getColor(x, y);
     var replacementColor = (r << 24) | (g << 16) | (b << 8) | a;
     function getColor(x, y) {
         var index = ((y * w) + x) * 4;
-        return (fd[index] ?
-            replacementColor :
+        return (rd[index] ? replacementColor :
             ((od[index] << 24) | (od[index + 1] << 16) |
              (od[index + 2] << 8) | od[index + 3]));
-    }
-    function setColor(x, y, color) {
-        var index = ((y * w) + x) * 4;
-        fd[index] = 1;
-        rd[index] = color >>> 24;
-        rd[index + 1] = (color >> 16) & 0xff;
-        rd[index + 2] = (color >> 8) & 0xff;
-        rd[index + 3] = color & 0xff;
     }
     var queue = [];
     queue.push(x, y);
@@ -659,13 +648,24 @@ Croquis.createFloodFill = function (canvas, x, y, r, g, b, a) {
             var ec = getColor(++east, ny);
         } while ((east < w) && (ec === targetColor));
         for (var i = west + 1; i < east; ++i) {
-            setColor(i, ny, replacementColor);
+            rd[((ny * w) + i) * 4] = 1;
             var north = ny - 1;
             var south = ny + 1;
             if (getColor(i, north) === targetColor)
                 queue.push(i, north);
             if (getColor(i, south) === targetColor)
                 queue.push(i, south);
+        }
+    }
+    for (var i = 0; i < w; ++i) {
+        for (var j = 0; j < h; ++j) {
+            var index = ((j * w) + i) * 4;
+            if (rd[index] == 0)
+                continue;
+            rd[index] = r;
+            rd[index + 1] = g;
+            rd[index + 2] = b;
+            rd[index + 3] = a;
         }
     }
     resultContext.putImageData(resultData, 0, 0);
