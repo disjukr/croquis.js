@@ -19,6 +19,11 @@ Basic example: sketch pad
 -------------------------
 
 ```javascript
+/**
+You can sketch on screen by dragging.
+If you drawing on wacom tablet then line size is controlled by tablet pressure.
+*/
+
 // initialization
 var croquis = new Croquis();
 croquis.setCanvasSize(400, 300);
@@ -43,9 +48,7 @@ function onMouseUp(e) {
     document.removeEventListener('mouseup', onMouseUp);
 }
 ```
-You can sketch on screen by dragging.
-
-If you drawing on wacom tablet then line size is controlled by tablet pressure.
+You can find more examples on [here](https://github.com/crosspop/Croquispop)
 
 
 Projects using croquis.js
