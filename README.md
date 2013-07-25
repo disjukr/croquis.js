@@ -43,7 +43,8 @@ function onMouseUp(e) {
     document.removeEventListener('mouseup', onMouseUp);
 }
 ```
-Now you can sketch on screen by dragging.
+You can sketch on screen by dragging.
+
 If you drawing on wacom tablet then line size is controlled by tablet pressure.
 
 
