@@ -422,7 +422,7 @@ function Croquis() {
         pushLayerVisibleUndo();
         layers[layerIndex].style.visibility = visible ? 'visible' : 'hidden';
     }
-    var tool = new Croquis.Brush();
+    var tool;
     var toolStabilizeLevel = 0;
     var toolStabilizeWeight = 0.8;
     var stabilizer = null;
@@ -436,6 +436,7 @@ function Croquis() {
         if (tool.setContext)
             tool.setContext(paintingContext);
     }
+    self.setTool(new Croquis.Brush());
     self.getPaintingOpacity = function () {
         return paintingOpacity;
     }
