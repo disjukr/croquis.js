@@ -611,6 +611,70 @@ Croquis.createAlphaThresholdBorder = function (image, threshold, antialias) {
     context.putImageData(imageData, 0, 0);
     return canvas;
 }
+Croquis.createFloodFill = function (canvas, x, y, r, g, b, a) {
+    var result = document.createElement('canvas');
+    var w = result.width = canvas.width;
+    var h = result.height = canvas.height;
+    if ((x < 0) || (x > w) || (y < 0) || (y > h) || !(r || g || b || a))
+        return result;
+    var originalContext = canvas.getContext('2d');
+    var originalData = originalContext.getImageData(0, 0, w, h);
+    var od = originalData.data;
+    var resultContext = result.getContext('2d');
+    var resultData = resultContext.getImageData(0, 0, w, h);
+    var rd = resultData.data;
+    function getColor(x, y) {
+        var index = ((y * w) + x) * 4;
+        var rr = rd[index];
+        var rg = rd[index + 1];
+        var rb = rd[index + 2];
+        var ra = rd[index + 3];
+        return ((rr || rg || rb || ra) ?
+            {r: rr, g: rg, b: rb, a: ra} :
+            {r: od[index], g: od[index + 1],
+             b: od[index + 2], a: od[index + 3]});
+    }
+    function setColor(x, y, color) {
+        var index = ((y * w) + x) * 4;
+        rd[index] = color.r;
+        rd[index + 1] = color.g;
+        rd[index + 2] = color.b;
+        rd[index + 3] = color.a;
+    }
+    function eq(a, b) {
+        return (a.r === b.r) && (a.g === b.g) && (a.b === b.b) && (a.a === b.a);
+    }
+    var targetColor = getColor(x, y);
+    var replacementColor = {r: r, g: g, b: b, a: a};
+    var queue = [];
+    queue.push({x: x, y: y});
+    while (queue.length) {
+        var n = queue.shift();
+        var nx = n.x;
+        var ny = n.y;
+        if (!eq(getColor(nx, ny), targetColor))
+            continue;
+        var west, east;
+        west = east = nx;
+        do {
+            var wc = getColor(--west, ny);
+        } while ((west >= 0) && eq(wc, targetColor));
+        do {
+            var ec = getColor(++east, ny);
+        } while ((east <= w) && eq(ec, targetColor));
+        for (var i = west + 1; i < east; ++i) {
+            setColor(i, ny, replacementColor);
+            var north = ny - 1;
+            var south = ny + 1;
+            if (eq(getColor(i, north), targetColor))
+                queue.push({x: i, y: north});
+            if (eq(getColor(i, south), targetColor))
+                queue.push({x: i, y: south});
+        }
+    }
+    resultContext.putImageData(resultData, 0, 0);
+    return result;
+}
 
 Croquis.Tablet = {};
 Croquis.Tablet.plugin = function () {
