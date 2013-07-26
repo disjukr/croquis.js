@@ -465,10 +465,10 @@ function Croquis() {
     higher stabilize weight makes trackers follow slower.
     */
     self.getToolStabilizeWeight = function () {
-        return 1 - toolStabilizeWeight;
+        return toolStabilizeWeight;
     }
     self.setToolStabilizeWeight = function (weight) {
-        toolStabilizeWeight = 1 - Math.min(1, Math.max(0.05, weight));
+        toolStabilizeWeight = Math.min(1, Math.max(0.05, weight));
     }
     var beforeErase = document.createElement('canvas');
     var isDrawing = false;
@@ -524,8 +524,7 @@ function Croquis() {
         pressure = (pressure == null) ? Croquis.Tablet.pressure() : pressure;
         var down = tool.down;
         if (toolStabilizeLevel > 0) {
-            stabilizer = new Croquis.Stabilizer;
-            stabilizer.init(down, _move,
+            stabilizer = new Croquis.Stabilizer(down, _move,
                 toolStabilizeLevel, toolStabilizeWeight, x, y, pressure);
             isStabilizing = true;
         }
@@ -591,7 +590,12 @@ Croquis.createAlphaThresholdBorder = function (image, threshold, antialias) {
     var context = canvas.getContext('2d');
     canvas.width = width;
     canvas.height = height;
-    context.drawImage(image, 0, 0, width, height);
+    try {
+        context.drawImage(image, 0, 0, width, height);
+    }
+    catch (e) {
+        return canvas;
+    }
     var imageData = context.getImageData(0, 0, width, height);
     var d = imageData.data;
     function getAlphaIndex(index) {
@@ -752,29 +756,21 @@ Croquis.Tablet.isEraser = function () {
     return pen ? pen.isEraser : false;
 }
 
-Croquis.Stabilizer = function () {
-    var interval = 5;
-    var follow;
-    var first;
-    var last;
-    var paramTable;
-    var current;
-    var moveCallback;
-    var upCallback;
-    this.init = function (down, move, level, weight, x, y, pressure) {
-        follow = weight;
-        paramTable = [];
-        current = { x: x, y: y, pressure: pressure };
-        moveCallback = move;
-        upCallback = null;
-        for (var i = 0; i < level; ++i)
-            paramTable.push({ x: x, y: y, pressure: pressure });
-        first = paramTable[0];
-        last = paramTable[paramTable.length - 1];
-        if (down != null)
-            down(x, y, pressure);
-        window.setTimeout(_move, interval);
-    }
+Croquis.Stabilizer = function (down, move, level, weight,
+                               x, y, pressure, interval) {
+    interval = interval || 5;
+    var follow = 1 - weight;
+    var paramTable = [];
+    var current = { x: x, y: y, pressure: pressure };
+    var moveCallback = move;
+    var upCallback = null;
+    for (var i = 0; i < level; ++i)
+        paramTable.push({ x: x, y: y, pressure: pressure });
+    var first = paramTable[0];
+    var last = paramTable[paramTable.length - 1];
+    if (down != null)
+        down(x, y, pressure);
+    window.setTimeout(_move, interval);
     this.move = function (x, y, pressure) {
         current.x = x;
         current.y = y;
