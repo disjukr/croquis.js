@@ -283,7 +283,7 @@ function Croquis() {
         return layers.concat(); //clone layers
     }
     self.addLayer = function (index) {
-        index = index || layers.length;
+        index = (index == null) ? layers.length : index;
         pushAddLayerUndo(index);
         var layer = document.createElement('div');
         layer.className = 'croquis-layer';
@@ -304,7 +304,7 @@ function Croquis() {
         return layer;
     }
     self.removeLayer = function (index) {
-        index = index || layerIndex;
+        index = (index == null) ? layerIndex : index;
         pushRemoveLayerUndo(index);
         domElement.removeChild(layers[index]);
         layers.splice(index, 1);
