@@ -354,6 +354,13 @@ function Croquis() {
         context.fillStyle = fillColor;
         context.fillRect(0, 0, size.width, size.height);
     }
+    self.fillLayerRect = function (fillColor, x, y, width, height, index) {
+        pushDirtyRectUndo(x, y, width, height);
+        index = (index == null) ? layerIndex : index;
+        var context = getLayerContext(index);
+        context.fillStyle = fillColor;
+        context.fillRect(x, y, width, height);
+    }
     self.floodFill = function (x, y, r, g, b, a, index) {
         pushContextUndo();
         index = (index == null) ? layerIndex : index;
