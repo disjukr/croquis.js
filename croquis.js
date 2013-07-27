@@ -341,20 +341,23 @@ function Croquis() {
         if (self.onLayerSelected)
             self.onLayerSelected(index);
     }
-    self.clearLayer = function () {
+    self.clearLayer = function (index) {
         pushContextUndo();
-        var context = getLayerContext(layerIndex);
+        index = (index == null) ? layerIndex : index;
+        var context = getLayerContext(index);
         context.clearRect(0, 0, size.width, size.height);
     }
-    self.fillLayer = function (fillColor) {
+    self.fillLayer = function (fillColor, index) {
         pushContextUndo();
-        var context = getLayerContext(layerIndex);
+        index = (index == null) ? layerIndex : index;
+        var context = getLayerContext(index);
         context.fillStyle = fillColor;
         context.fillRect(0, 0, size.width, size.height);
     }
-    self.floodFill = function (x, y, r, g, b, a) {
+    self.floodFill = function (x, y, r, g, b, a, index) {
         pushContextUndo();
-        var context = getLayerContext(layerIndex);
+        index = (index == null) ? layerIndex : index;
+        var context = getLayerContext(index);
         var w = size.width;
         var h = size.height;
         if ((x < 0) || (x >= w) || (y < 0) || (y >= h))
