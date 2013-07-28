@@ -288,6 +288,9 @@ function Croquis() {
     self.getLayers = function () {
         return layers.concat(); //clone layers
     }
+    self.getLayerCount = function () {
+        return layers.length;
+    }
     self.addLayer = function (index) {
         index = (index == null) ? layers.length : index;
         pushAddLayerUndo(index);
