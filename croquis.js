@@ -25,6 +25,12 @@ function Croquis() {
     self.unlockHistory = function () {
         preventPushUndo = false;
     }
+    self.clearHistory = function () {
+        if (preventPushUndo)
+            throw 'history is locked';
+        undoStack = [];
+        redoStack = [];
+    }
     function pushUndo(undoFunction) {
         if (preventPushUndo)
             return;
