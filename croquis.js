@@ -51,6 +51,8 @@ function Croquis() {
             undoStack.shift();
     }
     self.undo = function () {
+        if (pushToTransaction)
+            throw 'transaction is not ended';
         if (preventPushUndo)
             throw 'history is locked';
         if (isDrawing || isStabilizing)
@@ -64,6 +66,8 @@ function Croquis() {
         redoStack.push(redoTransaction);
     }
     self.redo = function () {
+        if (pushToTransaction)
+            throw 'transaction is not ended';
         if (preventPushUndo)
             throw 'history is locked';
         if (isDrawing || isStabilizing)
