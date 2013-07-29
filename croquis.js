@@ -153,8 +153,8 @@ function Croquis() {
         }
         pushUndo(add);
     }
-    function pushDirtyRectUndo(x, y, width, height) {
-        var index = layerIndex;
+    function pushDirtyRectUndo(x, y, width, height, index) {
+        index = (index == null) ? layerIndex : index;
         var w = size.width;
         var h = size.height;
         x = Math.min(w, Math.max(0, x));
@@ -180,8 +180,9 @@ function Croquis() {
             pushUndo(swap);
         }
     }
-    function pushContextUndo() {
-        pushDirtyRectUndo(0, 0, size.width, size.height);
+    function pushContextUndo(index) {
+        index = (index == null) ? layerIndex : index;
+        pushDirtyRectUndo(0, 0, size.width, size.height, index);
     }
     function pushAllContextUndo() {
         var snapshotDatas = [];
@@ -368,28 +369,28 @@ function Croquis() {
             self.onLayerSelected(index);
     }
     self.clearLayer = function (index) {
-        pushContextUndo();
         index = (index == null) ? layerIndex : index;
+        pushContextUndo(index);
         var context = getLayerContext(index);
         context.clearRect(0, 0, size.width, size.height);
     }
     self.fillLayer = function (fillColor, index) {
-        pushContextUndo();
         index = (index == null) ? layerIndex : index;
+        pushContextUndo(index);
         var context = getLayerContext(index);
         context.fillStyle = fillColor;
         context.fillRect(0, 0, size.width, size.height);
     }
     self.fillLayerRect = function (fillColor, x, y, width, height, index) {
-        pushDirtyRectUndo(x, y, width, height);
         index = (index == null) ? layerIndex : index;
+        pushDirtyRectUndo(x, y, width, height, index);
         var context = getLayerContext(index);
         context.fillStyle = fillColor;
         context.fillRect(x, y, width, height);
     }
     self.floodFill = function (x, y, r, g, b, a, index) {
-        pushContextUndo();
         index = (index == null) ? layerIndex : index;
+        pushContextUndo(index);
         var context = getLayerContext(index);
         var w = size.width;
         var h = size.height;
