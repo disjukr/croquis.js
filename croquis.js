@@ -13,6 +13,7 @@ function Croquis() {
     var redoStack = [];
     var undoLimit = 10;
     var preventPushUndo = false;
+    var pushToTransaction = false;
     self.getUndoLimit = function () {
         return undoLimit;
     }
@@ -25,6 +26,12 @@ function Croquis() {
     self.unlockHistory = function () {
         preventPushUndo = false;
     }
+    self.beginHistoryTransaction = function () {
+        pushToTransaction = true;
+    }
+    self.endHistoryTransaction = function () {
+        pushToTransaction = false;
+    }
     self.clearHistory = function () {
         if (preventPushUndo)
             throw 'history is locked';
@@ -35,7 +42,10 @@ function Croquis() {
         if (preventPushUndo)
             return;
         redoStack = [];
-        undoStack.push(undoFunction);
+        if (pushToTransaction && undoStack.length)
+            undoStack[undoStack.length - 1].push(undoFunction);
+        else
+            undoStack.push([undoFunction]);
         while (undoStack.length > undoLimit)
             undoStack.shift();
     }
@@ -44,20 +54,26 @@ function Croquis() {
             throw 'history is locked';
         if (isDrawing || isStabilizing)
             throw 'still drawing';
-        var undoFunction = undoStack.pop();
-        if (undoFunction === undefined)
+        if (undoStack.length == 0)
             throw 'no more undo data';
-        redoStack.push(undoFunction());
+        var undoTransaction = undoStack.pop();
+        var redoTransaction = [];
+        while (undoTransaction.length)
+            redoTransaction.push(undoTransaction.pop()());
+        redoStack.push(redoTransaction);
     }
     self.redo = function () {
         if (preventPushUndo)
             throw 'history is locked';
         if (isDrawing || isStabilizing)
             throw 'still drawing';
-        var redoFunction = redoStack.pop();
-        if (redoFunction === undefined)
+        if (redoStack.length == 0)
             throw 'no more redo data';
-        undoStack.push(redoFunction());
+        var redoTransaction = redoStack.pop();
+        var undoTransaction = [];
+        while (redoTransaction.length)
+            undoTransaction.push(redoTransaction.pop()());
+        undoStack.push(undoTransaction);
     }
     function pushLayerOpacityUndo() {
         var snapshotIndex = layerIndex;
