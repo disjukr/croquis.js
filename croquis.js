@@ -618,7 +618,7 @@ Croquis.createBrushPointer = function (brushImage, brushSize,
     return Croquis.createAlphaThresholdBorder(pointer, threshold, antialias);
 };
 Croquis.createAlphaThresholdBorder = function (image, threshold, antialias) {
-    threshold = threshold || 0x80;
+    threshold = (threshold == null)? 0x80 : threshold;
     var width = image.width;
     var height = image.height;
     var canvas = document.createElement('canvas');
