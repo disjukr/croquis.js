@@ -27,6 +27,7 @@ function Croquis() {
         preventPushUndo = false;
     }
     self.beginHistoryTransaction = function () {
+        undoStack.push([]);
         pushToTransaction = true;
     }
     self.endHistoryTransaction = function () {
@@ -42,7 +43,7 @@ function Croquis() {
         if (preventPushUndo)
             return;
         redoStack = [];
-        if (pushToTransaction && undoStack.length)
+        if (pushToTransaction)
             undoStack[undoStack.length - 1].push(undoFunction);
         else
             undoStack.push([undoFunction]);
