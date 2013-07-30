@@ -265,14 +265,14 @@ function Croquis() {
     self.getCanvasWidth = function () {
         return size.width;
     }
-    self.setCanvasWidth = function (width) {
-        self.setCanvasSize(width, size.height);
+    self.setCanvasWidth = function (width, offsetX) {
+        self.setCanvasSize(width, size.height, offsetX, 0);
     }
     self.getCanvasHeight = function () {
         return size.height;
     }
-    self.setCanvasHeight = function (height) {
-        self.setCanvasSize(size.width, height);
+    self.setCanvasHeight = function (height, offsetY) {
+        self.setCanvasSize(size.width, height, 0, offsetY);
     }
     var layers = [];
     function getLayerCanvas(index) {
