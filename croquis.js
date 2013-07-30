@@ -210,7 +210,7 @@ function Croquis() {
         }
         pushUndo(swapAll);
     }
-    function pushCanvasSizeUndo() {
+    function pushCanvasSizeUndo(width, height, offsetX, offsetY) {
         var snapshotSize = self.getCanvasSize();
         var snapshotDatas = [];
         var w = snapshotSize.width;
@@ -219,39 +219,34 @@ function Croquis() {
             var layerContext = getLayerContext(i);
             snapshotDatas[i] = layerContext.getImageData(0, 0, w, h);
         }
-        var setSize = function (width, height) {
+        function setSize(width, height, offsetX, offsetY) {
             self.lockHistory();
-            self.setCanvasSize(width, height);
+            self.setCanvasSize(width, height, offsetX, offsetY);
             self.unlockHistory();
         }
-        var sizeUp = function (width, height) {
-            setSize(width, height);
+        var rollback = function () {
+            setSize(w, h);
             for (var i = 0; i < layers.length; ++i) {
                 var layerContext = getLayerContext(i);
                 layerContext.putImageData(snapshotDatas[i], 0, 0);
             }
+            return redo;
         }
-        var swap = function () {
-            var size = self.getCanvasSize();
-            if (size.width == snapshotSize.width)
-                if (size.height == snapshotSize.height)
-                    return swap;
-            if ((size.width < snapshotSize.width) ||
-                (size.height < snapshotSize.height))
-                sizeUp(snapshotSize.width, snapshotSize.height);
-            else
-                setSize(snapshotSize.width, snapshotSize.height);
-            snapshotSize = size;
-            return swap;
+        var redo = function () {
+            rollback();
+            setSize(width, height, offsetX, offsetY);
+            return rollback;
         }
-        pushUndo(swap);
+        pushUndo(rollback);
     }
     var size = {width: 640, height: 480};
     self.getCanvasSize = function () {
         return {width: size.width, height: size.height}; //clone size
     }
-    self.setCanvasSize = function (width, height) {
-        pushCanvasSizeUndo();
+    self.setCanvasSize = function (width, height, offsetX, offsetY) {
+        offsetX = (offsetX == null) ? 0 : offsetX;
+        offsetY = (offsetY == null) ? 0 : offsetY;
+        pushCanvasSizeUndo(width, height, offsetX, offsetY);
         size.width = width = Math.floor(width);
         size.height = height = Math.floor(height);
         paintingCanvas.width = width;
@@ -264,7 +259,7 @@ function Croquis() {
             var imageData = context.getImageData(0, 0, width, height);
             canvas.width = width;
             canvas.height = height;
-            context.putImageData(imageData, 0, 0);
+            context.putImageData(imageData, offsetX, offsetY);
         }
     }
     self.getCanvasWidth = function () {
