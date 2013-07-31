@@ -461,6 +461,8 @@ function Croquis() {
     var tool;
     var toolStabilizeLevel = 0;
     var toolStabilizeWeight = 0.8;
+    var tick;
+    var tickInterval = 20;
     var stabilizer = null;
     var paintingOpacity = 1;
     var paintingKnockout = false;
@@ -486,6 +488,12 @@ function Croquis() {
     self.setPaintingKnockout = function (knockout) {
         paintingKnockout = knockout;
         paintingCanvas.style.visibility = knockout ? 'hidden' : 'visible';
+    }
+    self.getTickInterval = function () {
+        return tickInterval;
+    }
+    self.setTickInterval = function (interval) {
+        tickInterval = interval;
     }
     /*
     stabilize level is the number of coordinate tracker.
@@ -541,6 +549,7 @@ function Croquis() {
         paintingContext.clearRect(0, 0, size.width, size.height);
         if (self.onUpped)
             self.onUpped(x, y, pressure);
+        window.clearInterval(tick);
     }
     self.down = function (x, y, pressure) {
         if (isDrawing || isStabilizing)
@@ -568,6 +577,12 @@ function Croquis() {
             down(x, y, pressure);
         if (self.onDowned)
             self.onDowned(x, y, pressure);
+        tick = window.setInterval(function () {
+            if (tool.tick)
+                tool.tick();
+            if (self.onTicked)
+                self.onTicked();
+        }, tickInterval);
     }
     self.move = function (x, y, pressure) {
         if (!isDrawing)
