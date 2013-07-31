@@ -903,13 +903,6 @@ Croquis.Brush = function (canvasRenderingContext) {
     this.setSpacing = function (value) {
         spacing = (value < 0.01) ? 0.01 : value;
     }
-    var snapToPixel = false;
-    this.getSnapToPixel = function () {
-        return sanpToPixel;
-    }
-    this.setSnapToPixel = function (value) {
-        sanpToPixel = value;
-    }
     var image = null;
     var transformedImage = null;
     var transformedImageIsDirty = true;
@@ -974,11 +967,7 @@ Croquis.Brush = function (canvasRenderingContext) {
     function drawTo(x, y, size) {
         var halfSize = size * 0.5;
         context.save();
-        if (snapToPixel)
-            context.translate((x - halfSize) | 0,
-                (y - halfSize * imageRatio) | 0);
-        else
-            context.translate(x - halfSize, y - halfSize * imageRatio);
+        context.translate(x - halfSize, y - halfSize * imageRatio);
         drawFunction(size);
         context.restore();
     }
