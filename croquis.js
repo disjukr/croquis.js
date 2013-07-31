@@ -461,9 +461,10 @@ function Croquis() {
     var tool;
     var toolStabilizeLevel = 0;
     var toolStabilizeWeight = 0.8;
+    var stabilizer = null;
+    var stabilizerInterval = 5;
     var tick;
     var tickInterval = 20;
-    var stabilizer = null;
     var paintingOpacity = 1;
     var paintingKnockout = false;
     self.getTool = function () {
@@ -513,6 +514,12 @@ function Croquis() {
     }
     self.setToolStabilizeWeight = function (weight) {
         toolStabilizeWeight = Math.min(1, Math.max(0.05, weight));
+    }
+    self.getToolStabilizeInterval = function () {
+        return stabilizerInterval;
+    }
+    self.setToolStabilizeInterval = function (interval) {
+        stabilizerInterval = interval;
     }
     var beforeErase = document.createElement('canvas');
     var isDrawing = false;
@@ -570,7 +577,8 @@ function Croquis() {
         var down = tool.down;
         if (toolStabilizeLevel > 0) {
             stabilizer = new Croquis.Stabilizer(down, _move,
-                toolStabilizeLevel, toolStabilizeWeight, x, y, pressure);
+                toolStabilizeLevel, toolStabilizeWeight,
+                x, y, pressure, stabilizerInterval);
             isStabilizing = true;
         }
         else if (down != null)
