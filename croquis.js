@@ -524,6 +524,8 @@ function Croquis() {
     var beforeErase = document.createElement('canvas');
     var isDrawing = false;
     var isStabilizing = false;
+    var knockoutTick;
+    var knockoutTickInterval = 20;
     function drawPaintingCanvas() { //draw painting canvas on current layer
         var context = getLayerContext(layerIndex);
         var w = size.width;
@@ -542,8 +544,6 @@ function Croquis() {
     function _move(x, y, pressure) {
         if (tool.move)
             tool.move(x, y, pressure);
-        if (paintingKnockout)
-            drawPaintingCanvas();
         if (self.onMoved)
             self.onMoved(x, y, pressure);
     }
@@ -556,6 +556,7 @@ function Croquis() {
         paintingContext.clearRect(0, 0, size.width, size.height);
         if (self.onUpped)
             self.onUpped(x, y, pressure);
+        window.clearInterval(knockoutTick);
         window.clearInterval(tick);
     }
     self.down = function (x, y, pressure) {
@@ -585,6 +586,10 @@ function Croquis() {
             down(x, y, pressure);
         if (self.onDowned)
             self.onDowned(x, y, pressure);
+        knockoutTick = window.setInterval(function () {
+            if (paintingKnockout)
+                drawPaintingCanvas();
+        }, knockoutTickInterval);
         tick = window.setInterval(function () {
             if (tool.tick)
                 tool.tick();
