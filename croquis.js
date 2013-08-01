@@ -553,10 +553,16 @@ function Croquis() {
     function _up(x, y, pressure) {
         isDrawing = false;
         isStabilizing = false;
+        var dirtyRect;
         if (tool.up)
-            tool.up(x, y, pressure);
+            dirtyRect = tool.up(x, y, pressure);
         if (paintingKnockout)
             gotoBeforeKnockout();
+        if (dirtyRect)
+            pushDirtyRectUndo(dirtyRect.x, dirtyRect.y,
+                              dirtyRect.width, dirtyRect.height);
+        else
+            pushContextUndo();
         drawPaintingCanvas();
         paintingContext.clearRect(0, 0, size.width, size.height);
         if (self.onUpped)
@@ -567,7 +573,6 @@ function Croquis() {
     self.down = function (x, y, pressure) {
         if (isDrawing || isStabilizing)
             throw 'still drawing';
-        pushContextUndo();
         isDrawing = true;
         if (paintingKnockout) {
             var w = size.width;
