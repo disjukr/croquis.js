@@ -986,6 +986,21 @@ Croquis.Brush = function (canvasRenderingContext) {
     var lastY = 0;
     var prevScale = 0;
     var drawFunction = drawCircle;
+    var dirtyRect;
+    function appendDirtyRect(x, y, width, height) {
+        if (!(width && height))
+            return;
+        var dxw = dirtyRect.x + dirtyRect.width;
+        var dyh = dirtyRect.y + dirtyRect.height;
+        var xw = x + width;
+        var yh = y + height;
+        var minX = dirtyRect.width ? Math.min(dirtyRect.x, x) : x;
+        var minY = dirtyRect.height ? Math.min(dirtyRect.y, y) : y;
+        dirtyRect.x = minX;
+        dirtyRect.y = minY;
+        dirtyRect.width = Math.max(dxw, xw) - minX;
+        dirtyRect.height = Math.max(dyh, yh) - minY;
+    }
     function transformImage() {
         transformedImage.width = size;
         transformedImage.height = size * imageRatio;
@@ -1021,12 +1036,16 @@ Croquis.Brush = function (canvasRenderingContext) {
     }
     function drawTo(x, y, size) {
         var halfSize = size * 0.5;
+        var left = x - halfSize;
+        var top = y - halfSize * imageRatio;
         context.save();
-        context.translate(x - halfSize, y - halfSize * imageRatio);
+        context.translate(left, top);
         drawFunction(size);
         context.restore();
+        appendDirtyRect(left, top, size, size * imageRatio);
     }
     this.down = function(x, y, scale) {
+        dirtyRect = {x: 0, y: 0, width: 0, height: 0};
         if (scale > 0 && context)
             drawTo(x, y, size * scale);
         delta = 0;
@@ -1085,5 +1104,8 @@ Croquis.Brush = function (canvasRenderingContext) {
             prevY = y;
             prevScale = scale;
         }
+    }
+    this.up = function (x, y, scale) {
+        return dirtyRect;
     }
 }
