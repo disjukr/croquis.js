@@ -521,19 +521,22 @@ function Croquis() {
     self.setToolStabilizeInterval = function (interval) {
         stabilizerInterval = interval;
     }
-    var beforeErase = document.createElement('canvas');
     var isDrawing = false;
     var isStabilizing = false;
+    var beforeKnockout = document.createElement('canvas');
     var knockoutTick;
     var knockoutTickInterval = 20;
+    function gotoBeforeKnockout() {
+        var context = getLayerContext(layerIndex);
+        var w = size.width;
+        var h = size.height;
+        context.clearRect(0, 0, w, h);
+        context.drawImage(beforeKnockout, 0, 0, w, h);
+    }
     function drawPaintingCanvas() { //draw painting canvas on current layer
         var context = getLayerContext(layerIndex);
         var w = size.width;
         var h = size.height;
-        if (paintingKnockout) {
-            context.clearRect(0, 0, w, h);
-            context.drawImage(beforeErase, 0, 0, w, h);
-        }
         context.save();
         context.globalAlpha = paintingOpacity;
         context.globalCompositeOperation = paintingKnockout ?
@@ -552,6 +555,8 @@ function Croquis() {
         isStabilizing = false;
         if (tool.up)
             tool.up(x, y, pressure);
+        if (paintingKnockout)
+            gotoBeforeKnockout();
         drawPaintingCanvas();
         paintingContext.clearRect(0, 0, size.width, size.height);
         if (self.onUpped)
@@ -568,11 +573,11 @@ function Croquis() {
             var w = size.width;
             var h = size.height;
             var canvas = getLayerCanvas(layerIndex);
-            var beforeEraseContext = beforeErase.getContext('2d');
-            beforeErase.width = w;
-            beforeErase.height = h;
-            beforeEraseContext.clearRect(0, 0, w, h);
-            beforeEraseContext.drawImage(canvas, 0, 0, w, h);
+            var beforeKnockoutContext = beforeKnockout.getContext('2d');
+            beforeKnockout.width = w;
+            beforeKnockout.height = h;
+            beforeKnockoutContext.clearRect(0, 0, w, h);
+            beforeKnockoutContext.drawImage(canvas, 0, 0, w, h);
         }
         pressure = (pressure == null) ? Croquis.Tablet.pressure() : pressure;
         var down = tool.down;
@@ -587,8 +592,10 @@ function Croquis() {
         if (self.onDowned)
             self.onDowned(x, y, pressure);
         knockoutTick = window.setInterval(function () {
-            if (paintingKnockout)
+            if (paintingKnockout) {
+                gotoBeforeKnockout();
                 drawPaintingCanvas();
+            }
         }, knockoutTickInterval);
         tick = window.setInterval(function () {
             if (tool.tick)
