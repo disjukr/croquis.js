@@ -183,6 +183,8 @@ function Croquis() {
             }
             pushUndo(swap);
         }
+        if (renderDirtyRect)
+            drawDirtyRect(x, y, width, height);
     }
     function pushContextUndo(index) {
         index = (index == null) ? layerIndex : index;
@@ -251,6 +253,8 @@ function Croquis() {
         size.height = height = Math.floor(height);
         paintingCanvas.width = width;
         paintingCanvas.height = height;
+        dirtyRectDisplay.width = width;
+        dirtyRectDisplay.height = height;
         domElement.style.width = width + 'px';
         domElement.style.height = height + 'px';
         for (var i=0; i<layers.length; ++i) {
@@ -274,24 +278,52 @@ function Croquis() {
     self.setCanvasHeight = function (height, offsetY) {
         self.setCanvasSize(size.width, height, 0, offsetY);
     }
-    var layers = [];
     function getLayerCanvas(index) {
         return layers[index].getElementsByClassName('croquis-layer-canvas')[0];
     }
     function getLayerContext(index) {
         return getLayerCanvas(index).getContext('2d');
     }
+    var layers = [];
     var layerIndex = 0;
     var paintingCanvas = document.createElement('canvas');
     var paintingContext = paintingCanvas.getContext('2d');
     paintingCanvas.id = 'croquis-painting-canvas';
     paintingCanvas.style.position = 'absolute';
+    var dirtyRectDisplay = document.createElement('canvas');
+    var dirtyRectDisplayContext = dirtyRectDisplay.getContext('2d');
+    dirtyRectDisplay.id = 'croquis-dirty-rect-display';
+    dirtyRectDisplay.style.position = 'absolute';
+    var renderDirtyRect = false;
     function sortLayers() {
         domElement.innerHTML = '';
         for (var i=0; i<layers.length; ++i) {
             var layer = layers[i];
             domElement.appendChild(layer);
         }
+        domElement.appendChild(dirtyRectDisplay);
+    }
+    function drawDirtyRect(x, y, w, h) {
+        x = x | 0;
+        y = y | 0;
+        w = Math.ceil(w);
+        h = Math.ceil(h);
+        var context = dirtyRectDisplayContext;
+        context.fillStyle = '#f00';
+        context.globalCompositeOperation = 'source-over';
+        context.fillRect(x, y, w, h);
+        if ((w > 2) && (h > 2)) {
+            context.globalCompositeOperation = 'destination-out';
+            context.fillRect(x + 1, y + 1, w - 2, h - 2);
+        }
+    }
+    self.getRenderDirtyRect = function () {
+        return renderDirtyRect;
+    }
+    self.setRenderDirtyRect = function (render) {
+        renderDirtyRect = render;
+        if (render == false)
+            dirtyRectDisplayContext.clearRect(0, 0, size.width, size.height);
     }
     self.createLayerThumbnail = function (index, width, height) {
         var canvas = getLayerCanvas(index);
