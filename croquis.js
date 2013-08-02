@@ -167,6 +167,14 @@ function Croquis() {
         y = Math.min(h, Math.max(0, y));
         width = Math.min(w, Math.max(x, right)) - x;
         height = Math.min(h, Math.max(y, bottom)) - y;
+        if ((x % 1) > 0)
+            ++width;
+        if ((y % 1) > 0)
+            ++height;
+        x = x | 0;
+        y = y | 0;
+        width = Math.min(w - x, Math.ceil(width));
+        height = Math.min(h - y, Math.ceil(height));
         if ((width == 0) || (height == 0)) {
             var doNothing = function () {
                 return doNothing;
@@ -306,14 +314,6 @@ function Croquis() {
         domElement.appendChild(dirtyRectDisplay);
     }
     function drawDirtyRect(x, y, w, h) {
-        if ((x % 1) > 0)
-            w += 1;
-        if ((y % 1) > 0)
-            h += 1;
-        x = x | 0;
-        y = y | 0;
-        w = Math.ceil(w);
-        h = Math.ceil(h);
         var context = dirtyRectDisplayContext;
         context.fillStyle = '#f00';
         context.globalCompositeOperation = 'source-over';
