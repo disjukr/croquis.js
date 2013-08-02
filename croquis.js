@@ -161,10 +161,12 @@ function Croquis() {
         index = (index == null) ? layerIndex : index;
         var w = size.width;
         var h = size.height;
+        var right = x + width;
+        var bottom = y + height;
         x = Math.min(w, Math.max(0, x));
         y = Math.min(h, Math.max(0, y));
-        width = Math.min(w - x, Math.max(0, width));
-        height = Math.min(h - y, Math.max(0, height));
+        width = Math.min(w, Math.max(x, right)) - x;
+        height = Math.min(h, Math.max(y, bottom)) - y;
         if ((width == 0) || (height == 0)) {
             var doNothing = function () {
                 return doNothing;
