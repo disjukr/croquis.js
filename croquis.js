@@ -304,6 +304,10 @@ function Croquis() {
         domElement.appendChild(dirtyRectDisplay);
     }
     function drawDirtyRect(x, y, w, h) {
+        if ((x % 1) > 0)
+            w += 1;
+        if ((y % 1) > 0)
+            h += 1;
         x = x | 0;
         y = y | 0;
         w = Math.ceil(w);
