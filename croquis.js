@@ -949,8 +949,8 @@ Croquis.Stabilizer = function (down, move, level, weight,
     }
 }
 
-Croquis.Brush = function (canvasRenderingContext) {
-    var context = canvasRenderingContext;
+Croquis.Brush = function () {
+    var context;
     this.clone = function () {
         var clone = new Brush(context);
         clone.setColor(this.getColor());
@@ -1083,8 +1083,10 @@ Croquis.Brush = function (canvasRenderingContext) {
         appendDirtyRect(left, top, size, size * imageRatio);
     }
     this.down = function(x, y, scale) {
+        if (context == null)
+            throw 'brush needs the context';
         dirtyRect = {x: 0, y: 0, width: 0, height: 0};
-        if (scale > 0 && context)
+        if (scale > 0)
             drawTo(x, y, size * scale);
         delta = 0;
         lastX = prevX = x;
@@ -1092,7 +1094,9 @@ Croquis.Brush = function (canvasRenderingContext) {
         prevScale = scale;
     }
     this.move = function(x, y, scale) {
-        if (scale > 0 && context) {
+        if (context == null)
+            throw 'brush needs the context';
+        if (scale > 0) {
             var dx = x - prevX;
             var dy = y - prevY;
             var ds = scale - prevScale;
