@@ -711,8 +711,10 @@ Croquis.createBrushPointer = function (brushImage, brushSize,
     }
     return Croquis.createAlphaThresholdBorder(pointer, threshold, antialias);
 };
-Croquis.createAlphaThresholdBorder = function (image, threshold, antialias) {
-    threshold = (threshold == null)? 0x80 : threshold;
+Croquis.createAlphaThresholdBorder = function (image, threshold,
+                                               antialias, color) {
+    threshold = (threshold == null) ? 0x80 : threshold;
+    color = (color == null) ? '#000' : color;
     var width = image.width;
     var height = image.height;
     var canvas = document.createElement('canvas');
@@ -796,6 +798,9 @@ Croquis.createAlphaThresholdBorder = function (image, threshold, antialias) {
         }
     }
     context.putImageData(imageData, 0, 0);
+    context.globalCompositeOperation = 'source-in';
+    context.fillStyle = color;
+    context.fillRect(0, 0, width, height);
     return canvas;
 }
 Croquis.createFloodFill = function (canvas, x, y, r, g, b, a) {
