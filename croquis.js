@@ -667,20 +667,20 @@ function Croquis() {
         stabilizer = null;
     }
 }
-Croquis.createCheckerImage = function (cellSize, colorA, colorB) {
+Croquis.createChecker = function (cellSize, colorA, colorB) {
     cellSize = (cellSize == null) ? 10 : cellSize;
     colorA = (colorA == null) ? '#fff' : colorA;
     colorB = (colorB == null) ? '#ccc' : colorB;
     var size = cellSize + cellSize;
-    var checkerImage = document.createElement('canvas');
-    checkerImage.width = checkerImage.height = size;
-    var context = checkerImage.getContext('2d');
+    var checker = document.createElement('canvas');
+    checker.width = checker.height = size;
+    var context = checker.getContext('2d');
     context.fillStyle = colorB;
     context.fillRect(0, 0, size, size);
     context.fillStyle = colorA;
     context.fillRect(0, 0, cellSize, cellSize);
     context.fillRect(cellSize, cellSize, size, size);
-    return checkerImage;
+    return checker;
 }
 Croquis.createBrushPointer = function (brushImage, brushSize,
                                        threshold, antialias) {
