@@ -291,6 +291,7 @@ function Croquis() {
     function getLayerCanvas(index) {
         return layers[index].getElementsByClassName('croquis-layer-canvas')[0];
     }
+    self.getLayerCanvas = getLayerCanvas;
     function getLayerContext(index) {
         return getLayerCanvas(index).getContext('2d');
     }
