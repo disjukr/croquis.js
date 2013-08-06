@@ -80,33 +80,27 @@ function Croquis() {
             undoTransaction.push(redoTransaction.pop()());
         undoStack.push(undoTransaction);
     }
-    function pushLayerOpacityUndo() {
-        var snapshotIndex = layerIndex;
-        var snapshotOpacity = self.getLayerOpacity();
+    function pushLayerOpacityUndo(index) {
+        index = (index == null) ? layerIndex : index;
+        var snapshotOpacity = self.getLayerOpacity(index);
         var swap = function () {
             self.lockHistory();
-            var currentIndex = layerIndex;
-            self.selectLayer(snapshotIndex);
-            var temp = self.getLayerOpacity();
-            self.setLayerOpacity(snapshotOpacity);
+            var temp = self.getLayerOpacity(index);
+            self.setLayerOpacity(snapshotOpacity, index);
             snapshotOpacity = temp;
-            self.selectLayer(currentIndex);
             self.unlockHistory();
             return swap;
         }
         pushUndo(swap);
     }
-    function pushLayerVisibleUndo() {
-        var snapshotIndex = layerIndex;
-        var snapshotVisible = self.getLayerVisible();
+    function pushLayerVisibleUndo(index) {
+        index = (index == null) ? layerIndex : index;
+        var snapshotVisible = self.getLayerVisible(index);
         var swap = function () {
             self.lockHistory();
-            var currentIndex = layerIndex;
-            self.selectLayer(snapshotIndex);
-            var temp = self.getLayerVisible();
-            self.setLayerVisible(snapshotVisible);
+            var temp = self.getLayerVisible(index);
+            self.setLayerVisible(snapshotVisible, index);
             snapshotVisible = temp;
-            self.selectLayer(currentIndex);
             self.unlockHistory();
             return swap;
         }
@@ -308,7 +302,7 @@ function Croquis() {
     var renderDirtyRect = false;
     function sortLayers() {
         domElement.innerHTML = '';
-        for (var i=0; i<layers.length; ++i) {
+        for (var i = 0; i < layers.length; ++i) {
             var layer = layers[i];
             domElement.appendChild(layer);
         }
@@ -333,12 +327,31 @@ function Croquis() {
             dirtyRectDisplayContext.clearRect(0, 0, size.width, size.height);
     }
     self.createLayerThumbnail = function (index, width, height) {
+        index = (index == null) ? layerIndex : index;
+        width = (width == null) ? size.width : width;
+        height = (height == null) ? size.height : height;
         var canvas = getLayerCanvas(index);
         var thumbnail = document.createElement('canvas');
         var thumbnailContext = thumbnail.getContext('2d');
         thumbnail.width = width;
         thumbnail.height = height;
         thumbnailContext.drawImage(canvas, 0, 0, width, height);
+        return thumbnail;
+    }
+    self.createFlattenThumbnail = function (width, height) {
+        width = (width == null) ? size.width : width;
+        height = (height == null) ? size.height : height;
+        var thumbnail = document.createElement('canvas');
+        var thumbnailContext = thumbnail.getContext('2d');
+        thumbnail.width = width;
+        thumbnail.height = height;
+        for (var i = 0; i < layers.length; ++i) {
+            if (!self.getLayerVisible(i))
+                continue;
+            var canvas = getLayerCanvas(i);
+            thumbnailContext.globalAlpha = self.getLayerOpacity(i);
+            thumbnailContext.drawImage(canvas, 0, 0, width, height);
+        }
         return thumbnail;
     }
     self.getLayers = function () {
@@ -480,22 +493,26 @@ function Croquis() {
         }
         context.putImageData(imageData, 0, 0);
     }
-    self.getLayerOpacity = function () {
+    self.getLayerOpacity = function (index) {
+        index = (index == null) ? layerIndex : index;
         var opacity = parseFloat(
-            layers[layerIndex].style.getPropertyValue('opacity'));
+            layers[index].style.getPropertyValue('opacity'));
         return Number.isNaN(opacity) ? 1 : opacity;
     }
-    self.setLayerOpacity = function (opacity) {
-        pushLayerOpacityUndo();
-        layers[layerIndex].style.opacity = opacity;
+    self.setLayerOpacity = function (opacity, index) {
+        index = (index == null) ? layerIndex : index;
+        pushLayerOpacityUndo(index);
+        layers[index].style.opacity = opacity;
     }
-    self.getLayerVisible = function () {
-        var visible = layers[layerIndex].style.getPropertyValue('visibility');
+    self.getLayerVisible = function (index) {
+        index = (index == null) ? layerIndex : index;
+        var visible = layers[index].style.getPropertyValue('visibility');
         return visible != 'hidden';
     }
-    self.setLayerVisible = function (visible) {
-        pushLayerVisibleUndo();
-        layers[layerIndex].style.visibility = visible ? 'visible' : 'hidden';
+    self.setLayerVisible = function (visible, index) {
+        index = (index == null) ? layerIndex : index;
+        pushLayerVisibleUndo(index);
+        layers[index].style.visibility = visible ? 'visible' : 'hidden';
     }
     var tool;
     var toolStabilizeLevel = 0;
