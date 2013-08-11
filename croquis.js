@@ -622,7 +622,8 @@ function Croquis() {
         drawPaintingCanvas();
         paintingContext.clearRect(0, 0, size.width, size.height);
         if (self.onUpped)
-            self.onUpped(x, y, pressure);
+            self.onUpped(x, y, pressure, (dirtyRect != null) ? dirtyRect :
+                {x: 0, y: 0, width: size.width, height: size.height});
         window.clearInterval(knockoutTick);
         window.clearInterval(tick);
     }
