@@ -685,7 +685,7 @@ function Croquis(imageDataList) {
             _up(x, y, pressure);
         stabilizer = null;
     };
-    // apply image datas
+    // apply image data
     (function (croquis, imageDataList) {
         if (imageDataList != null) {
             if (imageDataList.length == 0)
@@ -945,6 +945,9 @@ Croquis.Stabilizer = function (down, move, level, weight,
     if (down != null)
         down(x, y, pressure);
     window.setTimeout(_move, interval);
+    this.getParamTable = function () { //for test
+        return paramTable;
+    }
     this.move = function (x, y, pressure) {
         current.x = x;
         current.y = y;
