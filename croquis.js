@@ -1,4 +1,4 @@
-function Croquis(imageDatas) {
+function Croquis(imageDataList) {
     var self = this;
     var domElement = document.createElement('div');
     domElement.style.clear = 'both';
@@ -686,15 +686,15 @@ function Croquis(imageDatas) {
         stabilizer = null;
     };
     // apply image datas
-    (function (croquis, imageDatas) {
-        if (imageDatas != null) {
-            if (imageDatas.length == 0)
+    (function (croquis, imageDataList) {
+        if (imageDataList != null) {
+            if (imageDataList.length == 0)
                 return;
             croquis.lockHistory();
-            var first = imageDatas[0];
+            var first = imageDataList[0];
             croquis.setCanvasSize(first.width, first.height);
-            for (var i = 0; i < imageDatas.length; ++i) {
-                var current = imageDatas[i];
+            for (var i = 0; i < imageDataList.length; ++i) {
+                var current = imageDataList[i];
                 if ((current.width != first.width) ||
                     (current.height != first.height))
                     throw 'all image data must have same size';
@@ -705,7 +705,7 @@ function Croquis(imageDatas) {
             croquis.selectLayer(0);
             croquis.unlockHistory();
         }
-    }).call(null, self, imageDatas);
+    }).call(null, self, imageDataList);
 }
 Croquis.createChecker = function (cellSize, colorA, colorB) {
     cellSize = (cellSize == null) ? 10 : cellSize;
