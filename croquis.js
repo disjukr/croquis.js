@@ -569,7 +569,7 @@ function Croquis(imageDataList) {
         return toolStabilizeWeight;
     }
     self.setToolStabilizeWeight = function (weight) {
-        toolStabilizeWeight = Math.min(1, Math.max(0.05, weight));
+        toolStabilizeWeight = weight;
     }
     self.getToolStabilizeInterval = function () {
         return stabilizerInterval;
@@ -933,7 +933,7 @@ Croquis.Tablet.isEraser = function () {
 Croquis.Stabilizer = function (down, move, level, weight,
                                x, y, pressure, interval) {
     interval = interval || 5;
-    var follow = 1 - weight;
+    var follow = 1 - Math.min(0.95, Math.max(0, weight));
     var paramTable = [];
     var current = { x: x, y: y, pressure: pressure };
     var moveCallback = move;
