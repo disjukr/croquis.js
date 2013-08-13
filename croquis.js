@@ -644,7 +644,7 @@ function Croquis(imageDataList) {
         pressure = (pressure == null) ? Croquis.Tablet.pressure() : pressure;
         var down = tool.down;
         if (toolStabilizeLevel > 0) {
-            stabilizer = new Croquis.Stabilizer(down, _move,
+            stabilizer = new Croquis.Stabilizer(down, _move, _up,
                 toolStabilizeLevel, toolStabilizeWeight,
                 x, y, pressure, stabilizerInterval);
             isStabilizing = true;
@@ -680,7 +680,7 @@ function Croquis(imageDataList) {
             throw 'you need to call \'down\' first';
         pressure = (pressure == null) ? Croquis.Tablet.pressure() : pressure;
         if (stabilizer != null)
-            stabilizer.up(_up);
+            stabilizer.up(x, y, pressure);
         else
             _up(x, y, pressure);
         stabilizer = null;
@@ -930,18 +930,17 @@ Croquis.Tablet.isEraser = function () {
     return pen ? pen.isEraser : false;
 }
 
-Croquis.Stabilizer = function (down, move, level, weight,
+Croquis.Stabilizer = function (down, move, up, level, weight,
                                x, y, pressure, interval) {
     interval = interval || 5;
     var follow = 1 - Math.min(0.95, Math.max(0, weight));
     var paramTable = [];
     var current = { x: x, y: y, pressure: pressure };
-    var moveCallback = move;
-    var upCallback = null;
     for (var i = 0; i < level; ++i)
         paramTable.push({ x: x, y: y, pressure: pressure });
     var first = paramTable[0];
     var last = paramTable[paramTable.length - 1];
+    var upCalled = false;
     if (down != null)
         down(x, y, pressure);
     window.setTimeout(_move, interval);
@@ -953,8 +952,11 @@ Croquis.Stabilizer = function (down, move, level, weight,
         current.y = y;
         current.pressure = pressure;
     }
-    this.up = function (up) {
-        upCallback = up;
+    this.up = function (x, y, pressure) {
+        current.x = x;
+        current.y = y;
+        current.pressure = pressure;
+        upCalled = true;
     }
     function dlerp(a, d, t) {
         return a + d * t;
@@ -983,15 +985,15 @@ Croquis.Stabilizer = function (down, move, level, weight,
         }
         if (justCalc)
             return delta;
-        if (upCallback != null) {
+        if (upCalled) {
             while(delta > 1) {
-                moveCallback(last.x, last.y, last.pressure);
+                move(last.x, last.y, last.pressure);
                 delta = _move(true);
             }
-            upCallback(last.x, last.y, last.pressure);
+            up(last.x, last.y, last.pressure);
         }
         else {
-            moveCallback(last.x, last.y, last.pressure);
+            move(last.x, last.y, last.pressure);
             window.setTimeout(_move, interval);
         }
     }
