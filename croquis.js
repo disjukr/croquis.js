@@ -1,5 +1,7 @@
-function Croquis(imageDataList) {
+function Croquis(imageDataList, properties) {
     var self = this;
+    for (var property in properties)
+        self[property] = properties[property];
     var domElement = document.createElement('div');
     domElement.style.clear = 'both';
     domElement.style.setProperty('user-select', 'none');
