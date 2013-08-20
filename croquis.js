@@ -293,11 +293,11 @@ function Croquis(imageDataList) {
     var layerIndex = 0;
     var paintingCanvas = document.createElement('canvas');
     var paintingContext = paintingCanvas.getContext('2d');
-    paintingCanvas.id = 'croquis-painting-canvas';
+    paintingCanvas.className = 'croquis-painting-canvas';
     paintingCanvas.style.position = 'absolute';
     var dirtyRectDisplay = document.createElement('canvas');
     var dirtyRectDisplayContext = dirtyRectDisplay.getContext('2d');
-    dirtyRectDisplay.id = 'croquis-dirty-rect-display';
+    dirtyRectDisplay.className = 'croquis-dirty-rect-display';
     dirtyRectDisplay.style.position = 'absolute';
     var renderDirtyRect = false;
     function sortLayers() {
