@@ -301,7 +301,8 @@ function Croquis(imageDataList) {
     dirtyRectDisplay.style.position = 'absolute';
     var renderDirtyRect = false;
     function sortLayers() {
-        domElement.innerHTML = '';
+        while (domElement.firstChild)
+            domElement.removeChild(domElement.firstChild);
         for (var i = 0; i < layers.length; ++i) {
             var layer = layers[i];
             domElement.appendChild(layer);
