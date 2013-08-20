@@ -1,6 +1,6 @@
 function Croquis(imageDataList, properties) {
     var self = this;
-    if (properties != null) {
+    if (properties != null)
         for (var property in properties)
             self[property] = properties[property];
     var domElement = document.createElement('div');
