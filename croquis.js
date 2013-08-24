@@ -43,6 +43,8 @@ function Croquis(imageDataList, properties) {
         redoStack = [];
     };
     function pushUndo(undoFunction) {
+        if (self.onChanged)
+            self.onChanged();
         if (preventPushUndo)
             return;
         redoStack = [];
