@@ -503,7 +503,7 @@ function Croquis(imageDataList, properties) {
         index = (index == null) ? layerIndex : index;
         var opacity = parseFloat(
             layers[index].style.getPropertyValue('opacity'));
-        return Number.isNaN(opacity) ? 1 : opacity;
+        return window.isNaN(opacity) ? 1 : opacity;
     }
     self.setLayerOpacity = function (opacity, index) {
         index = (index == null) ? layerIndex : index;
