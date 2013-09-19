@@ -534,6 +534,7 @@ function Croquis(imageDataList, properties) {
     }
     self.setTool = function (value) {
         tool = value;
+        paintingContext = paintingCanvas.getContext('2d');
         if (tool.setContext)
             tool.setContext(paintingContext);
     }
