@@ -8,7 +8,7 @@ _(hit spacebar to see next page)_
 <!-- >>> -->
 ## Am I need to use croquis.js?
 
-If you have no many time but want beaut function
+If you have no much time but want beaut function
 like __layer__, __history(undo and redo)__, __photoshop-like brush__, etc...
 then __yes__.
 
@@ -129,6 +129,13 @@ Rest of it is same as `down`.
 
 <!-- vvv -->
 ### You have history function already
+
+Undo and Redo is very important feature in drawing tool.
+
+But don't worry. You just need to call `croquis.undo` and `croquis.redo`.
+
+You can set the limitation of undo by `croquis.setUndoLimit(limit)`.
+
 
 <!-- vvv -->
 ### Adding stabilizer easily
