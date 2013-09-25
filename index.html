@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Introducing croquis.js</title>
+    <link rel="stylesheet" href="reveal.js/css/reveal.css">
+    <link rel="stylesheet" href="reveal.js/css/theme/solarized.css" id="theme">
+    <link rel="stylesheet" href="reveal.js/lib/css/zenburn.css">
+  </head>
+  <body>
+    <object type="application/x-wacomtabletplugin"
+            style="position: absolute; top: -1000px; left: -1000px;"></object>
+    <div class="reveal">
+      <div id="reveal-slides" class="slides">
+        <section data-markdown="README.md"
+                 data-separator="<!-- >>> -->"
+                 data-vertical="<!-- vvv -->">
+        </section>
+      </div>
+    </div>
+    <a href="https://github.com/disjukr/croquis.js">
+      <img style="position: absolute; top: 0; right: 0; border: 0;"
+           src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"
+           alt="Fork me on GitHub">
+    </a>
+    <script src="reveal.js/lib/js/head.min.js"></script>
+    <script src="reveal.js/js/reveal.js"></script>
+    <script src="reveal.js/plugin/highlight/highlight.js"></script>
+    <script src="croquis.js/croquis.js"></script>
+    <script>
+    var revealSlides = document.getElementById('reveal-slides');
+    Reveal.initialize({
+      controls: true,
+      progress: true,
+      history: true,
+      center: true,
+      theme: Reveal.getQueryHash().theme,
+      transition: Reveal.getQueryHash().transition || 'page',
+      dependencies: [{
+        src: 'reveal.js/lib/js/classList.js',
+        condition: function() {
+          return !document.body.classList;
+        }
+      }, {
+        src: 'reveal.js/plugin/markdown/marked.js'
+      }, {
+        src: 'reveal.js/plugin/markdown/markdown.js',
+        callback: function() {
+          var hljs_nodes = revealSlides.querySelectorAll('pre code');
+          var i;
+          for (i = 0; i < hljs_nodes.length; ++i) {
+            var element = hljs_nodes[i];
+            element.innerHTML = element.innerHTML.trim();
+            hljs.highlightBlock(element);
+          }
+        }
+      }]
+    });
+    </script>
+    <style>
+    .reveal p {
+      font-size: 80%;
+    }
+    .reveal p>code {
+      display: inline-block;
+      color: #567;
+      font-weight: bold;
+      border-radius: 5px;
+      box-shadow: 0 0 15px #cba inset;
+    }
+    </style>
+  </body>
+</html>
