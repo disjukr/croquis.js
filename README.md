@@ -140,20 +140,48 @@ You can set the limitation of undo by `croquis.setUndoLimit(limit)`.
 <!-- vvv -->
 ### Adding stabilizer easily
 
+Have you used stabilizer in sai-tool?
+It helps to draw the line smoothly.
+
+`croquis.js` helps applying stabilizer very easy:
+
+```javasript
+croquis.setToolStabilizeLevel(10);
+// Higher stabilizer level makes lines smoother. integer value.
+croquis.setToolStabilizeWeight(0.5);
+// Higher weight makes following slower. decimal number [0, 1].
+```
+
+Now you have stabilizer function without writing any code for tool!
+
 
 <!-- >>> -->
-## bonus
+## Bonus
 
-### default brush tool
 
+<!-- vvv -->
 ### use tool in tool
 
+`croquis.js`'s tool is considered using tool in tool.
+
+
+<!-- vvv -->
+### default brush tool
+
+
+<!-- vvv -->
 ### brush pointer
 
+
+<!-- vvv -->
 ### flood fill
 
+
+<!-- vvv -->
 ### dirty rect
 
+
+<!-- vvv -->
 ### transaction
 
 
