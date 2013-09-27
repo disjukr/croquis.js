@@ -39,7 +39,7 @@ document.body.appendChild(domElement);
 
 You can see nothing now because there is no layer at first.
 
-so add filled layer and select for drawing like this:
+Add filled layer and select it to draw:
 
 ```javascript
 croquis.addLayer();
@@ -79,7 +79,7 @@ function onMouseUp() {
 <!-- vvv -->
 ### Make your own tool
 
-Just define `setContext`, `down`, `move`, `up` member,
+Just define `setContext`, `down`, `move`, `up` and `tick` member,
 then you can set your tools to `croquis`.
 
 ```javascript
@@ -87,7 +87,8 @@ var tool = {
     setContext: function (context) {},
     down: function (x, y, pressure) {},
     move: function (x, y, pressure) {},
-    up: function (x, y, pressure) {return dirtyRect}
+    up: function (x, y, pressure) {return dirtyRect},
+    tick: function () {}
 };
 croquis.setTool(tool);
 ```
@@ -128,6 +129,41 @@ Rest of it is same as `down`.
 
 
 <!-- vvv -->
+### There is knockout and opacity property already
+
+You don't need considering of erasing function and opacity blending.
+
+It processed in `croquis`'s layer level.
+
+So if you make one tool, then you'll get corresponding eraser tool of it:
+
+```javascript
+croquis.setPaintingOpacity(true); // true to erase the canvas
+croquis.setPaintingKnockout(0.5); // opacity value, 1 means 100%
+```
+
+
+<!-- vvv -->
+### There is stabilizer already
+
+Have you used stabilizer in sai-tool?
+It helps to draw the line smoothly.
+
+`croquis.js` have stabilizer implementation,
+so you just need to set the value:
+
+```javasript
+croquis.setToolStabilizeLevel(10);
+// Higher stabilizer level makes lines smoother. integer value.
+croquis.setToolStabilizeWeight(0.5);
+// Higher weight makes following slower. decimal number [0, 1].
+```
+
+So you've got opacity blending, erasing, stabilizing function
+without writing any code for tool!
+
+
+<!-- vvv -->
 ### You have history function already
 
 Undo and Redo is very important feature in drawing tool.
@@ -137,32 +173,46 @@ But don't worry. You just need to call `croquis.undo` and `croquis.redo`.
 You can set the limitation of undo by `croquis.setUndoLimit(limit)`.
 
 
-<!-- vvv -->
-### Adding stabilizer easily
-
-Have you used stabilizer in sai-tool?
-It helps to draw the line smoothly.
-
-`croquis.js` helps applying stabilizer very easy:
-
-```javasript
-croquis.setToolStabilizeLevel(10);
-// Higher stabilizer level makes lines smoother. integer value.
-croquis.setToolStabilizeWeight(0.5);
-// Higher weight makes following slower. decimal number [0, 1].
-```
-
-Now you have stabilizer function without writing any code for tool!
-
-
 <!-- >>> -->
 ## Bonus
+
+Previous slides were just the skeleton of `croquis.js`.
+
+Now let me show you the flesh.
 
 
 <!-- vvv -->
 ### use tool in tool
 
 `croquis.js`'s tool is considered using tool in tool.
+
+`croquis` object calls `tool.setContext` when
+called after `croquis.setTool(tool)`.
+It serves the context of canvas.
+
+So if you want to use other tool in your tool,
+just passing that context directly to sub tool.
+
+```javascript
+var tool = {};
+var subTool = new AnyTool();
+tool.setContext = function (context) {
+    subTool.setContext(context);
+};
+tool.down = function (x, y, pressure) {
+    subTool.down(x, y, pressure);
+};
+tool.move = function (x, y, pressure) {
+    subTool.move(x, y, pressure);
+};
+tool.up = function (x, y, pressure) {
+    return subTool.up(x, y, pressure);
+    // returns dirty rectangle
+};
+tool.tick = function () {
+    subTool.tick();
+};
+```
 
 
 <!-- vvv -->
@@ -195,4 +245,6 @@ Make artists making their own drawing tool by `croquis.js`
 ## Future plan
 
  * Port to [Typescript](http://www.typescriptlang.org/)
+ * Apply observer pattern event model
+ * Write test cases
  * Make fully customizable
