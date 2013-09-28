@@ -182,7 +182,7 @@ Now let me show you the flesh.
 
 
 <!-- vvv -->
-### use tool in tool
+### Use tool in tool
 
 `croquis.js`'s tool is considered using tool in tool.
 
@@ -216,23 +216,52 @@ tool.tick = function () {
 
 
 <!-- vvv -->
-### default brush tool
+### Default brush tool
+
+Implementing photoshop-like brush tool in short time is pretty hard.
+
+The brush tool, which offerd by `croquis.js` have
+`brush image`, `flow`, `spacing` properties like photoshop brush.
+
+some properties like `spread` are under consideration.
 
 
 <!-- vvv -->
-### brush pointer
+### Brush pointer
+
+`croquis.js` serves brush pointer to preview the outline of brush:
+
+```javascript
+Croquis.createBrushPointer(brushImage, brushSize,
+                           threshold, antialias);
+// it returns the <canvas> element
+```
 
 
 <!-- vvv -->
-### flood fill
+### Flood fill
+
+There is no flood fill method in html5 context currently.
+
+So `croquis.js` offers two method to rendering flood fill:
+
+```javascript
+croquis.floodFill(x, y, r, g, b, a, index);
+// render flood fill on layer
+Croquis.createFloodFill(canvas, x, y, r, g, b, a);
+// render flood fill on new canvas
+```
 
 
 <!-- vvv -->
-### dirty rect
+### Dirty rect
+
+`croquis` swap the canvas data when called `undo` and `redo`.
+dkaskdfasdfjask아 시간 부족 ㅠㅠ
 
 
 <!-- vvv -->
-### transaction
+### Transaction
 
 
 <!-- >>> -->
@@ -245,6 +274,6 @@ Make artists making their own drawing tool by `croquis.js`
 ## Future plan
 
  * Port to [Typescript](http://www.typescriptlang.org/)
- * Apply observer pattern event model
+ * Offer observer pattern event model (using callback currently)
  * Write test cases
  * Make fully customizable
