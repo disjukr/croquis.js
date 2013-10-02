@@ -3,6 +3,12 @@ croquis.js
 
 The library for making web drawing tool.
 
+> Status: Porting to TypeScript
+>
+> `tsc @tsc-args.txt` to compile
+>
+> `casperjs test test/` to test
+
 
 Features
 --------
