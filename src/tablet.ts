@@ -1,7 +1,6 @@
 module Croquis {
     export class Tablet {
-        private static plugin = Tablet.getPlugin();
-        private static getPlugin() {
+        private static get plugin() {
             var plugin = <HTMLObjectElement>document.querySelector(
                 'object[type=\'application/x-wacomtabletplugin\']');
             if (!plugin) {
@@ -13,7 +12,7 @@ module Croquis {
             }
             return plugin;
         }
-        private static get pen() {
+        static get pen() {
             return Croquis.Tablet.plugin['penAPI'];
         }
         static get pressure() {
