@@ -65,4 +65,12 @@ casper.run(function () {
         assertCode('rect.isEmpty()');
         test.done();
     });
+    casper.test.begin('clone', 2, function (test) {
+        evalCode('rect = new Croquis.Rect(0, 0, 10, 10)');
+        evalCode('rect2 = rect.clone()');
+        evalCode('rect.x = 1');
+        assertCode('rect2.x === 0');
+        assertCode('rect.width === rect2.width');
+        test.done();
+    });
 });

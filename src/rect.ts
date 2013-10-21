@@ -10,6 +10,9 @@ module Croquis {
             this._width = width;
             this._height = height;
         }
+        clone(): Rect {
+            return new Rect(this._x, this._y, this._width, this._height);
+        }
         isEmpty(): boolean {
             return this._width === 0 || this._height === 0;
         }
