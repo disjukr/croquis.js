@@ -12,6 +12,10 @@ function Croquis(imageDataList, properties) {
     self.getDOMElement = function () {
         return domElement;
     };
+    self.getRelativePosition = function (absoluteX, absoluteY) {
+        var rect = domElement.getBoundingClientRect();
+        return {x: absoluteX - rect.left,y: absoluteY - rect.top};
+    };
     var undoStack = [];
     var redoStack = [];
     var undoLimit = 10;
