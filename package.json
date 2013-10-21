@@ -1,0 +1,13 @@
+{
+  "name": "croquis.js",
+  "description": "HTML5 drawing tool library",
+  "scripts": {
+    "test": "casperjs test test/"
+  },
+  "license": "MIT",
+  "author": "JongChan Choi <disjukr@naver.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/disjukr/croquis.js.git"
+  }
+}
