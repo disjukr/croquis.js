@@ -2,7 +2,7 @@
   "name": "croquis.js",
   "description": "HTML5 drawing tool library",
   "scripts": {
-    "test": "casperjs test test/"
+    "test": "tsc @tsc-args.txt; casperjs test test/"
   },
   "license": "MIT",
   "author": "JongChan Choi <disjukr@naver.com>",

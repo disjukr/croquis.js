@@ -7,7 +7,7 @@ The library for making web drawing tool.
 >
 > `tsc @tsc-args.txt` to compile
 >
-> `casperjs test test/` to test
+> `npm test` to test
 
 
 Features
