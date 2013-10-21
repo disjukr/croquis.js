@@ -55,4 +55,14 @@ casper.run(function () {
         assertCode('rect.bottom === 20');
         test.done();
     });
+    casper.test.begin('isEmpty', 3, function (test) {
+        evalCode('rect = new Croquis.Rect(0, 0, 10, 10)');
+        assertCode('!rect.isEmpty()');
+        evalCode('rect.width = 0');
+        assertCode('rect.isEmpty()');
+        evalCode('rect = new Croquis.Rect(0, 0, 10, 10)');
+        evalCode('rect.height = 0');
+        assertCode('rect.isEmpty()');
+        test.done();
+    });
 });

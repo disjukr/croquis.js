@@ -11,7 +11,7 @@ module Croquis {
             this._height = height;
         }
         isEmpty(): boolean {
-            return this._width === 0 && this._height === 0;
+            return this._width === 0 || this._height === 0;
         }
         get x(): number {
             return this._x;
