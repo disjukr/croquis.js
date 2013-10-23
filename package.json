@@ -2,6 +2,7 @@
   "name": "croquis.js",
   "description": "HTML5 drawing tool library",
   "scripts": {
+    "preinstall": "npm install -g typescript",
     "test": "tsc @tsc-args.txt; casperjs test test/"
   },
   "license": "MIT",
