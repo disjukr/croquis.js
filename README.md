@@ -4,6 +4,7 @@ croquis.js
 The library for making web drawing tool.
 
 > Status: Porting to TypeScript
+> [![travis](https://travis-ci.org/disjukr/croquis.js.png)](https://travis-ci.org/disjukr/croquis.js)
 >
 > `tsc @tsc-args.txt` to compile
 >
