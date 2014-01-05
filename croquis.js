@@ -1057,6 +1057,15 @@ Croquis.Brush = function () {
     this.setSpacing = function (value) {
         spacing = (value < 0.01) ? 0.01 : value;
     }
+    var toRad = Math.PI / 180;
+    var toDeg = 1 / toRad;
+    var angle = 0; // radian unit
+    this.getAngle = function () { // returns degree unit
+        return angle * toDeg;
+    }
+    this.setAngle = function (value) {
+        angle = value * toRad;
+    }
     var image = null;
     var transformedImage = null;
     var transformedImageIsDirty = true;
@@ -1135,13 +1144,15 @@ Croquis.Brush = function () {
     }
     function drawTo(x, y, size) {
         var halfSize = size * 0.5;
-        var left = x - halfSize;
-        var top = y - halfSize * imageRatio;
+        var height = size * imageRatio;
+        var halfHeight = height * 0.5;
         context.save();
-        context.translate(left, top);
+        context.translate(x, y);
+        context.rotate(angle);
+        context.translate(-halfSize, -halfHeight);
         drawFunction(size);
         context.restore();
-        appendDirtyRect(left, top, size, size * imageRatio);
+        appendDirtyRect(x - halfSize, y - halfHeight, size, height);
     }
     this.down = function(x, y, scale) {
         if (context == null)
@@ -1173,7 +1184,6 @@ Croquis.Brush = function () {
                 prevScale = scale;
                 return;
             }
-            context.save();
             var scaleSpacing = ds * (drawSpacing / delta);
             var ldx = x - lastX;
             var ldy = y - lastY;
@@ -1199,7 +1209,6 @@ Croquis.Brush = function () {
                 }
             }
             prevScale = scale;
-            context.restore();
         }
         else {
             delta = 0;
