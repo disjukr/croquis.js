@@ -1079,6 +1079,13 @@ Croquis.Brush = function () {
     this.setAngle = function (value) {
         angle = value * toRad;
     }
+    var rotateToDirection = false;
+    this.getRotateToDirection = function () {
+        return rotateToDirection;
+    }
+    this.setRotateToDirection = function (value) {
+        rotateToDirection = value;
+    }
     var image = null;
     var transformedImage = null;
     var transformedImageIsDirty = true;
@@ -1105,6 +1112,7 @@ Croquis.Brush = function () {
     var prevY = 0;
     var lastX = 0;
     var lastY = 0;
+    var dir = 0;
     var prevScale = 0;
     var drawFunction = drawCircle;
     var dirtyRect;
@@ -1161,7 +1169,7 @@ Croquis.Brush = function () {
         var halfHeight = height * 0.5;
         context.save();
         context.translate(x, y);
-        context.rotate(angle);
+        context.rotate(rotateToDirection ? angle + dir : angle);
         context.translate(-halfSize, -halfHeight);
         drawFunction(size);
         context.restore();
@@ -1171,7 +1179,7 @@ Croquis.Brush = function () {
         if (context == null)
             throw 'brush needs the context';
         dirtyRect = {x: 0, y: 0, width: 0, height: 0};
-        if (scale > 0)
+        if (scale > 0 && !rotateToDirection)
             drawTo(x, y, size * scale);
         delta = 0;
         lastX = prevX = x;
@@ -1200,6 +1208,7 @@ Croquis.Brush = function () {
             var scaleSpacing = ds * (drawSpacing / delta);
             var ldx = x - lastX;
             var ldy = y - lastY;
+            dir = Math.atan2(ldy, ldx);
             var ld = Math.sqrt(ldx * ldx + ldy * ldy);
             if (ld < drawSpacing) {
                 lastX = x;
@@ -1211,7 +1220,6 @@ Croquis.Brush = function () {
                 while(delta >= drawSpacing) {
                     ldx = x - lastX;
                     ldy = y - lastY;
-                    var dir = Math.atan2(ldy, ldx);
                     var tx = Math.cos(dir);
                     var ty = Math.sin(dir);
                     lastX += tx * drawSpacing;
