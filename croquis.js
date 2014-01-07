@@ -1115,7 +1115,14 @@ Croquis.Brush = function () {
     var dir = 0;
     var prevScale = 0;
     var drawFunction = drawCircle;
+    var reserved = null;
     var dirtyRect;
+    function drawReserved() {
+        if (reserved != null) {
+            drawTo(reserved.x, reserved.y, reserved.scale * size);
+            reserved = null;
+        }
+    }
     function appendDirtyRect(x, y, width, height) {
         if (!(width && height))
             return;
@@ -1178,9 +1185,14 @@ Croquis.Brush = function () {
     this.down = function(x, y, scale) {
         if (context == null)
             throw 'brush needs the context';
+        dir = 0;
         dirtyRect = {x: 0, y: 0, width: 0, height: 0};
-        if (scale > 0 && !rotateToDirection)
-            drawTo(x, y, size * scale);
+        if (scale > 0) {
+            if (rotateToDirection)
+                reserved = {x: x, y: y, scale: scale};
+            else
+                drawTo(x, y, size * scale);
+        }
         delta = 0;
         lastX = prevX = x;
         lastY = prevY = y;
@@ -1208,8 +1220,9 @@ Croquis.Brush = function () {
             var scaleSpacing = ds * (drawSpacing / delta);
             var ldx = x - lastX;
             var ldy = y - lastY;
-            dir = Math.atan2(ldy, ldx);
             var ld = Math.sqrt(ldx * ldx + ldy * ldy);
+            dir = Math.atan2(ldy, ldx);
+            drawReserved();
             if (ld < drawSpacing) {
                 lastX = x;
                 lastY = y;
@@ -1239,6 +1252,7 @@ Croquis.Brush = function () {
         }
     }
     this.up = function (x, y, scale) {
+        drawReserved();
         return dirtyRect;
     }
 }
