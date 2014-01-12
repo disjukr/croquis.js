@@ -1031,6 +1031,7 @@ Croquis.Brush = function () {
         clone.setSize(this.getSize());
         clone.setSpacing(this.getSpacing());
         clone.setAngle(this.getAngle());
+        clone.setRotateToDirection(this.getRotateToDirection());
         clone.setImage(this.getImage());
     }
     this.getContext = function () {
