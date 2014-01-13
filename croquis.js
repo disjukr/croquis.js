@@ -1023,7 +1023,14 @@ Croquis.Stabilizer = function (down, move, up, level, weight,
 }
 
 Croquis.Brush = function () {
-    var context;
+    // math shortcut
+    var min = Math.min;
+    var max = Math.max;
+    var abs = Math.abs;
+    var sin = Math.sin;
+    var cos = Math.cos;
+    var sqrt = Math.sqrt;
+    var atan2 = Math.atan2;
     this.clone = function () {
         var clone = new Brush(context);
         clone.setColor(this.getColor());
@@ -1034,6 +1041,7 @@ Croquis.Brush = function () {
         clone.setRotateToDirection(this.getRotateToDirection());
         clone.setImage(this.getImage());
     }
+    var context = null;
     this.getContext = function () {
         return context;
     }
@@ -1131,12 +1139,12 @@ Croquis.Brush = function () {
         var dyh = dirtyRect.y + dirtyRect.height;
         var xw = x + width;
         var yh = y + height;
-        var minX = dirtyRect.width ? Math.min(dirtyRect.x, x) : x;
-        var minY = dirtyRect.height ? Math.min(dirtyRect.y, y) : y;
+        var minX = dirtyRect.width ? min(dirtyRect.x, x) : x;
+        var minY = dirtyRect.height ? min(dirtyRect.y, y) : y;
         dirtyRect.x = minX;
         dirtyRect.y = minY;
-        dirtyRect.width = Math.max(dxw, xw) - minX;
-        dirtyRect.height = Math.max(dyh, yh) - minY;
+        dirtyRect.width = max(dxw, xw) - minX;
+        dirtyRect.height = max(dyh, yh) - minY;
     }
     function transformImage() {
         transformedImage.width = size;
@@ -1171,17 +1179,20 @@ Croquis.Brush = function () {
             drawCircle(size);
         }
     }
-    function drawTo(x, y, size) {
-        var halfSize = size * 0.5;
-        var height = size * imageRatio;
-        var halfHeight = height * 0.5;
+    function drawTo(x, y, width) {
+        var ra = rotateToDirection ? angle + dir : angle;
+        var height = width * imageRatio;
+        var boundWidth = abs(height * sin(ra)) + abs(width * cos(ra));
+        var boundHeight = abs(width * sin(ra)) + abs(height * cos(ra));
         context.save();
         context.translate(x, y);
-        context.rotate(rotateToDirection ? angle + dir : angle);
-        context.translate(-halfSize, -halfHeight);
-        drawFunction(size);
+        context.rotate(ra);
+        context.translate(-(width * 0.5), -(height * 0.5));
+        drawFunction(width);
         context.restore();
-        appendDirtyRect(x - halfSize, y - halfHeight, size, height);
+        appendDirtyRect(x - (boundWidth * 0.5),
+                        y - (boundHeight * 0.5),
+                        boundWidth, boundHeight);
     }
     this.down = function(x, y, scale) {
         if (context == null)
@@ -1206,7 +1217,7 @@ Croquis.Brush = function () {
             var dx = x - prevX;
             var dy = y - prevY;
             var ds = scale - prevScale;
-            var d = Math.sqrt(dx * dx + dy * dy);
+            var d = sqrt(dx * dx + dy * dy);
             prevX = x;
             prevY = y;
             delta += d;
@@ -1221,8 +1232,8 @@ Croquis.Brush = function () {
             var scaleSpacing = ds * (drawSpacing / delta);
             var ldx = x - lastX;
             var ldy = y - lastY;
-            var ld = Math.sqrt(ldx * ldx + ldy * ldy);
-            dir = Math.atan2(ldy, ldx);
+            var ld = sqrt(ldx * ldx + ldy * ldy);
+            dir = atan2(ldy, ldx);
             drawReserved();
             if (ld < drawSpacing) {
                 lastX = x;
@@ -1234,8 +1245,8 @@ Croquis.Brush = function () {
                 while(delta >= drawSpacing) {
                     ldx = x - lastX;
                     ldy = y - lastY;
-                    var tx = Math.cos(dir);
-                    var ty = Math.sin(dir);
+                    var tx = cos(dir);
+                    var ty = sin(dir);
                     lastX += tx * drawSpacing;
                     lastY += ty * drawSpacing;
                     prevScale += scaleSpacing;
