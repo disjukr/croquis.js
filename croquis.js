@@ -1213,55 +1213,53 @@ Croquis.Brush = function () {
     this.move = function(x, y, scale) {
         if (context == null)
             throw 'brush needs the context';
-        if (scale > 0) {
-            var dx = x - prevX;
-            var dy = y - prevY;
-            var ds = scale - prevScale;
-            var d = sqrt(dx * dx + dy * dy);
-            prevX = x;
-            prevY = y;
-            delta += d;
-            var midScale = (prevScale + scale) * 0.5;
-            var drawSpacing = size * spacing * midScale;
-            if (drawSpacing < 0.5) //not correct, but performance
-                drawSpacing = 0.5;
-            if (delta < drawSpacing) { //no need to draw
-                prevScale = scale;
-                return;
-            }
-            var scaleSpacing = ds * (drawSpacing / delta);
-            var ldx = x - lastX;
-            var ldy = y - lastY;
-            var ld = sqrt(ldx * ldx + ldy * ldy);
-            dir = atan2(ldy, ldx);
-            drawReserved();
-            if (ld < drawSpacing) {
-                lastX = x;
-                lastY = y;
-                prevScale = scale;
+        if (scale <= 0) {
+            delta = 0;
+            lastX = prevX = x;
+            lastY = prevY = y;
+            prevScale = scale;
+            return;
+        }
+        var dx = x - prevX;
+        var dy = y - prevY;
+        var ds = scale - prevScale;
+        var d = sqrt(dx * dx + dy * dy);
+        prevX = x;
+        prevY = y;
+        delta += d;
+        var midScale = (prevScale + scale) * 0.5;
+        var drawSpacing = size * spacing * midScale;
+        if (drawSpacing < 0.5)
+            drawSpacing = 0.5;
+        if (delta < drawSpacing) {
+            prevScale = scale;
+            return;
+        }
+        var scaleSpacing = ds * (drawSpacing / delta);
+        var ldx = x - lastX;
+        var ldy = y - lastY;
+        var ld = sqrt(ldx * ldx + ldy * ldy);
+        dir = atan2(ldy, ldx);
+        drawReserved();
+        if (ld < drawSpacing) {
+            lastX = x;
+            lastY = y;
+            drawTo(lastX, lastY, size * scale);
+            delta -= drawSpacing;
+        } else {
+            while(delta >= drawSpacing) {
+                ldx = x - lastX;
+                ldy = y - lastY;
+                var tx = cos(dir);
+                var ty = sin(dir);
+                lastX += tx * drawSpacing;
+                lastY += ty * drawSpacing;
+                prevScale += scaleSpacing;
                 drawTo(lastX, lastY, size * prevScale);
                 delta -= drawSpacing;
-            } else {
-                while(delta >= drawSpacing) {
-                    ldx = x - lastX;
-                    ldy = y - lastY;
-                    var tx = cos(dir);
-                    var ty = sin(dir);
-                    lastX += tx * drawSpacing;
-                    lastY += ty * drawSpacing;
-                    prevScale += scaleSpacing;
-                    drawTo(lastX, lastY, size * prevScale);
-                    delta -= drawSpacing;
-                }
             }
-            prevScale = scale;
         }
-        else {
-            delta = 0;
-            prevX = x;
-            prevY = y;
-            prevScale = scale;
-        }
+        prevScale = scale;
     }
     this.up = function (x, y, scale) {
         drawReserved();
