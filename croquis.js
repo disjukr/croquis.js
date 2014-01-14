@@ -1022,6 +1022,45 @@ Croquis.Stabilizer = function (down, move, up, level, weight,
     }
 }
 
+Croquis.Random = {};
+Croquis.Random.LFSR113 = function (seed) {
+    var IA = 16807;
+    var IM = 2147483647;
+    var IQ = 127773;
+    var IR = 2836;
+    var a, b, c, d, e;
+    this.get = function () {
+        var f = ((a << 6) ^ a) >> 13;
+        a = ((a & 4294967294) << 18) ^ f;
+        f  = ((b << 2) ^ b) >> 27;
+        b = ((b & 4294967288) << 2) ^ f;
+        f  = ((c << 13) ^ c) >> 21;
+        c = ((c & 4294967280) << 7) ^ f;
+        f  = ((d << 3) ^ d) >> 12;
+        d = ((d & 4294967168) << 13) ^ f;
+        return (a ^ b ^ c ^ d) * 2.3283064365386963e-10 + 0.5;
+    }
+    seed |= 0;
+    if (seed <= 0) seed = 1;
+    e = (seed / IQ) | 0;
+    seed = (((IA * (seed - ((e * IQ) | 0))) | 0) - ((IR * e) | 0)) | 0;
+    if (seed < 0) seed = (seed + IM) | 0;
+    if (seed < 2) a = (seed + 2) | 0 ; else a = seed;
+    e = (seed / IQ) | 0;
+    seed = (((IA * (seed - ((e * IQ) | 0))) | 0) - ((IR * e) | 0)) | 0;
+    if (seed < 0) seed = (seed + IM) | 0;
+    if (seed < 8) b = (seed + 8) | 0; else b = seed;
+    e = (seed / IQ) | 0;
+    seed = (((IA * (seed - ((e * IQ) | 0))) | 0) - ((IR * e) | 0)) | 0;
+    if (seed < 0) seed = (seed + IM) | 0;
+    if (seed < 16) c = (seed + 16) | 0; else c = seed;
+    e = (seed / IQ) | 0;
+    seed = (((IA * (seed - ((e * IQ) | 0))) | 0) - ((IR * e) | 0)) | 0;
+    if (seed < 0) seed = (seed + IM) | 0;
+    if (seed < 128) d = (seed + 128) | 0; else d = seed;
+    this.get();
+}
+
 Croquis.Brush = function () {
     // math shortcut
     var min = Math.min;
