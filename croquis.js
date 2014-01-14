@@ -1070,6 +1070,13 @@ Croquis.Brush = function () {
     var cos = Math.cos;
     var sqrt = Math.sqrt;
     var atan2 = Math.atan2;
+    var PI = Math.PI;
+    var ONE = PI + PI;
+    var QUARTER = PI * 0.5;
+    var random = Math.random;
+    this.setRandomFunction = function (value) {
+        random = value;
+    }
     this.clone = function () {
         var clone = new Brush(context);
         clone.setColor(this.getColor());
@@ -1078,6 +1085,8 @@ Croquis.Brush = function () {
         clone.setSpacing(this.getSpacing());
         clone.setAngle(this.getAngle());
         clone.setRotateToDirection(this.getRotateToDirection());
+        clone.setNormalSpread(this.getNormalSpread());
+        clone.setTangentSpread(this.getTangentSpread());
         clone.setImage(this.getImage());
     }
     var context = null;
@@ -1118,7 +1127,7 @@ Croquis.Brush = function () {
     this.setSpacing = function (value) {
         spacing = (value < 0.01) ? 0.01 : value;
     }
-    var toRad = Math.PI / 180;
+    var toRad = PI / 180;
     var toDeg = 1 / toRad;
     var angle = 0; // radian unit
     this.getAngle = function () { // returns degree unit
@@ -1133,6 +1142,20 @@ Croquis.Brush = function () {
     }
     this.setRotateToDirection = function (value) {
         rotateToDirection = value;
+    }
+    var normalSpread = 0;
+    this.getNormalSpread = function () {
+        return normalSpread;
+    }
+    this.setNormalSpread = function (value) {
+        normalSpread = value;
+    }
+    var tangentSpread = 0;
+    this.getTangentSpread = function () {
+        return tangentSpread;
+    }
+    this.setTangentSpread = function (value) {
+        tangentSpread = value;
     }
     var image = null;
     var transformedImage = null;
@@ -1165,9 +1188,12 @@ Croquis.Brush = function () {
     var drawFunction = drawCircle;
     var reserved = null;
     var dirtyRect;
+    function spreadRandom() {
+        return random() - 0.5;
+    }
     function drawReserved() {
         if (reserved != null) {
-            drawTo(reserved.x, reserved.y, reserved.scale * size);
+            drawTo(reserved.x, reserved.y, reserved.scale);
             reserved = null;
         }
     }
@@ -1204,7 +1230,7 @@ Croquis.Brush = function () {
         context.fillStyle = color;
         context.globalAlpha = flow;
         context.beginPath();
-        context.arc(halfSize, halfSize, halfSize, 0, Math.PI * 2);
+        context.arc(halfSize, halfSize, halfSize, 0, ONE);
         context.closePath();
         context.fill();
     }
@@ -1218,11 +1244,18 @@ Croquis.Brush = function () {
             drawCircle(size);
         }
     }
-    function drawTo(x, y, width) {
+    function drawTo(x, y, scale) {
+        var scaledSize = size * scale;
+        var nrm = dir + QUARTER;
+        var nr = normalSpread * scaledSize * spreadRandom();
+        var tr = tangentSpread * scaledSize * spreadRandom();
         var ra = rotateToDirection ? angle + dir : angle;
+        var width = scaledSize;
         var height = width * imageRatio;
         var boundWidth = abs(height * sin(ra)) + abs(width * cos(ra));
         var boundHeight = abs(width * sin(ra)) + abs(height * cos(ra));
+        x += Math.cos(nrm) * nr + Math.cos(dir) * tr;
+        y += Math.sin(nrm) * nr + Math.sin(dir) * tr;
         context.save();
         context.translate(x, y);
         context.rotate(ra);
@@ -1239,10 +1272,10 @@ Croquis.Brush = function () {
         dir = 0;
         dirtyRect = {x: 0, y: 0, width: 0, height: 0};
         if (scale > 0) {
-            if (rotateToDirection)
+            if (rotateToDirection || normalSpread != 0 || tangentSpread != 0)
                 reserved = {x: x, y: y, scale: scale};
             else
-                drawTo(x, y, size * scale);
+                drawTo(x, y, scale);
         }
         delta = 0;
         lastX = prevX = x;
@@ -1283,7 +1316,7 @@ Croquis.Brush = function () {
         if (ld < drawSpacing) {
             lastX = x;
             lastY = y;
-            drawTo(lastX, lastY, size * scale);
+            drawTo(lastX, lastY, scale);
             delta -= drawSpacing;
         } else {
             while(delta >= drawSpacing) {
@@ -1294,7 +1327,7 @@ Croquis.Brush = function () {
                 lastX += tx * drawSpacing;
                 lastY += ty * drawSpacing;
                 prevScale += scaleSpacing;
-                drawTo(lastX, lastY, size * prevScale);
+                drawTo(lastX, lastY, prevScale);
                 delta -= drawSpacing;
             }
         }
