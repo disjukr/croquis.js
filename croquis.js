@@ -1287,8 +1287,8 @@ Croquis.Brush = function () {
             throw 'brush needs the context';
         if (scale <= 0) {
             delta = 0;
-            lastX = prevX = x;
-            lastY = prevY = y;
+            prevX = x;
+            prevY = y;
             prevScale = scale;
             return;
         }
@@ -1301,6 +1301,12 @@ Croquis.Brush = function () {
         delta += d;
         var midScale = (prevScale + scale) * 0.5;
         var drawSpacing = size * spacing * midScale;
+        var ldx = x - lastX;
+        var ldy = y - lastY;
+        var ld = sqrt(ldx * ldx + ldy * ldy);
+        dir = atan2(ldy, ldx);
+        if (ldx || ldy)
+            drawReserved();
         if (drawSpacing < 0.5)
             drawSpacing = 0.5;
         if (delta < drawSpacing) {
@@ -1308,11 +1314,6 @@ Croquis.Brush = function () {
             return;
         }
         var scaleSpacing = ds * (drawSpacing / delta);
-        var ldx = x - lastX;
-        var ldy = y - lastY;
-        var ld = sqrt(ldx * ldx + ldy * ldy);
-        dir = atan2(ldy, ldx);
-        drawReserved();
         if (ld < drawSpacing) {
             lastX = x;
             lastY = y;
@@ -1334,6 +1335,7 @@ Croquis.Brush = function () {
         prevScale = scale;
     }
     this.up = function (x, y, scale) {
+        dir = atan2(y - lastY, x - lastX);
         drawReserved();
         return dirtyRect;
     }
