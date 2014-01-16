@@ -1120,7 +1120,7 @@ Croquis.Brush = function () {
         size = (value < 1) ? 1 : value;
         transformedImageIsDirty = true;
     }
-    var spacing = 0.05;
+    var spacing = 0.2;
     this.getSpacing = function () {
         return spacing;
     }
