@@ -734,7 +734,7 @@ Croquis.createChecker = function (cellSize, colorA, colorB) {
     return checker;
 }
 Croquis.createBrushPointer = function (brushImage, brushSize, brushAngle,
-                                       threshold, antialias) {
+                                       threshold, antialias, color) {
     brushSize = brushSize | 0;
     var pointer = document.createElement('canvas');
     var pointerContext = pointer.getContext('2d');
@@ -772,7 +772,8 @@ Croquis.createBrushPointer = function (brushImage, brushSize, brushAngle,
         pointerContext.drawImage(brushImage, 0, 0, width, height);
         pointerContext.restore();
     }
-    return Croquis.createAlphaThresholdBorder(pointer, threshold, antialias);
+    return Croquis.createAlphaThresholdBorder(
+            pointer, threshold, antialias, color);
 };
 Croquis.createAlphaThresholdBorder = function (image, threshold,
                                                antialias, color) {
