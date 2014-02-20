@@ -4,20 +4,6 @@ croquis.js
 The library for making web drawing tool.
 
 
-croquis.js is porting to TypeScript now
----------------------------------------
-[![travis](https://travis-ci.org/disjukr/croquis.js.png)](https://travis-ci.org/disjukr/croquis.js)
-
-__Prerequisites__:
-
-* [TypeScript](http://www.typescriptlang.org/) 0.9.5 or greater
-* [CasperJS](http://casperjs.org/) 1.1 or greater
-
-`tsc @tsc-args.txt` to compile
-
-`npm test` to test
-
-
 Features
 --------
 
