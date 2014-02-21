@@ -16,6 +16,49 @@ function Croquis(imageDataList, properties) {
         var rect = domElement.getBoundingClientRect();
         return {x: absoluteX - rect.left,y: absoluteY - rect.top};
     };
+    var eventListeners = {
+        'ondown': [],
+        'onmove': [],
+        'onup': [],
+        'ontick': [],
+        'onchange': [],
+        'onlayeradd': [],
+        'onlayerremove': [],
+        'onlayerswap': [],
+        'onlayerselect': []
+    };
+    function dispatchEvent(event, e) {
+        event = event.toLowerCase();
+        e = e || {};
+        if (eventListeners.hasOwnProperty(event)) {
+            eventListeners[event].forEach(function (listener) {
+                listener.call(self, e);
+            });
+        }
+        else throw 'don\'t support ' + event;
+    }
+    self.addEventListener = function (event, listener) {
+        event = event.toLowerCase();
+        if (eventListeners.hasOwnProperty(event)) {
+            if (typeof listener !== 'function')
+                throw listener + ' is not a function';
+            eventListeners[event].push(listener);
+        }
+        else throw 'don\'t support ' + event;
+    };
+    self.removeEventListener = function (event, listener) {
+        event = event.toLowerCase();
+        if (eventListeners.hasOwnProperty(event)) {
+            if (listener == null) { // remove all
+                eventListeners[event] = [];
+                return;
+            }
+            var listeners = eventListeners[event];
+            var index = listeners.indexOf(listener);
+            if (index >= 0) listeners.splice(index, 1);
+        }
+        else throw 'don\'t support ' + event;
+    };
     var undoStack = [];
     var redoStack = [];
     var undoLimit = 10;
@@ -47,6 +90,7 @@ function Croquis(imageDataList, properties) {
         redoStack = [];
     };
     function pushUndo(undoFunction) {
+        dispatchEvent('onchange');
         if (self.onChanged)
             self.onChanged();
         if (preventPushUndo)
@@ -387,6 +431,7 @@ function Croquis(imageDataList, properties) {
         layers.splice(index, 0, layer);
         sortLayers();
         self.selectLayer(layerIndex);
+        dispatchEvent('onlayeradd', {index: index});
         if (self.onLayerAdded)
             self.onLayerAdded(index);
         return layer;
@@ -399,6 +444,7 @@ function Croquis(imageDataList, properties) {
         if (layerIndex == layers.length)
             self.selectLayer(layerIndex - 1);
         sortLayers();
+        dispatchEvent('onlayerremove', {index: index});
         if (self.onLayerRemoved)
             self.onLayerRemoved(index);
     };
@@ -412,6 +458,7 @@ function Croquis(imageDataList, properties) {
         layers[layerA] = layers[layerB];
         layers[layerB] = layer;
         sortLayers();
+        dispatchEvent('onlayerswap', {a: layerA, b: layerB});
         if (self.onLayerSwapped)
             self.onLayerSwapped(layerA, layerB);
     };
@@ -426,6 +473,7 @@ function Croquis(imageDataList, properties) {
         if (paintingCanvas.parentElement != null)
             paintingCanvas.parentElement.removeChild(paintingCanvas);
         layers[index].appendChild(paintingCanvas);
+        dispatchEvent('onlayerselect', {index: index});
         if (self.onLayerSelected)
             self.onLayerSelected(index);
     };
@@ -614,6 +662,7 @@ function Croquis(imageDataList, properties) {
     function _move(x, y, pressure) {
         if (tool.move)
             tool.move(x, y, pressure);
+        dispatchEvent('onmove', {x: x, y: y, pressure: pressure});
         if (self.onMoved)
             self.onMoved(x, y, pressure);
     }
@@ -632,9 +681,12 @@ function Croquis(imageDataList, properties) {
             pushContextUndo();
         drawPaintingCanvas();
         paintingContext.clearRect(0, 0, size.width, size.height);
+        dirtyRect = dirtyRect ||
+            {x: 0, y: 0, width: size.width, height: size.height};
+        dispatchEvent('onup',
+            {x: x, y: y, pressure: pressure, dirtyRect: dirtyRect});
         if (self.onUpped)
-            self.onUpped(x, y, pressure, (dirtyRect != null) ? dirtyRect :
-                {x: 0, y: 0, width: size.width, height: size.height});
+            self.onUpped(x, y, pressure, dirtyRect);
         window.clearInterval(knockoutTick);
         window.clearInterval(tick);
     }
@@ -662,6 +714,7 @@ function Croquis(imageDataList, properties) {
         }
         else if (down != null)
             down(x, y, pressure);
+        dispatchEvent('ondown', {x: x, y: y, pressure: pressure});
         if (self.onDowned)
             self.onDowned(x, y, pressure);
         knockoutTick = window.setInterval(function () {
@@ -673,6 +726,7 @@ function Croquis(imageDataList, properties) {
         tick = window.setInterval(function () {
             if (tool.tick)
                 tool.tick();
+            dispatchEvent('ontick');
             if (self.onTicked)
                 self.onTicked();
         }, tickInterval);
