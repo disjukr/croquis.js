@@ -1,7 +1,0 @@
--t es5
--m commonjs
---removeComments
---out ./bin/croquis.js
-
-src/rect.ts
-src/tablet.ts
