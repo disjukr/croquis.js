@@ -59,6 +59,15 @@ function Croquis(imageDataList, properties) {
         }
         else throw 'don\'t support ' + event;
     };
+    self.hasEventListener = function (event, listener) {
+        event = event.toLowerCase();
+        if (eventListeners.hasOwnProperty(event)) {
+            if (listener == null)
+                return eventListeners[event].length > 0;
+            return eventListeners[event].indexOf(listener) >= 0;
+        }
+        else return false;
+    };
     var undoStack = [];
     var redoStack = [];
     var undoLimit = 10;
