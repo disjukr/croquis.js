@@ -596,7 +596,7 @@ function Croquis(imageDataList, properties) {
     self.setTool = function (value) {
         tool = value;
         paintingContext = paintingCanvas.getContext('2d');
-        if (tool.setContext)
+        if (tool && tool.setContext)
             tool.setContext(paintingContext);
     }
     self.setTool(new Croquis.Brush());
@@ -703,6 +703,8 @@ function Croquis(imageDataList, properties) {
         if (isDrawing || isStabilizing)
             throw 'still drawing';
         isDrawing = true;
+        if (tool == null)
+            return;
         if (paintingKnockout) {
             var w = size.width;
             var h = size.height;
@@ -743,6 +745,8 @@ function Croquis(imageDataList, properties) {
     self.move = function (x, y, pressure) {
         if (!isDrawing)
             throw 'you need to call \'down\' first';
+        if (tool == null)
+            return;
         pressure = (pressure == null) ? Croquis.Tablet.pressure() : pressure;
         if (stabilizer != null)
             stabilizer.move(x, y, pressure);
@@ -752,6 +756,10 @@ function Croquis(imageDataList, properties) {
     self.up = function (x, y, pressure) {
         if (!isDrawing)
             throw 'you need to call \'down\' first';
+        if (tool == null) {
+            isDrawing = false;
+            return;
+        }
         pressure = (pressure == null) ? Croquis.Tablet.pressure() : pressure;
         if (stabilizer != null)
             stabilizer.up(x, y, pressure);
