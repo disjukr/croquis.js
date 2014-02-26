@@ -22,6 +22,7 @@ function Croquis(imageDataList, properties) {
         'onup': [],
         'ontick': [],
         'onchange': [],
+        'ontool': [],
         'onlayeradd': [],
         'onlayerremove': [],
         'onlayerswap': [],
@@ -595,6 +596,7 @@ function Croquis(imageDataList, properties) {
     }
     self.setTool = function (value) {
         tool = value;
+        dispatchEvent('ontool', {tool: value});
         paintingContext = paintingCanvas.getContext('2d');
         if (tool && tool.setContext)
             tool.setContext(paintingContext);
