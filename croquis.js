@@ -23,6 +23,7 @@ function Croquis(imageDataList, properties) {
         'ontick': [],
         'onchange': [],
         'ontool': [],
+        'oncanvassize': [],
         'onlayeradd': [],
         'onlayerremove': [],
         'onlayerswap': [],
@@ -315,6 +316,10 @@ function Croquis(imageDataList, properties) {
     self.setCanvasSize = function (width, height, offsetX, offsetY) {
         offsetX = (offsetX == null) ? 0 : offsetX;
         offsetY = (offsetY == null) ? 0 : offsetY;
+        dispatchEvent('oncanvassize', {
+            width: width, height: height,
+            offsetX: offsetX, offsetY: offsetY
+        });
         pushCanvasSizeUndo(width, height, offsetX, offsetY);
         size.width = width = Math.floor(width);
         size.height = height = Math.floor(height);
