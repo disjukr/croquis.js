@@ -587,6 +587,42 @@ function Croquis(imageDataList, properties) {
         pushLayerVisibleUndo(index);
         layers[index].style.visibility = visible ? 'visible' : 'hidden';
     };
+    function makeColorData(imageData1x1) {
+        var data = imageData1x1.data;
+        var r = data[0];
+        var g = data[1];
+        var b = data[2];
+        var a = data[3];
+        return {
+            r: r, g: g, b: b, a: a,
+            htmlColor: 'rgba(' + [r, g, b, a / 0xff].join(',') + ')'
+        };
+    }
+    self.pickColor = function (x, y, index) {
+        if ((x < 0) || (x >= size.width) || (y < 0) || (y >= size.height))
+            return null;
+        index = (index == null) ? layerIndex : index;
+        return makeColorData(getLayerContext(index).getImageData(x, y, 1, 1));
+    };
+    self.eyeDrop = function (x, y, baseColor) {
+        if (self.pickColor(x, y) == null)
+            return null;
+        baseColor = (baseColor == null) ? '#fff' : baseColor;
+        var plane = document.createElement('canvas');
+        plane.width = 1;
+        plane.height = 1;
+        var planeContext = plane.getContext('2d');
+        planeContext.fillStyle = baseColor;
+        planeContext.fillRect(0, 0, 1, 1);
+        for (var i = 0; i < layers.length; ++i) {
+            if (!self.getLayerVisible(i))
+                continue;
+            planeContext.globalAlpha = self.getLayerOpacity(i);
+            planeContext.fillStyle = self.pickColor(x, y, i).htmlColor;
+            planeContext.fillRect(0, 0, 1, 1);
+        }
+        return makeColorData(planeContext.getImageData(0, 0, 1, 1));
+    };
     var tool;
     var toolStabilizeLevel = 0;
     var toolStabilizeWeight = 0.8;
