@@ -504,14 +504,14 @@ function Croquis(imageDataList, properties) {
         var context = getLayerContext(index);
         context.fillStyle = fillColor;
         context.fillRect(0, 0, size.width, size.height);
-    }
+    };
     self.fillLayerRect = function (fillColor, x, y, width, height, index) {
         index = (index == null) ? layerIndex : index;
         pushDirtyRectUndo(x, y, width, height, index);
         var context = getLayerContext(index);
         context.fillStyle = fillColor;
         context.fillRect(x, y, width, height);
-    }
+    };
     self.floodFill = function (x, y, r, g, b, a, index) {
         index = (index == null) ? layerIndex : index;
         pushContextUndo(index);
@@ -565,28 +565,28 @@ function Croquis(imageDataList, properties) {
             }
         }
         context.putImageData(imageData, 0, 0);
-    }
+    };
     self.getLayerOpacity = function (index) {
         index = (index == null) ? layerIndex : index;
         var opacity = parseFloat(
             layers[index].style.getPropertyValue('opacity'));
         return window.isNaN(opacity) ? 1 : opacity;
-    }
+    };
     self.setLayerOpacity = function (opacity, index) {
         index = (index == null) ? layerIndex : index;
         pushLayerOpacityUndo(index);
         layers[index].style.opacity = opacity;
-    }
+    };
     self.getLayerVisible = function (index) {
         index = (index == null) ? layerIndex : index;
         var visible = layers[index].style.getPropertyValue('visibility');
         return visible != 'hidden';
-    }
+    };
     self.setLayerVisible = function (visible, index) {
         index = (index == null) ? layerIndex : index;
         pushLayerVisibleUndo(index);
         layers[index].style.visibility = visible ? 'visible' : 'hidden';
-    }
+    };
     var tool;
     var toolStabilizeLevel = 0;
     var toolStabilizeWeight = 0.8;
@@ -598,60 +598,60 @@ function Croquis(imageDataList, properties) {
     var paintingKnockout = false;
     self.getTool = function () {
         return tool;
-    }
+    };
     self.setTool = function (value) {
         tool = value;
         dispatchEvent('ontool', {tool: value});
         paintingContext = paintingCanvas.getContext('2d');
         if (tool && tool.setContext)
             tool.setContext(paintingContext);
-    }
+    };
     self.setTool(new Croquis.Brush());
     self.getPaintingOpacity = function () {
         return paintingOpacity;
-    }
+    };
     self.setPaintingOpacity = function (opacity) {
         paintingOpacity = opacity;
         paintingCanvas.style.opacity = opacity;
-    }
+    };
     self.getPaintingKnockout = function () {
         return paintingKnockout;
-    }
+    };
     self.setPaintingKnockout = function (knockout) {
         paintingKnockout = knockout;
         paintingCanvas.style.visibility = knockout ? 'hidden' : 'visible';
-    }
+    };
     self.getTickInterval = function () {
         return tickInterval;
-    }
+    };
     self.setTickInterval = function (interval) {
         tickInterval = interval;
-    }
+    };
     /*
     stabilize level is the number of coordinate tracker.
     higher stabilize level makes lines smoother.
     */
     self.getToolStabilizeLevel = function () {
         return toolStabilizeLevel;
-    }
+    };
     self.setToolStabilizeLevel = function (level) {
         toolStabilizeLevel = (level < 0) ? 0 : level;
-    }
+    };
     /*
     higher stabilize weight makes trackers follow slower.
     */
     self.getToolStabilizeWeight = function () {
         return toolStabilizeWeight;
-    }
+    };
     self.setToolStabilizeWeight = function (weight) {
         toolStabilizeWeight = weight;
-    }
+    };
     self.getToolStabilizeInterval = function () {
         return stabilizerInterval;
-    }
+    };
     self.setToolStabilizeInterval = function (interval) {
         stabilizerInterval = interval;
-    }
+    };
     var isDrawing = false;
     var isStabilizing = false;
     var beforeKnockout = document.createElement('canvas');
@@ -775,7 +775,7 @@ function Croquis(imageDataList, properties) {
         stabilizer = null;
     };
     // apply image data
-    (function (croquis, imageDataList) {
+    ;(function (croquis, imageDataList) {
         if (imageDataList != null) {
             if (imageDataList.length == 0)
                 return;
