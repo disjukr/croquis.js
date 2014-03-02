@@ -184,6 +184,7 @@ function Croquis(imageDataList, properties) {
             self.lockHistory();
             self.addLayer(index);
             self.unlockHistory();
+            cacheLayer(index);
             return remove;
         }
         var remove = function () {
@@ -205,6 +206,7 @@ function Croquis(imageDataList, properties) {
             var layerContext = getLayerContext(index);
             layerContext.putImageData(snapshotData, 0, 0);
             self.unlockHistory();
+            cacheLayer(index);
             return remove;
         }
         var remove = function () {
@@ -247,6 +249,7 @@ function Croquis(imageDataList, properties) {
                 var tempData = layerContext.getImageData(x, y, width, height);
                 layerContext.putImageData(snapshotData, x, y);
                 snapshotData = tempData;
+                cacheLayer(index);
                 return swap;
             }
             pushUndo(swap);
@@ -272,6 +275,7 @@ function Croquis(imageDataList, properties) {
             var tempData = layerContext.getImageData(0, 0, w, h);
             layerContext.putImageData(snapshotDatas[index], 0, 0);
             snapshotDatas[index] = tempData;
+            cacheLayer(index);
         }
         var swapAll = function () {
             for (var i = 0; i < layers.length; ++i)
@@ -497,6 +501,7 @@ function Croquis(imageDataList, properties) {
         pushContextUndo(index);
         var context = getLayerContext(index);
         context.clearRect(0, 0, size.width, size.height);
+        cacheLayer(index);
     };
     self.fillLayer = function (fillColor, index) {
         index = (index == null) ? layerIndex : index;
@@ -504,6 +509,7 @@ function Croquis(imageDataList, properties) {
         var context = getLayerContext(index);
         context.fillStyle = fillColor;
         context.fillRect(0, 0, size.width, size.height);
+        cacheLayer(index);
     };
     self.fillLayerRect = function (fillColor, x, y, width, height, index) {
         index = (index == null) ? layerIndex : index;
@@ -511,6 +517,7 @@ function Croquis(imageDataList, properties) {
         var context = getLayerContext(index);
         context.fillStyle = fillColor;
         context.fillRect(x, y, width, height);
+        cacheLayer(index);
     };
     self.floodFill = function (x, y, r, g, b, a, index) {
         index = (index == null) ? layerIndex : index;
@@ -565,6 +572,7 @@ function Croquis(imageDataList, properties) {
             }
         }
         context.putImageData(imageData, 0, 0);
+        cacheLayer(index);
     };
     self.getLayerOpacity = function (index) {
         index = (index == null) ? layerIndex : index;
@@ -587,6 +595,18 @@ function Croquis(imageDataList, properties) {
         pushLayerVisibleUndo(index);
         layers[index].style.visibility = visible ? 'visible' : 'hidden';
     };
+    function cacheLayer(index) {
+        index = (index == null) ? layerIndex : index;
+        var w = size.width;
+        var h = size.height;
+        layers[index].cache = getLayerContext(index).getImageData(0, 0, w, h);
+    }
+    self.getLayerImageDataCache = function (index) {
+        index = (index == null) ? layerIndex : index;
+        if (layers[index].cache == null)
+            cacheLayer(index);
+        return layers[index].cache;
+    };
     function makeColorData(imageData1x1) {
         var data = imageData1x1.data;
         var r = data[0];
@@ -602,7 +622,14 @@ function Croquis(imageDataList, properties) {
         if ((x < 0) || (x >= size.width) || (y < 0) || (y >= size.height))
             return null;
         index = (index == null) ? layerIndex : index;
-        return makeColorData(getLayerContext(index).getImageData(x, y, 1, 1));
+        var cache = self.getLayerImageDataCache(index);
+        var position = (y * size.width + x) * 4;
+        var data = [];
+        data[0] = cache.data[position];
+        data[1] = cache.data[++position];
+        data[2] = cache.data[++position];
+        data[3] = cache.data[++position];
+        return makeColorData({data: data});
     };
     self.eyeDrop = function (x, y, baseColor) {
         if (self.pickColor(x, y) == null)
@@ -741,6 +768,7 @@ function Croquis(imageDataList, properties) {
             self.onUpped(x, y, pressure, dirtyRect);
         window.clearInterval(knockoutTick);
         window.clearInterval(tick);
+        cacheLayer(self.getCurrentLayerIndex());
     }
     self.down = function (x, y, pressure) {
         if (isDrawing || isStabilizing)
