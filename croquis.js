@@ -876,19 +876,21 @@ Croquis.createChecker = function (cellSize, colorA, colorB) {
     return checker;
 }
 Croquis.createBrushPointer = function (brushImage, brushSize, brushAngle,
-                                       threshold, antialias, color) {
+                                       threshold, antialias, color,
+                                       shadow, shadowOffsetX, shadowOffsetY) {
     brushSize = brushSize | 0;
     var pointer = document.createElement('canvas');
     var pointerContext = pointer.getContext('2d');
+    var boundWidth;
+    var boundHeight;
     if (brushSize == 0) {
-        pointer.width = 1;
-        pointer.height = 1;
-        return pointer;
+        pointer.width = boundWidth = 1;
+        pointer.height = boundHeight = 1;
     }
     if (brushImage == null) {
         var halfSize = (brushSize * 0.5) | 0;
-        pointer.width = brushSize;
-        pointer.height = brushSize;
+        pointer.width = boundWidth = brushSize;
+        pointer.height = boundHeight = brushSize;
         pointerContext.fillStyle = '#000';
         pointerContext.beginPath();
         pointerContext.arc(halfSize, halfSize, halfSize, 0, Math.PI * 2);
@@ -903,8 +905,8 @@ Croquis.createBrushPointer = function (brushImage, brushSize, brushAngle,
         var abs = Math.abs;
         var sin = Math.sin;
         var cos = Math.cos;
-        var boundWidth = abs(height * sin(ra)) + abs(width * cos(ra));
-        var boundHeight = abs(width * sin(ra)) + abs(height * cos(ra));
+        boundWidth = abs(height * sin(ra)) + abs(width * cos(ra));
+        boundHeight = abs(width * sin(ra)) + abs(height * cos(ra));
         pointer.width = boundWidth;
         pointer.height = boundHeight;
         pointerContext.save();
@@ -914,8 +916,26 @@ Croquis.createBrushPointer = function (brushImage, brushSize, brushAngle,
         pointerContext.drawImage(brushImage, 0, 0, width, height);
         pointerContext.restore();
     }
-    return Croquis.createAlphaThresholdBorder(
-            pointer, threshold, antialias, color);
+    var result;
+    var alphaThresholdBorder = Croquis.createAlphaThresholdBorder(
+        pointer, threshold, antialias, color);
+    if (shadow) {
+        shadowOffsetX = shadowOffsetX ? shadowOffsetX : 1;
+        shadowOffsetY = shadowOffsetY ? shadowOffsetY : 1;
+        result = document.createElement('canvas');
+        result.width = boundWidth + shadowOffsetX;
+        result.height = boundHeight + shadowOffsetY;
+        var resultContext = result.getContext('2d');
+        resultContext.shadowOffsetX = shadowOffsetX;
+        resultContext.shadowOffsetY = shadowOffsetY;
+        resultContext.shadowColor = shadow;
+        resultContext.drawImage(
+            alphaThresholdBorder, 0, 0, boundWidth, boundHeight);
+    }
+    else {
+        result = alphaThresholdBorder;
+    }
+    return result;
 };
 Croquis.createAlphaThresholdBorder = function (image, threshold,
                                                antialias, color) {
