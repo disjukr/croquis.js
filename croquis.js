@@ -619,6 +619,8 @@ function Croquis(imageDataList, properties) {
         };
     }
     self.pickColor = function (x, y, index) {
+        x = x | 0; // cast to int
+        y = y | 0;
         if ((x < 0) || (x >= size.width) || (y < 0) || (y >= size.height))
             return null;
         index = (index == null) ? layerIndex : index;
