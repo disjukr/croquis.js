@@ -200,9 +200,13 @@ function Croquis(imageDataList, properties) {
         var w = size.width;
         var h = size.height;
         var snapshotData = layerContext.getImageData(0, 0, w, h);
+        var snapshotOpacity = self.getLayerOpacity(index);
+        var snapshotVisible = self.getLayerVisible(index);
         var add = function () {
             self.lockHistory();
             self.addLayer(index);
+            self.setLayerOpacity(snapshotOpacity, index);
+            self.setLayerVisible(snapshotVisible, index);
             var layerContext = getLayerContext(index);
             layerContext.putImageData(snapshotData, 0, 0);
             self.unlockHistory();
