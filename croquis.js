@@ -144,6 +144,19 @@ function Croquis(imageDataList, properties) {
             undoTransaction.push(redoTransaction.pop()());
         undoStack.push(undoTransaction);
     };
+    function pushLayerMetadataUndo(index) {
+        index = (index == null) ? layerIndex : index;
+        var snapshotMetadata = self.getLayerMetadata(index);
+        var swap = function () {
+            self.lockHistory();
+            var temp = self.getLayerMetadata(index);
+            self.setLayerMetadata(snapshotMetadata, index);
+            snapshotMetadata = temp;
+            self.unlockHistory();
+            return swap;
+        }
+        pushUndo(swap);
+    }
     function pushLayerOpacityUndo(index) {
         index = (index == null) ? layerIndex : index;
         var snapshotOpacity = self.getLayerOpacity(index);
@@ -200,11 +213,13 @@ function Croquis(imageDataList, properties) {
         var w = size.width;
         var h = size.height;
         var snapshotData = layerContext.getImageData(0, 0, w, h);
+        var snapshotMetadata = self.getLayerMetadata(index);
         var snapshotOpacity = self.getLayerOpacity(index);
         var snapshotVisible = self.getLayerVisible(index);
         var add = function () {
             self.lockHistory();
             self.addLayer(index);
+            self.setLayerMetadata(snapshotMetadata, index);
             self.setLayerOpacity(snapshotOpacity, index);
             self.setLayerVisible(snapshotVisible, index);
             var layerContext = getLayerContext(index);
@@ -444,6 +459,7 @@ function Croquis(imageDataList, properties) {
         layer.className = 'croquis-layer';
         layer.style.visibility = 'visible';
         layer.style.opacity = 1;
+        layer['croquis-metadata'] = {};
         var canvas = document.createElement('canvas');
         canvas.className = 'croquis-layer-canvas';
         canvas.width = size.width;
@@ -577,6 +593,20 @@ function Croquis(imageDataList, properties) {
         }
         context.putImageData(imageData, 0, 0);
         cacheLayer(index);
+    };
+    self.getLayerMetadata = function (index) {
+        index = (index == null) ? layerIndex : index;
+        var metadata = layers[index]['croquis-metadata'];
+        var clone = {};
+        Object.keys(metadata).forEach(function (key) {
+            clone[key] = metadata[key];
+        });
+        return clone;
+    };
+    self.setLayerMetadata = function (metadata, index) {
+        index = (index == null) ? layerIndex : index;
+        pushLayerMetadataUndo(index);
+        layers[index]['croquis-metadata'] = metadata;
     };
     self.getLayerOpacity = function (index) {
         index = (index == null) ? layerIndex : index;
