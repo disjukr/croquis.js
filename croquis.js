@@ -254,7 +254,7 @@ function Croquis(imageDataList, properties) {
         y = y | 0;
         width = Math.min(w - x, Math.ceil(width));
         height = Math.min(h - y, Math.ceil(height));
-        if ((width == 0) || (height == 0)) {
+        if ((width === 0) || (height === 0)) {
             var doNothing = function () {
                 return doNothing;
             }
@@ -877,7 +877,7 @@ function Croquis(imageDataList, properties) {
     // apply image data
     ;(function (croquis, imageDataList) {
         if (imageDataList != null) {
-            if (imageDataList.length == 0)
+            if (imageDataList.length === 0)
                 return;
             croquis.lockHistory();
             var first = imageDataList[0];
@@ -919,7 +919,7 @@ Croquis.createBrushPointer = function (brushImage, brushSize, brushAngle,
     var pointerContext = pointer.getContext('2d');
     var boundWidth;
     var boundHeight;
-    if (brushSize == 0) {
+    if (brushSize === 0) {
         pointer.width = boundWidth = 1;
         pointer.height = boundHeight = 1;
     }
@@ -1114,7 +1114,7 @@ Croquis.createFloodFill = function (canvas, x, y, r, g, b, a) {
     for (var i = 0; i < w; ++i) {
         for (var j = 0; j < h; ++j) {
             var index = ((j * w) + i) * 4;
-            if (rd[index] == 0)
+            if (rd[index] === 0)
                 continue;
             rd[index] = r;
             rd[index + 1] = g;
@@ -1471,7 +1471,7 @@ Croquis.Brush = function () {
         dir = 0;
         dirtyRect = {x: 0, y: 0, width: 0, height: 0};
         if (scale > 0) {
-            if (rotateToDirection || normalSpread != 0 || tangentSpread != 0)
+            if (rotateToDirection || normalSpread !== 0 || tangentSpread !== 0)
                 reserved = {x: x, y: y, scale: scale};
             else
                 drawTo(x, y, scale);
