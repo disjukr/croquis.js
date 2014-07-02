@@ -189,7 +189,7 @@ function Croquis(imageDataList, properties) {
             self.swapLayer(layerA, layerB);
             self.unlockHistory();
             return swap;
-        }
+        };
         pushUndo(swap);
     }
     function pushAddLayerUndo(index) {
@@ -199,13 +199,13 @@ function Croquis(imageDataList, properties) {
             self.unlockHistory();
             cacheLayer(index);
             return remove;
-        }
+        };
         var remove = function () {
             self.lockHistory();
             self.removeLayer(index);
             self.unlockHistory();
             return add;
-        }
+        };
         pushUndo(remove);
     }
     function pushRemoveLayerUndo(index) {
@@ -227,13 +227,13 @@ function Croquis(imageDataList, properties) {
             self.unlockHistory();
             cacheLayer(index);
             return remove;
-        }
+        };
         var remove = function () {
             self.lockHistory();
             self.removeLayer(index);
             self.unlockHistory();
             return add;
-        }
+        };
         pushUndo(add);
     }
     function pushDirtyRectUndo(x, y, width, height, index) {
@@ -257,7 +257,7 @@ function Croquis(imageDataList, properties) {
         if ((width === 0) || (height === 0)) {
             var doNothing = function () {
                 return doNothing;
-            }
+            };
             pushUndo(doNothing);
         }
         else {
@@ -270,7 +270,7 @@ function Croquis(imageDataList, properties) {
                 snapshotData = tempData;
                 cacheLayer(index);
                 return swap;
-            }
+            };
             pushUndo(swap);
         }
         if (renderDirtyRect)
@@ -295,12 +295,12 @@ function Croquis(imageDataList, properties) {
             layerContext.putImageData(snapshotDatas[index], 0, 0);
             snapshotDatas[index] = tempData;
             cacheLayer(index);
-        }
+        };
         var swapAll = function () {
             for (var i = 0; i < layers.length; ++i)
                 swap(i);
             return swapAll;
-        }
+        };
         pushUndo(swapAll);
     }
     function pushCanvasSizeUndo(width, height, offsetX, offsetY) {
@@ -324,12 +324,12 @@ function Croquis(imageDataList, properties) {
                 layerContext.putImageData(snapshotDatas[i], 0, 0);
             }
             return redo;
-        }
+        };
         var redo = function () {
             rollback();
             setSize(width, height, offsetX, offsetY);
             return rollback;
-        }
+        };
         pushUndo(rollback);
     }
     var size = {width: 640, height: 480};
@@ -910,7 +910,7 @@ Croquis.createChecker = function (cellSize, colorA, colorB) {
     context.fillRect(0, 0, cellSize, cellSize);
     context.fillRect(cellSize, cellSize, size, size);
     return checker;
-}
+};
 Croquis.createBrushPointer = function (brushImage, brushSize, brushAngle,
                                        threshold, antialias, color,
                                        shadow, shadowOffsetX, shadowOffsetY) {
@@ -1064,7 +1064,7 @@ Croquis.createAlphaThresholdBorder = function (image, threshold,
     context.fillStyle = color;
     context.fillRect(0, 0, width, height);
     return canvas;
-}
+};
 Croquis.createFloodFill = function (canvas, x, y, r, g, b, a) {
     var result = document.createElement('canvas');
     var w = result.width = canvas.width;
@@ -1124,7 +1124,7 @@ Croquis.createFloodFill = function (canvas, x, y, r, g, b, a) {
     }
     resultContext.putImageData(resultData, 0, 0);
     return result;
-}
+};
 
 Croquis.Tablet = {};
 Croquis.Tablet.plugin = function () {
@@ -1138,19 +1138,19 @@ Croquis.Tablet.plugin = function () {
         document.body.appendChild(plugin);
     }
     return plugin;
-}
+};
 Croquis.Tablet.pen = function () {
     var plugin = Croquis.Tablet.plugin();
     return plugin.penAPI;
-}
+};
 Croquis.Tablet.pressure = function () {
     var pen = Croquis.Tablet.pen();
     return (pen && pen.pointerType) ? pen.pressure : 1;
-}
+};
 Croquis.Tablet.isEraser = function () {
     var pen = Croquis.Tablet.pen();
     return pen ? pen.isEraser : false;
-}
+};
 
 Croquis.Stabilizer = function (down, move, up, level, weight,
                                x, y, pressure, interval) {
@@ -1168,18 +1168,18 @@ Croquis.Stabilizer = function (down, move, up, level, weight,
     window.setTimeout(_move, interval);
     this.getParamTable = function () { //for test
         return paramTable;
-    }
+    };
     this.move = function (x, y, pressure) {
         current.x = x;
         current.y = y;
         current.pressure = pressure;
-    }
+    };
     this.up = function (x, y, pressure) {
         current.x = x;
         current.y = y;
         current.pressure = pressure;
         upCalled = true;
-    }
+    };
     function dlerp(a, d, t) {
         return a + d * t;
     }
@@ -1219,7 +1219,7 @@ Croquis.Stabilizer = function (down, move, up, level, weight,
             window.setTimeout(_move, interval);
         }
     }
-}
+};
 
 Croquis.Random = {};
 Croquis.Random.LFSR113 = function (seed) {
@@ -1238,7 +1238,7 @@ Croquis.Random.LFSR113 = function (seed) {
         f  = ((d << 3) ^ d) >> 12;
         d = ((d & 4294967168) << 13) ^ f;
         return (a ^ b ^ c ^ d) * 2.3283064365386963e-10 + 0.5;
-    }
+    };
     seed |= 0;
     if (seed <= 0) seed = 1;
     e = (seed / IQ) | 0;
@@ -1258,7 +1258,7 @@ Croquis.Random.LFSR113 = function (seed) {
     if (seed < 0) seed = (seed + IM) | 0;
     if (seed < 128) d = (seed + 128) | 0; else d = seed;
     this.get();
-}
+};
 
 Croquis.Brush = function () {
     // math shortcut
@@ -1275,7 +1275,7 @@ Croquis.Brush = function () {
     var random = Math.random;
     this.setRandomFunction = function (value) {
         random = value;
-    }
+    };
     this.clone = function () {
         var clone = new Brush(context);
         clone.setColor(this.getColor());
@@ -1287,82 +1287,82 @@ Croquis.Brush = function () {
         clone.setNormalSpread(this.getNormalSpread());
         clone.setTangentSpread(this.getTangentSpread());
         clone.setImage(this.getImage());
-    }
+    };
     var context = null;
     this.getContext = function () {
         return context;
-    }
+    };
     this.setContext = function (value) {
         context = value;
-    }
+    };
     var color = '#000';
     this.getColor = function () {
         return color;
-    }
+    };
     this.setColor = function (value) {
         color = value;
         transformedImageIsDirty = true;
-    }
+    };
     var flow = 1;
     this.getFlow = function() {
         return flow;
-    }
+    };
     this.setFlow = function(value) {
         flow = value;
         transformedImageIsDirty = true;
-    }
+    };
     var size = 10;
     this.getSize = function () {
         return size;
-    }
+    };
     this.setSize = function (value) {
         size = (value < 1) ? 1 : value;
         transformedImageIsDirty = true;
-    }
+    };
     var spacing = 0.2;
     this.getSpacing = function () {
         return spacing;
-    }
+    };
     this.setSpacing = function (value) {
         spacing = (value < 0.01) ? 0.01 : value;
-    }
+    };
     var toRad = PI / 180;
     var toDeg = 1 / toRad;
     var angle = 0; // radian unit
     this.getAngle = function () { // returns degree unit
         return angle * toDeg;
-    }
+    };
     this.setAngle = function (value) {
         angle = value * toRad;
-    }
+    };
     var rotateToDirection = false;
     this.getRotateToDirection = function () {
         return rotateToDirection;
-    }
+    };
     this.setRotateToDirection = function (value) {
         rotateToDirection = value;
-    }
+    };
     var normalSpread = 0;
     this.getNormalSpread = function () {
         return normalSpread;
-    }
+    };
     this.setNormalSpread = function (value) {
         normalSpread = value;
-    }
+    };
     var tangentSpread = 0;
     this.getTangentSpread = function () {
         return tangentSpread;
-    }
+    };
     this.setTangentSpread = function (value) {
         tangentSpread = value;
-    }
+    };
     var image = null;
     var transformedImage = null;
     var transformedImageIsDirty = true;
     var imageRatio = 1;
     this.getImage = function () {
         return image;
-    }
+    };
     this.setImage = function (value) {
         if (value == null) {
             transformedImage = image = null;
@@ -1376,7 +1376,7 @@ Croquis.Brush = function () {
             drawFunction = drawImage;
             transformedImageIsDirty = true;
         }
-    }
+    };
     var delta = 0;
     var prevX = 0;
     var prevY = 0;
@@ -1480,7 +1480,7 @@ Croquis.Brush = function () {
         lastX = prevX = x;
         lastY = prevY = y;
         prevScale = scale;
-    }
+    };
     this.move = function(x, y, scale) {
         if (context == null)
             throw 'brush needs the context';
@@ -1532,10 +1532,10 @@ Croquis.Brush = function () {
             }
         }
         prevScale = scale;
-    }
+    };
     this.up = function (x, y, scale) {
         dir = atan2(y - lastY, x - lastX);
         drawReserved();
         return dirtyRect;
-    }
-}
+    };
+};
