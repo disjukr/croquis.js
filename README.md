@@ -57,6 +57,9 @@ Projects using croquis.js
 ### [Crosspop croquis](https://crosspop.in/croquis/)
 [![Crosspop croquis](http://i.imgur.com/I9fFZMs.png)](https://crosspop.in/croquis/)
 
+### [netcanvas for croquis](https://crosspop.in/croquis/) by [kuna](https://github.com/kuna)
+[![netcanvas for croquis](http://i.imgur.com/y15KE1D.png)](https://github.com/kuna/netcanvas_croquis)
+
 
 License
 -------
