@@ -717,6 +717,8 @@ function Croquis(imageDataList, properties) {
         return paintingKnockout;
     };
     self.setPaintingKnockout = function (knockout) {
+        if (isDrawing || isStabilizing)
+            throw 'still drawing';
         paintingKnockout = knockout;
         paintingCanvas.style.visibility = knockout ? 'hidden' : 'visible';
     };
