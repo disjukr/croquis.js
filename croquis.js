@@ -22,6 +22,8 @@ function Croquis(imageDataList, properties) {
         'onup': [],
         'ontick': [],
         'onchange': [],
+        'onundo': [],
+        'onredo': [],
         'ontool': [],
         'oncanvassize': [],
         'onlayeradd': [],
@@ -128,6 +130,7 @@ function Croquis(imageDataList, properties) {
         while (undoTransaction.length)
             redoTransaction.push(undoTransaction.pop()());
         redoStack.push(redoTransaction);
+        dispatchEvent('onundo');
     };
     self.redo = function () {
         if (pushToTransaction)
@@ -143,6 +146,7 @@ function Croquis(imageDataList, properties) {
         while (redoTransaction.length)
             undoTransaction.push(redoTransaction.pop()());
         undoStack.push(undoTransaction);
+        dispatchEvent('onredo');
     };
     function pushLayerMetadataUndo(index) {
         index = index || layerIndex;
