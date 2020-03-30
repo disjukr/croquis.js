@@ -4,9 +4,12 @@ import { Rect } from '../geom/rect';
 const pi = Math.PI;
 const one = pi + pi;
 const quarter = pi * 0.5;
+const min = Math.min;
+const max = Math.max;
 const abs = Math.abs;
 const sin = Math.sin;
 const cos = Math.cos;
+const sqrt = Math.sqrt;
 const atan2 = Math.atan2;
 
 export interface BrushStrokeParams {
@@ -67,8 +70,7 @@ export interface BrushStrokeState {
   prev: BrushStrokeParams;
   tangent: number; // radian
   delta: number;
-  lastStampX: number;
-  lastStampY: number;
+  lastStamp: StampParams;
   reservedStamp: StampParams | null;
   boundingRect: Rect;
 }
@@ -110,35 +112,75 @@ export function stamp(config: BrushConfig, state: BrushStrokeState, params: Stam
     const br = state.boundingRect;
     const bx = spreadX - boundWidth * 0.5;
     const by = spreadY - boundHeight * 0.5;
-    const x = Math.min(br.x, bx);
-    const y = Math.min(br.y, by);
-    const right = Math.max(br.x + br.w, bx + boundWidth);
-    const bottom = Math.max(br.y + br.h, by + boundHeight);
+    const x = min(br.x, bx);
+    const y = min(br.y, by);
+    const right = max(br.x + br.w, bx + boundWidth);
+    const bottom = max(br.y + br.h, by + boundHeight);
     state.boundingRect.x = x;
     state.boundingRect.y = y;
     state.boundingRect.w = right - x;
     state.boundingRect.h = bottom - y;
   }
+  state.lastStamp = params;
 }
 
-export function down(config: BrushConfig, state: BrushStrokeState, curr: BrushStrokeParams) {
-  state.tangent = 0;
-  state.delta = 0;
-  state.lastStampX = curr.x;
-  state.lastStampY = curr.y;
-  state.boundingRect = { x: 0, y: 0, w: 0, h: 0 };
-  state.prev = curr;
-  if (curr.pressure <= 0) return;
+export function down(config: BrushConfig, curr: BrushStrokeParams): BrushStrokeState {
   const stampParams = { x: curr.x, y: curr.y, scale: curr.pressure };
+  const state: BrushStrokeState = {
+    tangent: 0,
+    delta: 0,
+    lastStamp: stampParams,
+    reservedStamp: null,
+    boundingRect: { x: 0, y: 0, w: 0, h: 0 },
+    prev: curr,
+  };
+  if (curr.pressure <= 0) return state;
   if (config.rotateToTangent || config.normalSpread > 0 || config.tangentSpread > 0) {
     state.reservedStamp = stampParams;
   } else {
     stamp(config, state, stampParams);
   }
+  return state;
 }
 
 export function move(config: BrushConfig, state: BrushStrokeState, curr: BrushStrokeParams) {
-  // TODO
+  try {
+    {
+      // accumulate delta
+      const dx = curr.x - state.prev.x;
+      const dy = curr.y - state.prev.y;
+      state.delta += sqrt((dx * dx) + (dy * dy));
+    }
+    const spacing = max(
+      config.size * config.spacing * ((state.prev.pressure + curr.pressure) * 0.5),
+      0.5,
+    );
+    const ldx = curr.x - state.lastStamp.x;
+    const ldy = curr.y - state.lastStamp.y;
+    state.tangent = atan2(ldy, ldx);
+    if (state.reservedStamp && (ldx !== 0 && ldy !== 0)) {
+      stamp(config, state, state.reservedStamp);
+      state.reservedStamp = null;
+    }
+    if (state.delta < spacing) return;
+    if (sqrt((ldx * ldx) + (ldy * ldy)) < spacing) {
+      state.delta -= spacing;
+      stamp(config, state, { x: curr.x, y: curr.y, scale: curr.pressure });
+      return;
+    }
+    const scaleSpacing = (curr.pressure - state.prev.pressure) * (spacing / state.delta);
+    const tx = cos(state.tangent);
+    const ty = sin(state.tangent);
+    while (state.delta >= spacing) {
+      state.lastStamp.x += tx * spacing;
+      state.lastStamp.y += ty * spacing;
+      state.lastStamp.scale += scaleSpacing;
+      state.delta -= spacing;
+      stamp(config, state, state.lastStamp);
+    }
+  } finally {
+    state.prev = curr;
+  }
 }
 
 export function up(
@@ -146,7 +188,7 @@ export function up(
   state: BrushStrokeState,
   curr: BrushStrokeParams
 ): BrushStrokeResult {
-  state.tangent = atan2(curr.y - state.lastStampY, curr.x - state.lastStampX);
+  state.tangent = atan2(curr.y - state.lastStamp.y, curr.x - state.lastStamp.x);
   if (state.reservedStamp) {
     stamp(config, state, state.reservedStamp);
     state.reservedStamp = null;
