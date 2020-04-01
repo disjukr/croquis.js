@@ -4,6 +4,7 @@ import { Rect } from '../geom/rect';
 const pi = Math.PI;
 const one = pi + pi;
 const quarter = pi * 0.5;
+const toRad = pi / 180;
 const min = Math.min;
 const max = Math.max;
 const abs = Math.abs;
@@ -23,7 +24,7 @@ export interface BrushStrokeParams {
 }
 
 export interface RandomFn {
-  (): number;
+  (): number; // 0~1
 }
 
 export interface DrawFn {
@@ -32,14 +33,17 @@ export interface DrawFn {
 
 export interface BrushConfig {
   ctx: CanvasRenderingContext2D;
-  randomFn: RandomFn;
-  drawFn: DrawFn;
+  draw: DrawFn;
   size: number;
   aspectRatio: number;
   spacing: number;
   angle: number; // radian
   rotateToTangent: boolean;
+  angleRandom: RandomFn;
+  angleSpread: number; // radian
+  normalRandom: RandomFn;
   normalSpread: number;
+  tangentRandom: RandomFn;
   tangentSpread: number;
 }
 
@@ -83,20 +87,26 @@ export interface StampParams {
   x: number;
   y: number;
   scale: number;
+  angle: number;
 }
 
 export function stamp(config: BrushConfig, state: BrushStrokeState, params: StampParams) {
   const size = config.size * params.scale;
-  const normal = state.tangent + quarter;
-  const normalRandom = config.normalSpread * size * (config.randomFn() - 0.5);
-  const tangentRandom = config.tangentSpread * size * (config.randomFn() - 0.5);
-  const angle = config.rotateToTangent ? config.angle + state.tangent : config.angle;
   const width = getBrushWidth(size, config.aspectRatio);
   const height = getBrushHeight(size);
-  const boundWidth = abs(height * sin(angle)) + abs(width * cos(angle));
-  const boundHeight = abs(width * sin(angle)) + abs(height * cos(angle));
-  const spreadX = cos(normal) * normalRandom + cos(state.tangent) * tangentRandom;
-  const spreadY = sin(normal) * normalRandom + sin(state.tangent) * tangentRandom;
+  const angleSpread = config.angleSpread && config.angleSpread * (config.angleRandom() - 0.5);
+  const angle =
+    params.angle +
+    (config.rotateToTangent ? config.angle + state.tangent : config.angle) +
+    angleSpread;
+  const normalSpread =
+    config.normalSpread && config.normalSpread * size * (config.normalRandom() - 0.5);
+  const tangentSpread =
+    config.tangentSpread && config.tangentSpread * size * (config.tangentRandom() - 0.5);
+  const doSpread = normalSpread || tangentSpread;
+  const normal = state.tangent + quarter;
+  const spreadX = doSpread && cos(normal) * normalSpread + cos(state.tangent) * tangentSpread;
+  const spreadY = doSpread && sin(normal) * normalSpread + sin(state.tangent) * tangentSpread;
   {
     // draw
     const ctx = config.ctx;
@@ -104,12 +114,14 @@ export function stamp(config: BrushConfig, state: BrushStrokeState, params: Stam
     ctx.translate(spreadX, spreadY);
     ctx.rotate(angle);
     ctx.translate(-(width * 0.5), -(height * 0.5));
-    config.drawFn(width, height);
+    config.draw(width, height);
     ctx.restore();
   }
   {
     // expand bounding rect
     const br = state.boundingRect;
+    const boundWidth = angle ? abs(height * sin(angle)) + abs(width * cos(angle)) : width;
+    const boundHeight = angle ? abs(width * sin(angle)) + abs(height * cos(angle)) : height;
     const bx = spreadX - boundWidth * 0.5;
     const by = spreadY - boundHeight * 0.5;
     const x = min(br.x, bx);
@@ -125,7 +137,7 @@ export function stamp(config: BrushConfig, state: BrushStrokeState, params: Stam
 }
 
 export function down(config: BrushConfig, curr: BrushStrokeParams): BrushStrokeState {
-  const stampParams = { x: curr.x, y: curr.y, scale: curr.pressure };
+  const stampParams = { x: curr.x, y: curr.y, scale: curr.pressure, angle: curr.twist * toRad };
   const state: BrushStrokeState = {
     tangent: 0,
     delta: 0,
@@ -149,23 +161,28 @@ export function move(config: BrushConfig, state: BrushStrokeState, curr: BrushSt
       // accumulate delta
       const dx = curr.x - state.prev.x;
       const dy = curr.y - state.prev.y;
-      state.delta += sqrt((dx * dx) + (dy * dy));
+      state.delta += sqrt(dx * dx + dy * dy);
     }
     const spacing = max(
       config.size * config.spacing * ((state.prev.pressure + curr.pressure) * 0.5),
-      0.5,
+      0.5
     );
     const ldx = curr.x - state.lastStamp.x;
     const ldy = curr.y - state.lastStamp.y;
     state.tangent = atan2(ldy, ldx);
-    if (state.reservedStamp && (ldx !== 0 && ldy !== 0)) {
+    if (state.reservedStamp && ldx !== 0 && ldy !== 0) {
       stamp(config, state, state.reservedStamp);
       state.reservedStamp = null;
     }
     if (state.delta < spacing) return;
-    if (sqrt((ldx * ldx) + (ldy * ldy)) < spacing) {
+    if (sqrt(ldx * ldx + ldy * ldy) < spacing) {
       state.delta -= spacing;
-      stamp(config, state, { x: curr.x, y: curr.y, scale: curr.pressure });
+      stamp(config, state, {
+        x: curr.x,
+        y: curr.y,
+        scale: curr.pressure,
+        angle: curr.twist * toRad,
+      });
       return;
     }
     const scaleSpacing = (curr.pressure - state.prev.pressure) * (spacing / state.delta);
