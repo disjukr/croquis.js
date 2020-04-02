@@ -1,0 +1,19 @@
+{
+  "private": true,
+  "name": "website",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@types/node": "^13.9.8",
+    "@types/react": "^16.9.31",
+    "croquis.js": "^1.0.0",
+    "next": "9.3.4",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "typescript": "^3.8.3"
+  }
+}

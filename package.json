@@ -1,13 +1,14 @@
 {
   "private": true,
-  "name": "croquis",
+  "name": "croquis.js",
   "version": "0.0.0",
   "description": "drawing tool library",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "wsrun dev",
+    "build": "wsrun -t build"
   },
   "repository": {
     "type": "git",
@@ -18,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/disjukr/croquis.js/issues"
   },
-  "homepage": "https://github.com/disjukr/croquis.js#readme"
+  "homepage": "https://github.com/disjukr/croquis.js#readme",
+  "dependencies": {
+    "wsrun": "^5.2.0"
+  }
 }

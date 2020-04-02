@@ -47,6 +47,35 @@ export interface BrushConfig {
   tangentSpread: number;
 }
 
+type RequiredKeysOfBrushConfig = 'ctx' | 'draw' | 'size' | 'aspectRatio';
+export const defaultBrushConfig = Object.freeze<Omit<BrushConfig, RequiredKeysOfBrushConfig>>({
+  spacing: 0,
+  angle: 0,
+  rotateToTangent: false,
+  angleRandom: Math.random,
+  angleSpread: 0,
+  normalRandom: Math.random,
+  normalSpread: 0,
+  tangentRandom: Math.random,
+  tangentSpread: 0,
+});
+
+interface XY {
+  x: number;
+  y: number;
+}
+const id = <T>(x: T) => x;
+export function getBrushStrokeParams(e: PointerEvent, transformXy: (xy: XY) => XY = id) {
+  return {
+    ...(transformXy({ x: e.x, y: e.y })),
+    pressure: e.pressure,
+    tangentialPressure: e.tangentialPressure,
+    tiltX: e.tiltX,
+    tiltY: e.tiltY,
+    twist: e.twist,
+  };
+}
+
 export function getDrawCircleFn(ctx: CanvasRenderingContext2D, color: Color, flow: number) {
   return function drawCircle(width: number, height: number) {
     const halfWidth = width * 0.5;
@@ -107,11 +136,13 @@ export function stamp(config: BrushConfig, state: BrushStrokeState, params: Stam
   const normal = state.tangent + quarter;
   const spreadX = doSpread && cos(normal) * normalSpread + cos(state.tangent) * tangentSpread;
   const spreadY = doSpread && sin(normal) * normalSpread + sin(state.tangent) * tangentSpread;
+  const x = params.x + spreadX;
+  const y = params.y + spreadY;
   {
     // draw
     const ctx = config.ctx;
     ctx.save();
-    ctx.translate(spreadX, spreadY);
+    ctx.translate(x, y);
     ctx.rotate(angle);
     ctx.translate(-(width * 0.5), -(height * 0.5));
     config.draw(width, height);
@@ -122,16 +153,16 @@ export function stamp(config: BrushConfig, state: BrushStrokeState, params: Stam
     const br = state.boundingRect;
     const boundWidth = angle ? abs(height * sin(angle)) + abs(width * cos(angle)) : width;
     const boundHeight = angle ? abs(width * sin(angle)) + abs(height * cos(angle)) : height;
-    const bx = spreadX - boundWidth * 0.5;
-    const by = spreadY - boundHeight * 0.5;
-    const x = min(br.x, bx);
-    const y = min(br.y, by);
+    const bx = x - boundWidth * 0.5;
+    const by = y - boundHeight * 0.5;
+    const rx = min(br.x, bx);
+    const ry = min(br.y, by);
     const right = max(br.x + br.w, bx + boundWidth);
     const bottom = max(br.y + br.h, by + boundHeight);
-    state.boundingRect.x = x;
-    state.boundingRect.y = y;
-    state.boundingRect.w = right - x;
-    state.boundingRect.h = bottom - y;
+    state.boundingRect.x = rx;
+    state.boundingRect.y = ry;
+    state.boundingRect.w = right - rx;
+    state.boundingRect.h = bottom - ry;
   }
   state.lastStamp = params;
 }

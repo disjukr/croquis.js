@@ -1,9 +1,10 @@
 {
-  "name": "croquis",
+  "name": "croquis.js",
   "version": "1.0.0",
   "description": "drawing tool library",
   "main": "index.js",
   "scripts": {
+    "dev": "tsc --watch",
     "build": "tsc",
     "lint:fix": "prettier --write \"src/**/*.ts\""
   },
