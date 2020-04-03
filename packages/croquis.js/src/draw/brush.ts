@@ -120,6 +120,7 @@ export interface StampParams {
 }
 
 export function stamp(config: BrushConfig, state: BrushStrokeState, params: StampParams) {
+  if (params.scale <= 0) return;
   const size = config.size * params.scale;
   const width = getBrushWidth(size, config.aspectRatio);
   const height = getBrushHeight(size);

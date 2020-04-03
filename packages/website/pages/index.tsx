@@ -28,12 +28,12 @@ const Page = () => {
   };
   const moveHandler: PointerEventHandler = e => {
     if (!brushStateRef.current) return;
-    if (e.nativeEvent.pressure !== 0.5) console.log(e.nativeEvent.pressure);
     move(brushConfigRef.current!, brushStateRef.current, e.nativeEvent);
   };
   const upHandler: PointerEventHandler = e => {
     if (!brushStateRef.current) return;
     up(brushConfigRef.current!, brushStateRef.current, e.nativeEvent);
+    brushStateRef.current = undefined;
   };
   return <canvas
     ref={canvasRef}
@@ -42,7 +42,10 @@ const Page = () => {
     onPointerUp={upHandler}
     width={500}
     height={500}
-    style={{ outline: '1px solid black' }}
+    style={{
+      outline: '1px solid black',
+      touchAction: 'none',
+    }}
   />;
 }
 
