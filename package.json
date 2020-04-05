@@ -8,7 +8,8 @@
   ],
   "scripts": {
     "dev": "wsrun dev",
-    "build": "wsrun -t build"
+    "build": "wsrun -t build",
+    "lint:fix": "wsrun lint:fix"
   },
   "repository": {
     "type": "git",

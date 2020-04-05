@@ -1,52 +1,61 @@
-import React, { useEffect, useRef, PointerEventHandler } from 'react';
-import {
-  down,
-  move,
-  up,
-  defaultBrushConfig,
-  BrushConfig,
-  getDrawCircleFn,
-  BrushStrokeState,
-} from 'croquis.js/lib/draw/brush';
+import React, { useRef, PointerEventHandler, useState } from 'react';
+import { down, defaultBrushConfig, getDrawCircleFn } from 'croquis.js/lib/draw/brush';
+import chooChoo, { defaultChooChooConfig } from 'croquis.js/lib/stabilizer/chooChoo';
+import type { StrokeDrawingPhase } from 'croquis.js/lib';
+import { getStylusState } from 'croquis.js/lib/environment/stylus';
 
 const Page = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const brushConfigRef = useRef<BrushConfig>();
-  const brushStateRef = useRef<BrushStrokeState>();
-  useEffect(() => {
-    const ctx = canvasRef.current!.getContext('2d')!;
-    brushConfigRef.current = {
-      ...defaultBrushConfig,
-      ctx,
-      draw: getDrawCircleFn(ctx, '#000', 1),
-      size: 30,
-      aspectRatio: 1,
-    };
-  }, []);
+  const [drawingPhase, setDrawingPhase] = useState<StrokeDrawingPhase<any, any>>();
   const downHandler: PointerEventHandler = e => {
-    brushStateRef.current = down(brushConfigRef.current!, e.nativeEvent);
+    const ctx = canvasRef.current!.getContext('2d')!;
+    const stylusState = getStylusState(e.nativeEvent);
+    setDrawingPhase(
+      chooChoo(
+        {
+          ...defaultChooChooConfig,
+          target: down(
+            {
+              ...defaultBrushConfig,
+              ctx,
+              draw: getDrawCircleFn(ctx, '#000', 1),
+              size: 30,
+              aspectRatio: 1,
+            },
+            stylusState
+          ),
+        },
+        stylusState
+      )
+    );
   };
-  const moveHandler: PointerEventHandler = e => {
-    if (!brushStateRef.current) return;
-    move(brushConfigRef.current!, brushStateRef.current, e.nativeEvent);
-  };
-  const upHandler: PointerEventHandler = e => {
-    if (!brushStateRef.current) return;
-    up(brushConfigRef.current!, brushStateRef.current, e.nativeEvent);
-    brushStateRef.current = undefined;
-  };
-  return <canvas
-    ref={canvasRef}
-    onPointerDown={downHandler}
-    onPointerMove={moveHandler}
-    onPointerUp={upHandler}
-    width={500}
-    height={500}
-    style={{
-      outline: '1px solid black',
-      touchAction: 'none',
-    }}
-  />;
-}
+  const moveHandler: PointerEventHandler | undefined =
+    drawingPhase &&
+    (e => {
+      const stylusState = getStylusState(e.nativeEvent);
+      drawingPhase.move(stylusState);
+    });
+  const upHandler: PointerEventHandler | undefined =
+    drawingPhase &&
+    (e => {
+      const stylusState = getStylusState(e.nativeEvent);
+      drawingPhase.up(stylusState);
+      setDrawingPhase(undefined);
+    });
+  return (
+    <canvas
+      ref={canvasRef}
+      onPointerDown={downHandler}
+      onPointerMove={moveHandler}
+      onPointerUp={upHandler}
+      width={500}
+      height={500}
+      style={{
+        outline: '1px solid black',
+        touchAction: 'none',
+      }}
+    />
+  );
+};
 
 export default Page;
