@@ -1,29 +1,33 @@
 import React, { useRef, PointerEventHandler, useState } from 'react';
-import { down, defaultBrushConfig, getDrawCircleFn } from 'croquis.js/lib/draw/brush';
-import chooChoo, { defaultChooChooConfig } from 'croquis.js/lib/stabilizer/chooChoo';
+import {
+  stroke as brush,
+  defaultBrushConfig,
+  getDrawCircleFn,
+  BrushStrokeResult,
+} from 'croquis.js/lib/draw/brush';
+import chooChoo, { defaultChooChooConfig, ChooChooState } from 'croquis.js/lib/stabilizer/chooChoo';
 import type { StrokeDrawingPhase } from 'croquis.js/lib';
 import { getStylusState } from 'croquis.js/lib/environment/stylus';
 
 const Page = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [drawingPhase, setDrawingPhase] = useState<StrokeDrawingPhase<any, any>>();
+  const [drawingPhase, setDrawingPhase] = useState<
+    StrokeDrawingPhase<ChooChooState, BrushStrokeResult>
+  >();
   const downHandler: PointerEventHandler = e => {
     const ctx = canvasRef.current!.getContext('2d')!;
     const stylusState = getStylusState(e.nativeEvent);
     setDrawingPhase(
-      chooChoo(
+      chooChoo(brush).down(
         {
           ...defaultChooChooConfig,
-          target: down(
-            {
-              ...defaultBrushConfig,
-              ctx,
-              draw: getDrawCircleFn(ctx, '#000', 1),
-              size: 30,
-              aspectRatio: 1,
-            },
-            stylusState
-          ),
+          targetConfig: {
+            ...defaultBrushConfig,
+            ctx,
+            draw: getDrawCircleFn(ctx, '#000', 1),
+            size: 30,
+            aspectRatio: 1,
+          },
         },
         stylusState
       )

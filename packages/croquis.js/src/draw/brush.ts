@@ -144,20 +144,35 @@ export function stamp(config: BrushConfig, state: BrushStrokeState, params: Stam
   state.lastStamp = params;
 }
 
-export const down: StrokeProtocol<BrushConfig, BrushStrokeState, BrushStrokeResult> = (
-  config,
-  curr,
-  prevState
-) => {
-  const state: BrushStrokeState = prevState || {
-    tangent: 0,
-    delta: 0,
-    lastStamp: { x: curr.x, y: curr.y, scale: curr.pressure, angle: curr.twist * toRad },
-    reservedStamp: null,
-    boundingRect: { x: 0, y: 0, w: 0, h: 0 },
-    prev: curr,
-  };
-  const drawingPhase: StrokeDrawingPhase<BrushStrokeState, BrushStrokeResult> = {
+export const stroke: StrokeProtocol<BrushConfig, BrushStrokeState, BrushStrokeResult> = {
+  resume(config, prevState) {
+    return getDrawingPhase(config, prevState);
+  },
+  down(config, curr) {
+    const state: BrushStrokeState = {
+      tangent: 0,
+      delta: 0,
+      lastStamp: { x: curr.x, y: curr.y, scale: curr.pressure, angle: curr.twist * toRad },
+      reservedStamp: null,
+      boundingRect: { x: 0, y: 0, w: 0, h: 0 },
+      prev: curr,
+    };
+    const drawingPhase = getDrawingPhase(config, state);
+    if (curr.pressure <= 0) return drawingPhase;
+    if (config.rotateToTangent || config.normalSpread > 0 || config.tangentSpread > 0) {
+      state.reservedStamp = state.lastStamp;
+    } else {
+      stamp(config, state, state.lastStamp);
+    }
+    return drawingPhase;
+  },
+};
+
+function getDrawingPhase(
+  config: BrushConfig,
+  state: BrushStrokeState
+): StrokeDrawingPhase<BrushStrokeState, BrushStrokeResult> {
+  return {
     state,
     move(curr) {
       try {
@@ -214,12 +229,4 @@ export const down: StrokeProtocol<BrushConfig, BrushStrokeState, BrushStrokeResu
       };
     },
   };
-  if (prevState) return drawingPhase;
-  if (curr.pressure <= 0) return drawingPhase;
-  if (config.rotateToTangent || config.normalSpread > 0 || config.tangentSpread > 0) {
-    state.reservedStamp = state.lastStamp;
-  } else {
-    stamp(config, state, state.lastStamp);
-  }
-  return drawingPhase;
-};
+}
