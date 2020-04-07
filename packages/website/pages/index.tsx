@@ -1,4 +1,4 @@
-import React, { useRef, PointerEventHandler, useState } from 'react';
+import React, { useRef, PointerEventHandler, useState, useEffect } from 'react';
 import {
   stroke as brush,
   defaultBrushConfig,
@@ -14,6 +14,11 @@ const Page = () => {
   const [drawingPhase, setDrawingPhase] = useState<
     StrokeDrawingPhase<ChooChooState, BrushStrokeResult>
   >();
+  useEffect(() => {
+    if (!drawingPhase) return;
+    const id = setInterval(drawingPhase.state.update, 10);
+    return () => clearInterval(id);
+  }, [drawingPhase]);
   const downHandler: PointerEventHandler = e => {
     const ctx = canvasRef.current!.getContext('2d')!;
     const stylusState = getStylusState(e.nativeEvent);
@@ -25,7 +30,7 @@ const Page = () => {
             ...defaultBrushConfig,
             ctx,
             draw: getDrawCircleFn(ctx, '#000', 1),
-            size: 30,
+            size: 10,
             aspectRatio: 1,
           },
         },

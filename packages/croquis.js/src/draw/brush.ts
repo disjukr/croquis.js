@@ -1,6 +1,7 @@
 import type { Color } from '../color';
 import type { Rect } from '../geom/rect';
 import type { StylusState } from '../environment/stylus';
+import { cloneStylusState, copyStylusState } from '../environment/stylus';
 import type { StrokeProtocol, StrokeDrawingPhase } from '..';
 
 const pi = Math.PI;
@@ -155,7 +156,7 @@ export const stroke: StrokeProtocol<BrushConfig, BrushStrokeState, BrushStrokeRe
       lastStamp: { x: curr.x, y: curr.y, scale: curr.pressure, angle: curr.twist * toRad },
       reservedStamp: null,
       boundingRect: { x: 0, y: 0, w: 0, h: 0 },
-      prev: curr,
+      prev: cloneStylusState(curr),
     };
     const drawingPhase = getDrawingPhase(config, state);
     if (curr.pressure <= 0) return drawingPhase;
@@ -215,7 +216,7 @@ function getDrawingPhase(
           stamp(config, state, state.lastStamp);
         }
       } finally {
-        state.prev = curr;
+        copyStylusState(state.prev, curr);
       }
     },
     up(curr) {

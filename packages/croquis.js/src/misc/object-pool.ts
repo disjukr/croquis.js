@@ -2,7 +2,11 @@ export interface CreatePoolConfig<T> {
   createItem: () => T;
   poolSize: number;
 }
-export function createPool<T>(config: CreatePoolConfig<T>) {
+export interface ObjectPool<T> {
+  take(): T;
+  give(item: T): void;
+}
+export function createPool<T>(config: CreatePoolConfig<T>): ObjectPool<T> {
   const items: T[] = [];
   return {
     take() {
