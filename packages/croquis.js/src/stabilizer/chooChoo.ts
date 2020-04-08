@@ -1,5 +1,5 @@
-import type { StylusState } from '../environment/stylus';
-import { cloneStylusState, copyStylusState, interpolateStylusState } from '../environment/stylus';
+import { StylusState, createStylusStates } from '../environment/stylus';
+import { copyStylusState, interpolateStylusState } from '../environment/stylus';
 import type {
   StrokeProtocol,
   StrokeDrawingPhase,
@@ -38,7 +38,14 @@ function getDrawingPhase(
       const head = state.stylusStates[0];
       const tail = state.stylusStates[state.stylusStates.length - 1];
       copyStylusState(head, stylusState);
-      // TODO: catch up
+      if (config.catchUp) {
+        let dx: number, dy: number;
+        do {
+          state.update();
+          dx = (tail.x - head.x) | 0;
+          dy = (tail.y - head.y) | 0;
+        } while (dx || dy);
+      }
       return state.targetDrawingPhase.up(tail);
     },
   };
@@ -46,16 +53,20 @@ function getDrawingPhase(
 export default function chooChoo<TProxyTarget extends StrokeProtocol>(target: TProxyTarget) {
   return {
     resume(config, prevState) {
+      const diff = config.tailCount + 1 - prevState.stylusStates.length;
+      if (diff > 0) {
+        const tail = prevState.stylusStates[prevState.stylusStates.length - 1];
+        prevState.stylusStates = prevState.stylusStates.concat(createStylusStates(diff, tail));
+      } else if (diff < 0) {
+        prevState.stylusStates.length -= diff;
+      }
       return getDrawingPhase(config, prevState);
     },
-    down(config, strokeState) {
-      const stylusStates = Array.from({ length: config.tailCount + 1 }, () =>
-        cloneStylusState(strokeState)
-      );
-      const head = stylusStates[0];
+    down(config, stylusState) {
+      const stylusStates = createStylusStates(config.tailCount + 1, stylusState);
       const tail = stylusStates[stylusStates.length - 1];
       const state = {
-        targetDrawingPhase: target.down(config.targetConfig, strokeState),
+        targetDrawingPhase: target.down(config.targetConfig, stylusState),
         stylusStates,
         update() {
           const follow = 1 - Math.min(0.95, Math.max(0, config.weight));

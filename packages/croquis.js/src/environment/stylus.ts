@@ -36,6 +36,14 @@ export function createStylusState(): StylusState {
   };
 }
 
+const dummyStylusState = createStylusState();
+export function createStylusStates(
+  length: number,
+  prototype: Readonly<StylusState> = dummyStylusState
+): StylusState[] {
+  return Array.from({ length }, () => cloneStylusState(prototype));
+}
+
 export function cloneStylusState(stylusState: Readonly<StylusState>): StylusState {
   const { x, y, pressure, tangentialPressure, tiltX, tiltY, twist } = stylusState;
   return { x, y, pressure, tangentialPressure, tiltX, tiltY, twist };
