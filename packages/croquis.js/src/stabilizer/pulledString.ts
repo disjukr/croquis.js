@@ -8,7 +8,7 @@ import type {
 } from '..';
 
 export interface PulledStringConfig<TProxyTarget extends StrokeProtocol = any> {
-  stringLength: number; // 0~1
+  stringLength: number;
   targetConfig: ConfigOfStrokeProtocol<TProxyTarget>;
 }
 export const defaultPulledStringConfig: Omit<PulledStringConfig<any>, 'targetConfig'> = {
@@ -25,12 +25,24 @@ function getDrawingPhase(
   return {
     state,
     move(stylusState) {
-      // TODO
-      state.targetDrawingPhase.move(stylusState);
+      const l = config.stringLength;
+      const px = state.follower.x;
+      const py = state.follower.y;
+      const dx = stylusState.x - px;
+      const dy = stylusState.y - py;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      copyStylusState(state.follower, stylusState);
+      if (d > l) {
+        const t = Math.min((d - l) / l, 1);
+        state.follower.x = px + dx * t;
+        state.follower.y = py + dy * t;
+      } else {
+        state.follower.x = px;
+        state.follower.y = py;
+      }
+      state.targetDrawingPhase.move(state.follower);
     },
-    up(stylusState) {
-      return state.targetDrawingPhase.up(stylusState);
-    },
+    up: state.targetDrawingPhase.up,
   };
 }
 export default function pulledString<TProxyTarget extends StrokeProtocol>(target: TProxyTarget) {

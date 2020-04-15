@@ -5,34 +5,51 @@ import {
   getDrawCircleFn,
   BrushStrokeResult,
 } from 'croquis.js/lib/draw/brush';
-import chooChoo, { defaultChooChooConfig, ChooChooState } from 'croquis.js/lib/stabilizer/chooChoo';
+// import chooChoo, { defaultChooChooConfig, ChooChooState } from 'croquis.js/lib/stabilizer/chooChoo';
+import pulledString, {
+  defaultPulledStringConfig,
+  PulledStringState,
+} from 'croquis.js/lib/stabilizer/pulledString';
 import type { StrokeDrawingPhase } from 'croquis.js/lib';
 import { getStylusState } from 'croquis.js/lib/environment/stylus';
 
 const Page = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  // const [drawingPhase, setDrawingPhase] = useState<
+  //   StrokeDrawingPhase<ChooChooState, BrushStrokeResult>
+  // >();
   const [drawingPhase, setDrawingPhase] = useState<
-    StrokeDrawingPhase<ChooChooState, BrushStrokeResult>
+    StrokeDrawingPhase<PulledStringState, BrushStrokeResult>
   >();
-  useEffect(() => {
-    if (!drawingPhase) return;
-    const id = setInterval(drawingPhase.state.update, 10);
-    return () => clearInterval(id);
-  }, [drawingPhase]);
+  // useEffect(() => {
+  //   if (!drawingPhase) return;
+  //   const id = setInterval(drawingPhase.state.update, 10);
+  //   return () => clearInterval(id);
+  // }, [drawingPhase]);
   const downHandler: PointerEventHandler = e => {
     const ctx = canvasRef.current!.getContext('2d')!;
     const stylusState = getStylusState(e.nativeEvent);
+    const brushConfig = {
+      ...defaultBrushConfig,
+      ctx,
+      draw: getDrawCircleFn(ctx, '#000', 1),
+      size: 10,
+      aspectRatio: 1,
+    };
+    // setDrawingPhase(
+    //   chooChoo(brush).down(
+    //     {
+    //       ...defaultChooChooConfig,
+    //       targetConfig: brushConfig,
+    //     },
+    //     stylusState
+    //   )
+    // );
     setDrawingPhase(
-      chooChoo(brush).down(
+      pulledString(brush).down(
         {
-          ...defaultChooChooConfig,
-          targetConfig: {
-            ...defaultBrushConfig,
-            ctx,
-            draw: getDrawCircleFn(ctx, '#000', 1),
-            size: 10,
-            aspectRatio: 1,
-          },
+          ...defaultPulledStringConfig,
+          targetConfig: brushConfig,
         },
         stylusState
       )

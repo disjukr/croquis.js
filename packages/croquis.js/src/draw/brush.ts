@@ -1,5 +1,5 @@
 import type { Color } from '../color';
-import type { Rect } from '../geom/rect';
+import type { Rect } from '../geometry/rect';
 import type { StylusState } from '../environment/stylus';
 import { cloneStylusState, copyStylusState } from '../environment/stylus';
 import type { StrokeProtocol, StrokeDrawingPhase } from '..';
@@ -32,6 +32,7 @@ export interface BrushConfig {
   spacing: number;
   angle: number; // radian
   rotateToTangent: boolean;
+  // TODO: scaleSpread
   angleRandom: RandomFn;
   angleSpread: number; // radian
   normalRandom: RandomFn;
