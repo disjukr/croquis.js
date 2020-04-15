@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint:fix": "prettier --write \"pages/**/*.@(ts|tsx)\""
+    "lint:fix": "prettier --write \"src/**/*.@(ts|tsx)\""
   },
   "dependencies": {
     "@types/node": "^13.9.8",

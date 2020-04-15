@@ -12,7 +12,7 @@ export interface PulledStringConfig<TProxyTarget extends StrokeProtocol = any> {
   targetConfig: ConfigOfStrokeProtocol<TProxyTarget>;
 }
 export const defaultPulledStringConfig: Omit<PulledStringConfig<any>, 'targetConfig'> = {
-  stringLength: 50,
+  stringLength: 100,
 };
 export interface PulledStringState<TProxyTarget extends StrokeProtocol = any> {
   targetDrawingPhase: StrokeDrawingPhaseFromProtocol<TProxyTarget>;
@@ -62,4 +62,24 @@ export default function pulledString<TProxyTarget extends StrokeProtocol>(target
     PulledStringState<TProxyTarget>,
     ResultOfStrokeProtocol<TProxyTarget>
   >;
+}
+
+export function getGuidePathData(
+  pointerX: number,
+  pointerY: number,
+  followerX: number,
+  followerY: number,
+  stringLength: number
+): string {
+  const dx = pointerX - followerX;
+  const dy = pointerY - followerY;
+  const d = Math.sqrt(dx * dx + dy * dy);
+  const sx = followerX;
+  const sy = followerY;
+  const ex = pointerX;
+  const ey = pointerY;
+  if (d >= stringLength) return `M${sx},${sy}L${ex},${ey}`;
+  const cx = sx + (ex - sx) * 0.5;
+  const cy = sy + (ey - sy) * 0.5 + (stringLength - d);
+  return `M${sx},${sy}Q${cx},${cy} ${ex},${ey}`;
 }
