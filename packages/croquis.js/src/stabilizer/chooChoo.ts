@@ -1,12 +1,12 @@
-import { StylusState, createStylusStates } from '../environment/stylus';
-import { copyStylusState, interpolateStylusState } from '../environment/stylus';
+import { StylusState, createStylusStates } from '../stylus';
+import { copyStylusState, interpolateStylusState } from '../stylus';
 import type {
   StrokeProtocol,
   StrokeDrawingContext,
   ResultOfStrokeProtocol,
   StrokeDrawingContextFromProtocol,
   ConfigOfStrokeProtocol,
-} from '..';
+} from '../stroke-protocol';
 
 export interface ChooChooConfig<TProxyTarget extends StrokeProtocol = any> {
   tailCount: number;

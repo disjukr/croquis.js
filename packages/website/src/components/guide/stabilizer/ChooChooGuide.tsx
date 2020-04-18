@@ -1,5 +1,5 @@
 import React from 'react';
-import { StylusState } from 'croquis.js/lib/environment/stylus';
+import { StylusState } from 'croquis.js/lib/stylus';
 
 interface ChooChooGuideProps extends React.SVGProps<SVGSVGElement> {
   brushSize: number;

@@ -1,11 +1,11 @@
-import { StylusState, cloneStylusState, copyStylusState } from '../environment/stylus';
+import { StylusState, cloneStylusState, copyStylusState } from '../stylus';
 import type {
   StrokeProtocol,
   StrokeDrawingContext,
   ResultOfStrokeProtocol,
   StrokeDrawingContextFromProtocol,
   ConfigOfStrokeProtocol,
-} from '..';
+} from '../stroke-protocol';
 
 export interface PulledStringConfig<TProxyTarget extends StrokeProtocol = any> {
   stringLength: number;

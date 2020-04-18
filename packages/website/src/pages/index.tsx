@@ -5,21 +5,17 @@ import {
   defaultBrushConfig,
   getDrawCircleFn,
   BrushStrokeResult,
-} from 'croquis.js/lib/draw/brush';
+} from 'croquis.js/lib/brush';
 import chooChoo, {
   defaultChooChooConfig,
-  ChooChooState,
-  ChooChooConfig,
   ChooChooDrawingContext,
 } from 'croquis.js/lib/stabilizer/chooChoo';
 import pulledString, {
   defaultPulledStringConfig,
-  PulledStringState,
-  PulledStringConfig,
   PulledStringDrawingContext,
 } from 'croquis.js/lib/stabilizer/pulledString';
 import type { StrokeDrawingContext } from 'croquis.js/lib';
-import { getStylusState, createStylusState } from 'croquis.js/lib/environment/stylus';
+import { getStylusState, createStylusState } from 'croquis.js/lib/stylus';
 import ChooChooGuide from '../components/guide/stabilizer/ChooChooGuide';
 import PulledStringGuide from '../components/guide/stabilizer/PulledStringGuide';
 import useCanvasFadeout from '../misc/useCanvasFadeout';

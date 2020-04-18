@@ -1,6 +1,4 @@
-export * as draw from './draw';
-export * as color from './color';
-import { StylusState } from './environment/stylus';
+import { StylusState } from './stylus';
 
 export interface StrokeProtocol<TConfig = unknown, TState = unknown, TResult = unknown> {
   resume(config: TConfig, prevState: TState): StrokeDrawingContext<TConfig, TState, TResult>;
