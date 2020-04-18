@@ -2,7 +2,7 @@ import type { Color } from '../color';
 import type { Rect } from '../geometry/rect';
 import type { StylusState } from '../environment/stylus';
 import { cloneStylusState, copyStylusState } from '../environment/stylus';
-import type { StrokeProtocol, StrokeDrawingPhase } from '..';
+import type { StrokeProtocol, StrokeDrawingContext } from '..';
 
 const pi = Math.PI;
 const one = pi + pi;
@@ -146,9 +146,10 @@ export function stamp(config: BrushConfig, state: BrushStrokeState, params: Stam
   state.lastStamp = params;
 }
 
-export const stroke: StrokeProtocol<BrushConfig, BrushStrokeState, BrushStrokeResult> = {
+export type BrushStroke = StrokeProtocol<BrushConfig, BrushStrokeState, BrushStrokeResult>;
+export const stroke: BrushStroke = {
   resume(config, prevState) {
-    return getDrawingPhase(config, prevState);
+    return getDrawingContext(config, prevState);
   },
   down(config, curr) {
     const state: BrushStrokeState = {
@@ -159,22 +160,23 @@ export const stroke: StrokeProtocol<BrushConfig, BrushStrokeState, BrushStrokeRe
       boundingRect: { x: 0, y: 0, w: 0, h: 0 },
       prev: cloneStylusState(curr),
     };
-    const drawingPhase = getDrawingPhase(config, state);
-    if (curr.pressure <= 0) return drawingPhase;
+    const drawingContext = getDrawingContext(config, state);
+    if (curr.pressure <= 0) return drawingContext;
     if (config.rotateToTangent || config.normalSpread > 0 || config.tangentSpread > 0) {
       state.reservedStamp = state.lastStamp;
     } else {
       stamp(config, state, state.lastStamp);
     }
-    return drawingPhase;
+    return drawingContext;
   },
 };
 
-function getDrawingPhase(
+function getDrawingContext(
   config: BrushConfig,
   state: BrushStrokeState
-): StrokeDrawingPhase<BrushStrokeState, BrushStrokeResult> {
+): StrokeDrawingContext<BrushConfig, BrushStrokeState, BrushStrokeResult> {
   return {
+    config,
     state,
     move(curr) {
       try {

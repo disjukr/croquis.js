@@ -1,36 +1,45 @@
 import React, { useRef, PointerEventHandler, useState, useEffect } from 'react';
 import {
   stroke as brush,
+  BrushStroke,
   defaultBrushConfig,
   getDrawCircleFn,
   BrushStrokeResult,
 } from 'croquis.js/lib/draw/brush';
-import chooChoo, { defaultChooChooConfig, ChooChooState } from 'croquis.js/lib/stabilizer/chooChoo';
+import chooChoo, {
+  defaultChooChooConfig,
+  ChooChooState,
+  ChooChooConfig,
+  ChooChooDrawingContext,
+} from 'croquis.js/lib/stabilizer/chooChoo';
 import pulledString, {
   defaultPulledStringConfig,
   PulledStringState,
+  PulledStringConfig,
+  PulledStringDrawingContext,
 } from 'croquis.js/lib/stabilizer/pulledString';
-import type { StrokeDrawingPhase } from 'croquis.js/lib';
-import { getStylusState } from 'croquis.js/lib/environment/stylus';
+import type { StrokeDrawingContext } from 'croquis.js/lib';
+import { getStylusState, createStylusState } from 'croquis.js/lib/environment/stylus';
+import ChooChooGuide from '../components/guide/stabilizer/ChooChooGuide';
 import PulledStringGuide from '../components/guide/stabilizer/PulledStringGuide';
 import useCanvasFadeout from '../misc/useCanvasFadeout';
 import useWindowSize from '../misc/useWindowSize';
+import useForceUpdate from '../misc/useForceUpdate';
 
 const Page = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useCanvasFadeout(canvasRef);
   const windowSize = useWindowSize();
-  // const [drawingPhase, setDrawingPhase] = useState<
-  //   StrokeDrawingPhase<ChooChooState, BrushStrokeResult>
-  // >();
   const [drawingPhase, setDrawingPhase] = useState<
-    StrokeDrawingPhase<PulledStringState, BrushStrokeResult>
+    StrokeDrawingContext<any, any, BrushStrokeResult>
   >();
-  // useEffect(() => {
-  //   if (!drawingPhase) return;
-  //   const id = setInterval(drawingPhase.state.update, 10);
-  //   return () => clearInterval(id);
-  // }, [drawingPhase]);
+  const [stabilizerType, setStabilizerType] = useState<StabilizerType>('pulled string');
+  useEffect(() => setDrawingPhase(undefined), [stabilizerType]);
+  useEffect(() => {
+    if (!drawingPhase?.state.update) return;
+    const id = setInterval(drawingPhase.state.update, 10);
+    return () => clearInterval(id);
+  }, [drawingPhase]);
   const downHandler: PointerEventHandler = e => {
     const ctx = canvasRef.current!.getContext('2d')!;
     const stylusState = getStylusState(e.nativeEvent);
@@ -41,24 +50,23 @@ const Page = () => {
       size: 20,
       aspectRatio: 1,
     };
-    // setDrawingPhase(
-    //   chooChoo(brush).down(
-    //     {
-    //       ...defaultChooChooConfig,
-    //       targetConfig: brushConfig,
-    //     },
-    //     stylusState
-    //   )
-    // );
-    setDrawingPhase(
-      pulledString(brush).down(
-        {
-          ...defaultPulledStringConfig,
-          targetConfig: brushConfig,
-        },
-        stylusState
-      )
-    );
+    const drawingPhase =
+      stabilizerType === 'choo choo'
+        ? chooChoo(brush).down(
+            {
+              ...defaultChooChooConfig,
+              targetConfig: brushConfig,
+            },
+            stylusState
+          )
+        : pulledString(brush).down(
+            {
+              ...defaultPulledStringConfig,
+              targetConfig: brushConfig,
+            },
+            stylusState
+          );
+    setDrawingPhase(drawingPhase);
   };
   useEffect(() => {
     if (!drawingPhase) return;
@@ -92,7 +100,7 @@ const Page = () => {
           touchAction: 'none',
         }}
       />
-      <StabilizerGuide type="pulled string" drawingPhase={drawingPhase} />
+      <StabilizerGuide type={stabilizerType} drawingPhase={drawingPhase} />
     </>
   );
 };
@@ -100,33 +108,47 @@ const Page = () => {
 export default Page;
 
 type StabilizerGuideProps =
-  // | {
-  //   type: 'choo choo',
-  //   drawingPhase?: StrokeDrawingPhase<ChooChooState, BrushStrokeResult>,
-  // }
-  {
-    type: 'pulled string';
-    drawingPhase?: StrokeDrawingPhase<PulledStringState, BrushStrokeResult>;
-  };
-const StabilizerGuide: React.FC<StabilizerGuideProps> = ({ type, drawingPhase }) => {
-  const [pointer, setPointer] = useState({ x: 0, y: 0 });
+  | {
+      type: 'choo choo';
+      drawingPhase?: ChooChooDrawingContext<BrushStroke>;
+    }
+  | {
+      type: 'pulled string';
+      drawingPhase?: PulledStringDrawingContext<BrushStroke>;
+    };
+type StabilizerType = StabilizerGuideProps['type'];
+const defaultStylusState = createStylusState();
+const StabilizerGuide: React.FC<StabilizerGuideProps> = props => {
+  const [stylusState, setStylusState] = useState(defaultStylusState);
+  const forceUpdate = useForceUpdate();
   useEffect(() => {
-    const pointermove = (e: PointerEvent) => setPointer({ x: e.clientX, y: e.clientY });
+    const pointermove = (e: PointerEvent) => setStylusState(getStylusState(e));
+    const id = setInterval(forceUpdate, 10);
     window.addEventListener('pointermove', pointermove);
-    return () => window.removeEventListener('pointermove', pointermove);
+    return () => {
+      clearInterval(id);
+      window.removeEventListener('pointermove', pointermove);
+    };
   }, []);
-  return (
-    (drawingPhase && (
-      <PulledStringGuide
-        pointerX={pointer.x}
-        pointerY={pointer.y}
-        followerX={drawingPhase.state.follower.x}
-        followerY={drawingPhase.state.follower.y}
-        stringLength={100}
-        power={drawingPhase.state.follower.pressure * 20}
-        style={{ position: 'absolute', top: 0, left: 0 }}
-      />
-    )) ||
-    null
-  );
+  if (!props.drawingPhase) return null;
+  switch (props.type) {
+    case 'choo choo':
+      return (
+        <ChooChooGuide
+          brushSize={props.drawingPhase.config.targetConfig.size}
+          stylusStates={props.drawingPhase.state.stylusStates}
+          style={{ position: 'absolute', top: 0, left: 0 }}
+        />
+      );
+    case 'pulled string':
+      return (
+        <PulledStringGuide
+          brushSize={props.drawingPhase.config.targetConfig.size}
+          stylusState={stylusState}
+          follower={props.drawingPhase.state.follower}
+          stringLength={props.drawingPhase.config.stringLength}
+          style={{ position: 'absolute', top: 0, left: 0 }}
+        />
+      );
+  }
 };

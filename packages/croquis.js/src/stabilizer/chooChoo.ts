@@ -2,9 +2,9 @@ import { StylusState, createStylusStates } from '../environment/stylus';
 import { copyStylusState, interpolateStylusState } from '../environment/stylus';
 import type {
   StrokeProtocol,
-  StrokeDrawingPhase,
+  StrokeDrawingContext,
   ResultOfStrokeProtocol,
-  StrokeDrawingPhaseFromProtocol,
+  StrokeDrawingContextFromProtocol,
   ConfigOfStrokeProtocol,
 } from '..';
 
@@ -20,15 +20,19 @@ export const defaultChooChooConfig: Omit<ChooChooConfig<any>, 'targetConfig'> = 
   catchUp: true,
 };
 export interface ChooChooState<TProxyTarget extends StrokeProtocol = any> {
-  targetDrawingPhase: StrokeDrawingPhaseFromProtocol<TProxyTarget>;
+  targetDrawingContext: StrokeDrawingContextFromProtocol<TProxyTarget>;
   stylusStates: StylusState[];
   update(): void;
 }
-function getDrawingPhase(
+export type ChooChooDrawingContext<
+  TProxyTarget extends StrokeProtocol = any
+> = StrokeDrawingContext<ChooChooConfig<TProxyTarget>, ChooChooState<TProxyTarget>>;
+function getDrawingContext(
   config: ChooChooConfig<any>,
   state: ChooChooState<any>
-): StrokeDrawingPhase<ChooChooState<any>> {
+): ChooChooDrawingContext {
   return {
+    config,
     state,
     move(stylusState) {
       const head = state.stylusStates[0];
@@ -46,7 +50,7 @@ function getDrawingPhase(
           dy = (tail.y - head.y) | 0;
         } while (dx || dy);
       }
-      return state.targetDrawingPhase.up(tail);
+      return state.targetDrawingContext.up(tail);
     },
   };
 }
@@ -60,13 +64,13 @@ export default function chooChoo<TProxyTarget extends StrokeProtocol>(target: TP
       } else if (diff < 0) {
         prevState.stylusStates.length -= diff;
       }
-      return getDrawingPhase(config, prevState);
+      return getDrawingContext(config, prevState);
     },
     down(config, stylusState) {
       const stylusStates = createStylusStates(config.tailCount + 1, stylusState);
       const tail = stylusStates[stylusStates.length - 1];
       const state = {
-        targetDrawingPhase: target.down(config.targetConfig, stylusState),
+        targetDrawingContext: target.down(config.targetConfig, stylusState),
         stylusStates,
         update() {
           const follow = 1 - Math.min(0.95, Math.max(0, config.weight));
@@ -75,10 +79,10 @@ export default function chooChoo<TProxyTarget extends StrokeProtocol>(target: TP
             const prev = stylusStates[i - 1];
             interpolateStylusState(curr, prev, follow);
           }
-          state.targetDrawingPhase.move(tail);
+          state.targetDrawingContext.move(tail);
         },
       };
-      return getDrawingPhase(config, state);
+      return getDrawingContext(config, state);
     },
   } as StrokeProtocol<
     ChooChooConfig<TProxyTarget>,

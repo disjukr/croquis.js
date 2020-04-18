@@ -1,9 +1,9 @@
 import { StylusState, cloneStylusState, copyStylusState } from '../environment/stylus';
 import type {
   StrokeProtocol,
-  StrokeDrawingPhase,
+  StrokeDrawingContext,
   ResultOfStrokeProtocol,
-  StrokeDrawingPhaseFromProtocol,
+  StrokeDrawingContextFromProtocol,
   ConfigOfStrokeProtocol,
 } from '..';
 
@@ -12,17 +12,21 @@ export interface PulledStringConfig<TProxyTarget extends StrokeProtocol = any> {
   targetConfig: ConfigOfStrokeProtocol<TProxyTarget>;
 }
 export const defaultPulledStringConfig: Omit<PulledStringConfig<any>, 'targetConfig'> = {
-  stringLength: 100,
+  stringLength: 50,
 };
 export interface PulledStringState<TProxyTarget extends StrokeProtocol = any> {
-  targetDrawingPhase: StrokeDrawingPhaseFromProtocol<TProxyTarget>;
+  targetDrawingContext: StrokeDrawingContextFromProtocol<TProxyTarget>;
   follower: StylusState;
 }
-function getDrawingPhase(
+export type PulledStringDrawingContext<
+  TProxyTarget extends StrokeProtocol = any
+> = StrokeDrawingContext<PulledStringConfig<TProxyTarget>, PulledStringState<TProxyTarget>>;
+function getDrawingContext(
   config: PulledStringConfig<any>,
   state: PulledStringState<any>
-): StrokeDrawingPhase<PulledStringState<any>> {
+): PulledStringDrawingContext {
   return {
+    config,
     state,
     move(stylusState) {
       const l = config.stringLength;
@@ -40,22 +44,22 @@ function getDrawingPhase(
         state.follower.x = px;
         state.follower.y = py;
       }
-      state.targetDrawingPhase.move(state.follower);
+      state.targetDrawingContext.move(state.follower);
     },
-    up: state.targetDrawingPhase.up,
+    up: state.targetDrawingContext.up,
   };
 }
 export default function pulledString<TProxyTarget extends StrokeProtocol>(target: TProxyTarget) {
   return {
     resume(config, prevState) {
-      return getDrawingPhase(config, prevState);
+      return getDrawingContext(config, prevState);
     },
     down(config, stylusState) {
       const state = {
-        targetDrawingPhase: target.down(config.targetConfig, stylusState),
+        targetDrawingContext: target.down(config.targetConfig, stylusState),
         follower: cloneStylusState(stylusState),
       };
-      return getDrawingPhase(config, state);
+      return getDrawingContext(config, state);
     },
   } as StrokeProtocol<
     PulledStringConfig<TProxyTarget>,
