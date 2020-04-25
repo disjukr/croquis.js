@@ -14,7 +14,7 @@ import pulledString, {
   defaultPulledStringConfig,
   PulledStringDrawingContext,
 } from 'croquis.js/lib/stabilizer/pulledString';
-import type { StrokeDrawingContext } from 'croquis.js/lib';
+import type { StrokeDrawingContext } from 'croquis.js/lib/stroke-protocol';
 import { getStylusState, createStylusState } from 'croquis.js/lib/stylus';
 import ChooChooGuide from '../components/guide/stabilizer/ChooChooGuide';
 import PulledStringGuide from '../components/guide/stabilizer/PulledStringGuide';
