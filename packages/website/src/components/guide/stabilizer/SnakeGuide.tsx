@@ -1,11 +1,11 @@
 import React from 'react';
 import { StylusState } from 'croquis.js/lib/stylus';
 
-interface ChooChooGuideProps extends React.SVGProps<SVGSVGElement> {
+interface SnakeGuideProps extends React.SVGProps<SVGSVGElement> {
   brushSize: number;
   stylusStates: StylusState[];
 }
-const ChooChooGuide: React.FC<ChooChooGuideProps> = ({
+const SnakeGuide: React.FC<SnakeGuideProps> = ({
   brushSize,
   stylusStates,
   style,
@@ -49,4 +49,4 @@ const ChooChooGuide: React.FC<ChooChooGuideProps> = ({
   );
 };
 
-export default ChooChooGuide;
+export default SnakeGuide;

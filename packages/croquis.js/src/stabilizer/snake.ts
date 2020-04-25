@@ -8,29 +8,29 @@ import type {
   ConfigOfStrokeProtocol,
 } from '../stroke-protocol';
 
-export interface ChooChooConfig<TProxyTarget extends StrokeProtocol = any> {
+export interface SnakeConfig<TProxyTarget extends StrokeProtocol = any> {
   tailCount: number;
   weight: number; // 0~1
   catchUp: boolean;
   targetConfig: ConfigOfStrokeProtocol<TProxyTarget>;
 }
-export const defaultChooChooConfig: Omit<ChooChooConfig<any>, 'targetConfig'> = {
+export const defaultSnakeConfig: Omit<SnakeConfig<any>, 'targetConfig'> = {
   tailCount: 3,
   weight: 0.5,
   catchUp: true,
 };
-export interface ChooChooState<TProxyTarget extends StrokeProtocol = any> {
+export interface SnakeState<TProxyTarget extends StrokeProtocol = any> {
   targetDrawingContext: StrokeDrawingContextFromProtocol<TProxyTarget>;
   stylusStates: StylusState[];
   update(): void;
 }
-export type ChooChooDrawingContext<
+export type SnakeDrawingContext<
   TProxyTarget extends StrokeProtocol = any
-> = StrokeDrawingContext<ChooChooConfig<TProxyTarget>, ChooChooState<TProxyTarget>>;
+> = StrokeDrawingContext<SnakeConfig<TProxyTarget>, SnakeState<TProxyTarget>>;
 function getDrawingContext(
-  config: ChooChooConfig<any>,
-  state: ChooChooState<any>
-): ChooChooDrawingContext {
+  config: SnakeConfig<any>,
+  state: SnakeState<any>
+): SnakeDrawingContext {
   return {
     config,
     state,
@@ -54,7 +54,7 @@ function getDrawingContext(
     },
   };
 }
-export default function chooChoo<TProxyTarget extends StrokeProtocol>(target: TProxyTarget) {
+export default function snake<TProxyTarget extends StrokeProtocol>(target: TProxyTarget) {
   return {
     resume(config, prevState) {
       const diff = config.tailCount + 1 - prevState.stylusStates.length;
@@ -85,8 +85,8 @@ export default function chooChoo<TProxyTarget extends StrokeProtocol>(target: TP
       return getDrawingContext(config, state);
     },
   } as StrokeProtocol<
-    ChooChooConfig<TProxyTarget>,
-    ChooChooState<TProxyTarget>,
+    SnakeConfig<TProxyTarget>,
+    SnakeState<TProxyTarget>,
     ResultOfStrokeProtocol<TProxyTarget>
   >;
 }

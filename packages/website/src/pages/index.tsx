@@ -6,17 +6,17 @@ import {
   getDrawCircleFn,
   BrushStrokeResult,
 } from 'croquis.js/lib/brush';
-import chooChoo, {
-  defaultChooChooConfig,
-  ChooChooDrawingContext,
-} from 'croquis.js/lib/stabilizer/chooChoo';
+import snake, {
+  defaultSnakeConfig,
+  SnakeDrawingContext,
+} from 'croquis.js/lib/stabilizer/snake';
 import pulledString, {
   defaultPulledStringConfig,
   PulledStringDrawingContext,
 } from 'croquis.js/lib/stabilizer/pulledString';
 import type { StrokeDrawingContext } from 'croquis.js/lib/stroke-protocol';
 import { getStylusState, createStylusState } from 'croquis.js/lib/stylus';
-import ChooChooGuide from '../components/guide/stabilizer/ChooChooGuide';
+import SnakeGuide from '../components/guide/stabilizer/SnakeGuide';
 import PulledStringGuide from '../components/guide/stabilizer/PulledStringGuide';
 import useCanvasFadeout from '../misc/useCanvasFadeout';
 import useWindowSize from '../misc/useWindowSize';
@@ -47,10 +47,10 @@ const Page = () => {
       aspectRatio: 1,
     };
     const drawingPhase =
-      stabilizerType === 'choo choo'
-        ? chooChoo(brush).down(
+      stabilizerType === 'snake'
+        ? snake(brush).down(
             {
-              ...defaultChooChooConfig,
+              ...defaultSnakeConfig,
               targetConfig: brushConfig,
             },
             stylusState
@@ -105,8 +105,8 @@ export default Page;
 
 type StabilizerGuideProps =
   | {
-      type: 'choo choo';
-      drawingPhase?: ChooChooDrawingContext<BrushStroke>;
+      type: 'snake';
+      drawingPhase?: SnakeDrawingContext<BrushStroke>;
     }
   | {
       type: 'pulled string';
@@ -128,9 +128,9 @@ const StabilizerGuide: React.FC<StabilizerGuideProps> = props => {
   }, []);
   if (!props.drawingPhase) return null;
   switch (props.type) {
-    case 'choo choo':
+    case 'snake':
       return (
-        <ChooChooGuide
+        <SnakeGuide
           brushSize={props.drawingPhase.config.targetConfig.size}
           stylusStates={props.drawingPhase.state.stylusStates}
           style={{ position: 'absolute', top: 0, left: 0 }}

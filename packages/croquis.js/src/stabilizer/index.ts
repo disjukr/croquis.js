@@ -1,2 +1,2 @@
-export * as chooChoo from './chooChoo';
+export * as snake from './snake';
 export * as pulledString from './pulledString';
