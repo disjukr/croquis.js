@@ -28,12 +28,19 @@ export type SnakeDrawingContext<
   TProxyTarget extends StrokeProtocol = any
 > = StrokeDrawingContext<SnakeConfig<TProxyTarget>, SnakeState<TProxyTarget>>;
 function getDrawingContext(
+  stroke: StrokeProtocol,
   config: SnakeConfig<any>,
   state: SnakeState<any>
 ): SnakeDrawingContext {
   return {
-    config,
-    state,
+    getConfig(target?: StrokeProtocol<any>) {
+      if (!target || target === stroke) return config;
+      return state.targetDrawingContext.getConfig(target);
+    },
+    getState(target?: StrokeProtocol<any, any>) {
+      if (!target || target === stroke) return state;
+      return state.targetDrawingContext.getState(target);
+    },
     move(stylusState) {
       const head = state.stylusStates[0];
       copyStylusState(head, stylusState);
@@ -54,8 +61,8 @@ function getDrawingContext(
     },
   };
 }
-export default function snake<TProxyTarget extends StrokeProtocol>(target: TProxyTarget) {
-  return {
+export function getStroke<TProxyTarget extends StrokeProtocol>(target: TProxyTarget) {
+  const stroke = {
     resume(config, prevState) {
       const diff = config.tailCount + 1 - prevState.stylusStates.length;
       if (diff > 0) {
@@ -64,7 +71,7 @@ export default function snake<TProxyTarget extends StrokeProtocol>(target: TProx
       } else if (diff < 0) {
         prevState.stylusStates.length -= diff;
       }
-      return getDrawingContext(config, prevState);
+      return getDrawingContext(stroke, config, prevState);
     },
     down(config, stylusState) {
       const stylusStates = createStylusStates(config.tailCount + 1, stylusState);
@@ -82,11 +89,12 @@ export default function snake<TProxyTarget extends StrokeProtocol>(target: TProx
           state.targetDrawingContext.move(tail);
         },
       };
-      return getDrawingContext(config, state);
+      return getDrawingContext(stroke, config, state);
     },
   } as StrokeProtocol<
     SnakeConfig<TProxyTarget>,
     SnakeState<TProxyTarget>,
     ResultOfStrokeProtocol<TProxyTarget>
   >;
+  return stroke;
 }

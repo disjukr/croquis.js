@@ -5,8 +5,10 @@ export interface StrokeProtocol<TConfig = unknown, TState = unknown, TResult = u
   down(config: TConfig, stylusState: StylusState): StrokeDrawingContext<TConfig, TState, TResult>;
 }
 export interface StrokeDrawingContext<TConfig = unknown, TState = unknown, TResult = unknown> {
-  readonly config: TConfig;
-  readonly state: TState;
+  getConfig(): TConfig;
+  getConfig<TStroke extends StrokeProtocol>(target: TStroke): ConfigOfStrokeProtocol<TStroke>;
+  getState(): TState;
+  getState<TStroke extends StrokeProtocol>(target: TStroke): StateOfStrokeProtocol<TStroke>;
   move(stylusState: StylusState): void;
   up(stylusState: StylusState): TResult;
 }

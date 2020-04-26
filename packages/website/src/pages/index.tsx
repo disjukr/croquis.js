@@ -6,11 +6,13 @@ import {
   getDrawCircleFn,
   BrushStrokeResult,
 } from 'croquis.js/lib/brush';
-import snake, {
+import {
+  getStroke as getSnakeStroke,
   defaultSnakeConfig,
   SnakeDrawingContext,
 } from 'croquis.js/lib/stabilizer/snake';
-import pulledString, {
+import {
+  getStroke as getPulledStringStroke,
   defaultPulledStringConfig,
   PulledStringDrawingContext,
 } from 'croquis.js/lib/stabilizer/pulledString';
@@ -22,6 +24,9 @@ import useCanvasFadeout from '../misc/useCanvasFadeout';
 import useWindowSize from '../misc/useWindowSize';
 import useForceUpdate from '../misc/useForceUpdate';
 
+const snake = getSnakeStroke(brush);
+const pulledString = getPulledStringStroke(brush);
+
 const Page = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useCanvasFadeout(canvasRef);
@@ -32,8 +37,8 @@ const Page = () => {
   const [stabilizerType, setStabilizerType] = useState<StabilizerType>('pulled string');
   useEffect(() => setDrawingPhase(undefined), [stabilizerType]);
   useEffect(() => {
-    if (!drawingPhase?.state.update) return;
-    const id = setInterval(drawingPhase.state.update, 10);
+    if (!drawingPhase?.getState().update) return;
+    const id = setInterval(drawingPhase.getState().update, 10);
     return () => clearInterval(id);
   }, [drawingPhase]);
   const downHandler: PointerEventHandler = e => {
@@ -48,14 +53,14 @@ const Page = () => {
     };
     const drawingPhase =
       stabilizerType === 'snake'
-        ? snake(brush).down(
+        ? snake.down(
             {
               ...defaultSnakeConfig,
               targetConfig: brushConfig,
             },
             stylusState
           )
-        : pulledString(brush).down(
+        : pulledString.down(
             {
               ...defaultPulledStringConfig,
               targetConfig: brushConfig,
@@ -131,18 +136,18 @@ const StabilizerGuide: React.FC<StabilizerGuideProps> = props => {
     case 'snake':
       return (
         <SnakeGuide
-          brushSize={props.drawingPhase.config.targetConfig.size}
-          stylusStates={props.drawingPhase.state.stylusStates}
+          brushSize={props.drawingPhase.getConfig(brush).size}
+          stylusStates={props.drawingPhase.getState().stylusStates}
           style={{ position: 'absolute', top: 0, left: 0 }}
         />
       );
     case 'pulled string':
       return (
         <PulledStringGuide
-          brushSize={props.drawingPhase.config.targetConfig.size}
+          brushSize={props.drawingPhase.getConfig(brush).size}
           stylusState={stylusState}
-          follower={props.drawingPhase.state.follower}
-          stringLength={props.drawingPhase.config.stringLength}
+          follower={props.drawingPhase.getState().follower}
+          stringLength={props.drawingPhase.getConfig().stringLength}
           style={{ position: 'absolute', top: 0, left: 0 }}
         />
       );

@@ -176,8 +176,8 @@ function getDrawingContext(
   state: BrushStrokeState
 ): StrokeDrawingContext<BrushConfig, BrushStrokeState, BrushStrokeResult> {
   return {
-    config,
-    state,
+    getConfig() { return config; },
+    getState() { return state; },
     move(curr) {
       try {
         {

@@ -22,12 +22,19 @@ export type PulledStringDrawingContext<
   TProxyTarget extends StrokeProtocol = any
 > = StrokeDrawingContext<PulledStringConfig<TProxyTarget>, PulledStringState<TProxyTarget>>;
 function getDrawingContext(
+  stroke: StrokeProtocol,
   config: PulledStringConfig<any>,
   state: PulledStringState<any>
 ): PulledStringDrawingContext {
   return {
-    config,
-    state,
+    getConfig(target?: StrokeProtocol<any>) {
+      if (!target || target === stroke) return config;
+      return state.targetDrawingContext.getConfig(target);
+    },
+    getState(target?: StrokeProtocol<any, any>) {
+      if (!target || target === stroke) return state;
+      return state.targetDrawingContext.getState(target);
+    },
     move(stylusState) {
       const l = config.stringLength;
       const px = state.follower.x;
@@ -49,23 +56,24 @@ function getDrawingContext(
     up: state.targetDrawingContext.up,
   };
 }
-export default function pulledString<TProxyTarget extends StrokeProtocol>(target: TProxyTarget) {
-  return {
+export function getStroke<TProxyTarget extends StrokeProtocol>(target: TProxyTarget) {
+  const stroke = {
     resume(config, prevState) {
-      return getDrawingContext(config, prevState);
+      return getDrawingContext(stroke, config, prevState);
     },
     down(config, stylusState) {
       const state = {
         targetDrawingContext: target.down(config.targetConfig, stylusState),
         follower: cloneStylusState(stylusState),
       };
-      return getDrawingContext(config, state);
+      return getDrawingContext(stroke, config, state);
     },
   } as StrokeProtocol<
     PulledStringConfig<TProxyTarget>,
     PulledStringState<TProxyTarget>,
     ResultOfStrokeProtocol<TProxyTarget>
   >;
+  return stroke;
 }
 
 export function getGuidePathData(
