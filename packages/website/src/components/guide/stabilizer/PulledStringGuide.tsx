@@ -1,5 +1,5 @@
 import React from 'react';
-import { getGuidePathData } from 'croquis.js/lib/stabilizer/pulledString';
+import { getGuidePathData } from 'croquis.js/lib/stabilizer/pulled-string';
 import { StylusState } from 'croquis.js/lib/stylus';
 
 interface PulledStringGuideProps extends React.SVGProps<SVGSVGElement> {
