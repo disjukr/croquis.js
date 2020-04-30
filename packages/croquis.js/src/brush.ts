@@ -149,7 +149,7 @@ export function stamp(config: BrushConfig, state: BrushStrokeState, params: Stam
 export type BrushStroke = StrokeProtocol<BrushConfig, BrushStrokeState, BrushStrokeResult>;
 export const stroke: BrushStroke = {
   resume(config, prevState) {
-    return getDrawingContext(config, prevState);
+    return getDrawingContext(stroke, config, prevState);
   },
   down(config, curr) {
     const state: BrushStrokeState = {
@@ -160,7 +160,7 @@ export const stroke: BrushStroke = {
       boundingRect: { x: 0, y: 0, w: 0, h: 0 },
       prev: cloneStylusState(curr),
     };
-    const drawingContext = getDrawingContext(config, state);
+    const drawingContext = getDrawingContext(stroke, config, state);
     if (curr.pressure <= 0) return drawingContext;
     if (config.rotateToTangent || config.normalSpread > 0 || config.tangentSpread > 0) {
       state.reservedStamp = state.lastStamp;
@@ -172,12 +172,19 @@ export const stroke: BrushStroke = {
 };
 
 function getDrawingContext(
+  stroke: StrokeProtocol,
   config: BrushConfig,
   state: BrushStrokeState
 ): StrokeDrawingContext<BrushConfig, BrushStrokeState, BrushStrokeResult> {
   return {
-    getConfig() { return config; },
-    getState() { return state; },
+    getConfig(target?: StrokeProtocol) {
+      if (!target || target === stroke) return config;
+      throw undefined;
+    },
+    getState(target?: StrokeProtocol) {
+      if (!target || target === stroke) return state;
+      throw undefined;
+    },
     move(curr) {
       try {
         {
