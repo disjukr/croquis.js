@@ -24,9 +24,10 @@ export interface SnakeState<TProxyTarget extends StrokeProtocol = any> {
   stylusStates: StylusState[];
   update(): void;
 }
-export type SnakeDrawingContext<
-  TProxyTarget extends StrokeProtocol = any
-> = StrokeDrawingContext<SnakeConfig<TProxyTarget>, SnakeState<TProxyTarget>>;
+export type SnakeDrawingContext<TProxyTarget extends StrokeProtocol = any> = StrokeDrawingContext<
+  SnakeConfig<TProxyTarget>,
+  SnakeState<TProxyTarget>
+>;
 function getDrawingContext(
   stroke: StrokeProtocol,
   config: SnakeConfig<any>,

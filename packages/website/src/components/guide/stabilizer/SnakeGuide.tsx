@@ -5,12 +5,7 @@ interface SnakeGuideProps extends React.SVGProps<SVGSVGElement> {
   brushSize: number;
   stylusStates: StylusState[];
 }
-const SnakeGuide: React.FC<SnakeGuideProps> = ({
-  brushSize,
-  stylusStates,
-  style,
-  ...svgProps
-}) => {
+const SnakeGuide: React.FC<SnakeGuideProps> = ({ brushSize, stylusStates, style, ...svgProps }) => {
   const points = stylusStates.map(({ x, y }) => x + ',' + y).join(' ');
   return (
     <svg
