@@ -24,8 +24,13 @@ export interface DrawFn {
   (width: number, height: number): void;
 }
 
+export type BrushContext = Pick<
+  CanvasRenderingContext2D,
+  'restore' | 'rotate' | 'save' | 'translate'
+>;
+
 export interface BrushConfig {
-  ctx: CanvasRenderingContext2D;
+  ctx: BrushContext;
   draw: DrawFn;
   size: number;
   aspectRatio: number;
@@ -41,8 +46,19 @@ export interface BrushConfig {
   tangentSpread: number;
 }
 
-type RequiredKeysOfBrushConfig = 'ctx' | 'draw' | 'size' | 'aspectRatio';
-export const defaultBrushConfig = Object.freeze<Omit<BrushConfig, RequiredKeysOfBrushConfig>>({
+const noop = () => {};
+const dummyBrushContext: BrushContext = {
+  restore: noop,
+  rotate: noop,
+  save: noop,
+  translate: noop,
+};
+
+export const defaultBrushConfig = Object.freeze<BrushConfig>({
+  ctx: dummyBrushContext,
+  draw: noop,
+  size: 10,
+  aspectRatio: 1,
   spacing: 0.1,
   angle: 0,
   rotateToTangent: false,
