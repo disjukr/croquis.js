@@ -3,9 +3,8 @@ import {
   stroke as brush,
   BrushStroke,
   defaultBrushConfig,
-  getDrawCircleFn,
   BrushStrokeResult,
-} from 'croquis.js/lib/brush';
+} from 'croquis.js/lib/simple-brush';
 import {
   getStroke as getSnakeStroke,
   defaultSnakeConfig,
@@ -47,9 +46,7 @@ const Page = () => {
     const brushConfig = {
       ...defaultBrushConfig,
       ctx,
-      draw: getDrawCircleFn(ctx, '#000', 1),
       size: 20,
-      aspectRatio: 1,
     };
     const drawingPhase =
       stabilizerType === 'snake'
