@@ -16,7 +16,7 @@
     "url": "git+https://github.com/disjukr/croquis.js.git"
   },
   "author": "JongChan Choi <jong@chan.moe>",
-  "license": "Zlib",
+  "license": "(MIT OR Apache-2.0)",
   "bugs": {
     "url": "https://github.com/disjukr/croquis.js/issues"
   },

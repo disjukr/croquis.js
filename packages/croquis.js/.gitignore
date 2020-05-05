@@ -2,5 +2,7 @@
 .DS_Store
 Thumbs.db
 
+yarn-error.log
+
 node_modules
 lib

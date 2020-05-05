@@ -1,6 +1,6 @@
 {
   "name": "croquis.js",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "drawing tool library",
   "main": "index.js",
   "scripts": {
@@ -18,7 +18,7 @@
     "drawing"
   ],
   "author": "JongChan Choi <jong@chan.moe>",
-  "license": "Zlib",
+  "license": "(MIT OR Apache-2.0)",
   "bugs": {
     "url": "https://github.com/disjukr/croquis.js/issues"
   },
