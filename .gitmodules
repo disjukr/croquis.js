@@ -1,6 +1,0 @@
-[submodule "croquis.js"]
-	path = croquis.js
-	url = https://github.com/disjukr/croquis.js.git
-[submodule "reveal.js"]
-	path = reveal.js
-	url = https://github.com/hakimel/reveal.js.git
