@@ -15,7 +15,6 @@ jobs:
         node-version: 12.x
     - run: yarn
     - run: yarn build
-    - run: npm test
     - uses: JamesIves/github-pages-deploy-action@releases/v3
       with:
         BRANCH: gh-pages
