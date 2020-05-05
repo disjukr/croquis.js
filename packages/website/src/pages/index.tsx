@@ -4,7 +4,7 @@ import {
   BrushStroke,
   defaultBrushConfig,
   BrushStrokeResult,
-} from 'croquis.js/lib/simple-brush';
+} from 'croquis.js/lib/brush/simple';
 import {
   getStroke as getSnakeStroke,
   defaultSnakeConfig,

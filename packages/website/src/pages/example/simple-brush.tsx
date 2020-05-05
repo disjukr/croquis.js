@@ -3,7 +3,7 @@ import {
   stroke as brush,
   defaultBrushConfig,
   BrushStrokeResult,
-} from 'croquis.js/lib/simple-brush';
+} from 'croquis.js/lib/brush/simple';
 
 import type { StrokeDrawingContext } from 'croquis.js/lib/stroke-protocol';
 import { getStylusState } from 'croquis.js/lib/stylus';

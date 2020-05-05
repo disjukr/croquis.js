@@ -22,7 +22,7 @@ const Draw: React.FC<DrawProps> = ({ drawing }) => {
         pointerEvents: 'none',
         userSelect: 'none',
       }}>
-        {lang.startsWith('ko') ? '그려보세요' : 'draw'}
+      {lang.startsWith('ko') ? '그려보세요' : 'draw'}
     </h1>
   );
 };

@@ -1,9 +1,9 @@
-import type { Color } from './color';
-import type { Circle } from './geometry';
-import type { StylusState } from './stylus';
-import { cloneStylusState, copyStylusState } from './stylus';
-import type { StrokeProtocol, StrokeDrawingContext } from './stroke-protocol';
-import { dummyCanvasContext } from './misc';
+import type { Color } from '../color';
+import type { Circle } from '../geometry';
+import type { StylusState } from '../stylus';
+import { cloneStylusState, copyStylusState } from '../stylus';
+import type { StrokeProtocol, StrokeDrawingContext } from '../stroke-protocol';
+import { dummyCanvasContext } from '../misc';
 
 export type BrushContext = CanvasRenderingContext2D;
 

@@ -1,8 +1,8 @@
-import type { Color } from './color';
-import type { Rect } from './geometry';
-import type { StylusState } from './stylus';
-import { cloneStylusState, copyStylusState } from './stylus';
-import type { StrokeProtocol, StrokeDrawingContext } from './stroke-protocol';
+import type { Color } from '../color';
+import type { Rect } from '../geometry';
+import type { StylusState } from '../stylus';
+import { cloneStylusState, copyStylusState } from '../stylus';
+import type { StrokeProtocol, StrokeDrawingContext } from '../stroke-protocol';
 
 const pi = Math.PI;
 const one = pi + pi;
