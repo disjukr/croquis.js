@@ -1,0 +1,24 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 12.x
+    - run: yarn
+    - run: yarn build
+    - run: npm test
+    - uses: JamesIves/github-pages-deploy-action@releases/v3
+      with:
+        BRANCH: gh-pages
+        FOLDER: packages/website/out
+        CLEAN: true
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
