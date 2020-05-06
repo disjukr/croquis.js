@@ -7,9 +7,9 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "wsrun dev",
-    "build": "wsrun -t build",
-    "lint:fix": "wsrun lint:fix"
+    "dev": "ultra -r dev",
+    "build": "ultra -r -b build",
+    "lint:fix": "ultra -r lint:fix"
   },
   "repository": {
     "type": "git",
@@ -22,6 +22,6 @@
   },
   "homepage": "https://github.com/disjukr/croquis.js#readme",
   "dependencies": {
-    "wsrun": "^5.2.0"
+    "ultra-runner": "^3.2.2"
   }
 }
