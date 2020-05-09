@@ -98,7 +98,7 @@ export interface BrushStrokeState {
   tangent: number; // radian
   delta: number;
   lastStamp: StampParams;
-  reservedStamp: StampParams | null;
+  reserved: boolean;
   boundingRect: Rect;
 }
 
@@ -159,7 +159,6 @@ export function stamp(config: BrushConfig, state: BrushStrokeState, params: Stam
     state.boundingRect.w = right - rx;
     state.boundingRect.h = bottom - ry;
   }
-  state.lastStamp = params;
 }
 
 export type BrushStroke = StrokeProtocol<BrushConfig, BrushStrokeState, BrushStrokeResult>;
@@ -172,14 +171,14 @@ export const stroke: BrushStroke = {
       tangent: 0,
       delta: 0,
       lastStamp: { x: curr.x, y: curr.y, scale: curr.pressure, angle: curr.twist * toRad },
-      reservedStamp: null,
+      reserved: false,
       boundingRect: { x: 0, y: 0, w: 0, h: 0 },
       prev: cloneStylusState(curr),
     };
     const drawingContext = getDrawingContext(stroke, config, state);
     if (curr.pressure <= 0) return drawingContext;
     if (config.rotateToTangent || config.normalSpread > 0 || config.tangentSpread > 0) {
-      state.reservedStamp = state.lastStamp;
+      state.reserved = true;
     } else {
       stamp(config, state, state.lastStamp);
     }
@@ -209,47 +208,50 @@ function getDrawingContext(
           const dy = curr.y - state.prev.y;
           state.delta += sqrt(dx * dx + dy * dy);
         }
-        const spacing = max(
-          config.size * config.spacing * ((state.prev.pressure + curr.pressure) * 0.5),
+        const prevPressure = state.prev.pressure;
+        const currPressure = curr.pressure;
+        const lastStamp = state.lastStamp;
+        const drawSpacing = max(
+          config.size * config.spacing * ((prevPressure + currPressure) * 0.5),
           0.5
         );
-        const ldx = curr.x - state.lastStamp.x;
-        const ldy = curr.y - state.lastStamp.y;
+        const ldx = curr.x - lastStamp.x;
+        const ldy = curr.y - lastStamp.y;
         state.tangent = atan2(ldy, ldx);
-        if (state.reservedStamp && ldx !== 0 && ldy !== 0) {
-          stamp(config, state, state.reservedStamp);
-          state.reservedStamp = null;
+        if (state.reserved && ldx !== 0 && ldy !== 0) {
+          stamp(config, state, state.lastStamp);
+          state.reserved = false;
         }
-        if (state.delta < spacing) return;
-        if (sqrt(ldx * ldx + ldy * ldy) < spacing) {
-          state.delta -= spacing;
-          stamp(config, state, {
-            x: curr.x,
-            y: curr.y,
-            scale: curr.pressure,
-            angle: curr.twist * toRad,
-          });
+        if (state.delta < drawSpacing) return;
+        lastStamp.angle = curr.twist * toRad;
+        lastStamp.scale = curr.pressure;
+        if (sqrt(ldx * ldx + ldy * ldy) < drawSpacing) {
+          state.delta -= drawSpacing;
+          lastStamp.x = curr.x;
+          lastStamp.y = curr.y;
+          stamp(config, state, lastStamp);
           return;
         }
-        const scaleSpacing = (curr.pressure - state.prev.pressure) * (spacing / state.delta);
+        const scaleSpacing = (currPressure - prevPressure) * (drawSpacing / state.delta);
         const tx = cos(state.tangent);
         const ty = sin(state.tangent);
-        while (state.delta >= spacing) {
-          state.lastStamp.x += tx * spacing;
-          state.lastStamp.y += ty * spacing;
-          state.lastStamp.scale += scaleSpacing;
-          state.delta -= spacing;
-          stamp(config, state, state.lastStamp);
+        while (state.delta >= drawSpacing) {
+          lastStamp.x += tx * drawSpacing;
+          lastStamp.y += ty * drawSpacing;
+          lastStamp.scale += scaleSpacing;
+          state.delta -= drawSpacing;
+          stamp(config, state, lastStamp);
         }
       } finally {
         copyStylusState(state.prev, curr);
       }
     },
     up(curr) {
-      state.tangent = atan2(curr.y - state.lastStamp.y, curr.x - state.lastStamp.x);
-      if (state.reservedStamp) {
-        stamp(config, state, state.reservedStamp);
-        state.reservedStamp = null;
+      const lastStamp = state.lastStamp;
+      state.tangent = atan2(curr.y - lastStamp.y, curr.x - lastStamp.x);
+      if (state.reserved) {
+        stamp(config, state, state.lastStamp);
+        state.reserved = false;
       }
       return {
         boundingRect: state.boundingRect,
