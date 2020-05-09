@@ -36,17 +36,23 @@ export function getInitialState(seed: number = 0): Lfsr113State {
   return { a, b, c, d };
 }
 
-export default function* lfsr113(state: Lfsr113State = getInitialState(0)) {
+export default function lfsr113(state: Lfsr113State) {
   const s = state;
-  while (true) {
-    let f = ((s.a << 6) ^ s.a) >> 13;
-    s.a = ((s.a & 4294967294) << 18) ^ f;
-    f = ((s.b << 2) ^ s.b) >> 27;
-    s.b = ((s.b & 4294967288) << 2) ^ f;
-    f = ((s.c << 13) ^ s.c) >> 21;
-    s.c = ((s.c & 4294967280) << 7) ^ f;
-    f = ((s.d << 3) ^ s.d) >> 12;
-    s.d = ((s.d & 4294967168) << 13) ^ f;
-    yield (s.a ^ s.b ^ s.c ^ s.d) * 2.3283064365386963e-10 + 0.5;
-  }
+  let f = ((s.a << 6) ^ s.a) >> 13;
+  s.a = ((s.a & 4294967294) << 18) ^ f;
+  f = ((s.b << 2) ^ s.b) >> 27;
+  s.b = ((s.b & 4294967288) << 2) ^ f;
+  f = ((s.c << 13) ^ s.c) >> 21;
+  s.c = ((s.c & 4294967280) << 7) ^ f;
+  f = ((s.d << 3) ^ s.d) >> 12;
+  s.d = ((s.d & 4294967168) << 13) ^ f;
+  return (s.a ^ s.b ^ s.c ^ s.d) * 2.3283064365386963e-10 + 0.5;
+}
+
+export function getRandomFn(state: Lfsr113State = getInitialState()) {
+  return () => lfsr113(state);
+}
+
+export function* getIterator(state: Lfsr113State = getInitialState()) {
+  while (true) yield lfsr113(state);
 }
