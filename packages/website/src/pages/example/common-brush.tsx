@@ -21,19 +21,19 @@ const Page = () => {
         brushConfigState={brushConfigState}
         style={{ marginTop: '20px', marginBottom: '6px' }}
       />
-      <Slider brushConfigState={brushConfigState} min={0} max={50} field="size">
+      <Slider brushConfigState={brushConfigState} max={50} field="size">
         Size
       </Slider>
-      <Slider brushConfigState={brushConfigState} min={0} max={1} field="flow">
+      <Slider brushConfigState={brushConfigState} max={1} field="flow">
         Flow
       </Slider>
-      <Slider brushConfigState={brushConfigState} min={0} max={3} field="spacing">
+      <Slider brushConfigState={brushConfigState} max={3} field="spacing">
         Spacing
       </Slider>
-      <Slider brushConfigState={brushConfigState} min={0} max={50} field="normalSpread">
+      <Slider brushConfigState={brushConfigState} max={20} field="normalSpread">
         Normal Spread
       </Slider>
-      <Slider brushConfigState={brushConfigState} min={0} max={50} field="tangentSpread">
+      <Slider brushConfigState={brushConfigState} max={20} field="tangentSpread">
         Tangent Spread
       </Slider>
     </div>
@@ -61,6 +61,7 @@ const Slider: React.FC<SliderProps> = ({ children, brushConfigState, field, ...p
       </p>
       <input
         type="range"
+        min={0}
         step={0.01}
         style={{ width: '280px' }}
         {...props}
