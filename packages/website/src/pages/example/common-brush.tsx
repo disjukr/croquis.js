@@ -3,7 +3,7 @@ import {
   stroke as brush,
   defaultBrushConfig,
   BrushConfig,
-  getHardRoundStampFn,
+  getSoftRoundStampFn,
 } from 'croquis.js/lib/brush/common';
 import { getRandomFn } from 'croquis.js/lib/prng/lfsr113';
 import { createStylusState } from 'croquis.js/lib/stylus';
@@ -82,7 +82,7 @@ const BrushStrokePreview: React.FC<BrushStrokePreviewProps> = ({ brushConfigStat
     const ctx = canvasRef.current!.getContext('2d')!;
     setBrushConfig({
       ...brushConfig,
-      stamp: getHardRoundStampFn(ctx, '#fff'),
+      stamp: getSoftRoundStampFn(ctx, '#fff', 'rgba(255,255,255,0)'),
     });
   }, []);
   useEffect(() => {

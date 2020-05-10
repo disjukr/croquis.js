@@ -68,6 +68,29 @@ export function getHardRoundStampFn(ctx: CanvasRenderingContext2D, color: Color)
   });
 }
 
+export function getSoftRoundStampFn(
+  ctx: CanvasRenderingContext2D,
+  color: Color,
+  transparentColor: Color
+) {
+  return getStampFn(ctx, (ctx, width, height) => {
+    const halfWidth = width * 0.5;
+    const halfHeight = height * 0.5;
+    const grd = ctx.createRadialGradient(
+      halfWidth,
+      halfHeight,
+      0,
+      halfWidth,
+      halfHeight,
+      halfWidth
+    );
+    grd.addColorStop(0, color);
+    grd.addColorStop(1, transparentColor);
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, 100, 100);
+  });
+}
+
 export function getBrushWidth(size: number, aspectRatio: number) {
   return size * aspectRatio;
 }
