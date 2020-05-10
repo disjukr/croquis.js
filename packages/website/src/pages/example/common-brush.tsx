@@ -3,7 +3,10 @@ import {
   stroke as brush,
   defaultBrushConfig,
   BrushConfig,
-  getSoftRoundStampFn,
+  getDrawSoftRoundFn,
+  getDrawHardRoundFn,
+  getStampFn,
+  DrawFn,
 } from 'croquis.js/lib/brush/common';
 import { getRandomFn } from 'croquis.js/lib/prng/lfsr113';
 import { createStylusState } from 'croquis.js/lib/stylus';
@@ -12,15 +15,21 @@ const canvasWidth = 300;
 const canvasHeight = 80;
 const Page = () => {
   const brushConfigState = useState<BrushConfig>(defaultBrushConfig);
+  const [canvas, setCanvas] = useState<HTMLCanvasElement>();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
+    setCanvas(canvasRef.current!);
     document.body.style.backgroundColor = '#535353';
   }, []);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <BrushStrokePreview
+        ref={canvasRef}
         brushConfigState={brushConfigState}
+        canvas={canvas}
         style={{ marginTop: '20px', marginBottom: '6px' }}
       />
+      <SelectBrushTip brushConfigState={brushConfigState} canvas={canvas} />
       <Slider brushConfigState={brushConfigState} max={50} field="size">
         Size
       </Slider>
@@ -42,6 +51,77 @@ const Page = () => {
 
 export default Page;
 
+const drawSoftRound = getDrawSoftRoundFn('#fff', 'rgba(255,255,255,0)');
+const drawHardRound = getDrawHardRoundFn('#fff');
+
+interface SelectBrushTipProps {
+  brushConfigState: [BrushConfig, React.Dispatch<BrushConfig>];
+  canvas?: HTMLCanvasElement;
+}
+const SelectBrushTip: React.FC<SelectBrushTipProps> = ({ brushConfigState, canvas }) => {
+  const [brushConfig, setBrushConfig] = brushConfigState;
+  const [drawFn, setDrawFn] = useState<DrawFn>(() => drawSoftRound);
+  useEffect(() => {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d')!;
+    setBrushConfig({
+      ...brushConfig,
+      stamp: getStampFn(ctx, drawFn),
+    });
+  }, [canvas, drawFn]);
+  return (
+    <div style={{ marginBottom: '6px', width: '280px' }}>
+      <p
+        style={{
+          margin: 0,
+          marginBottom: '6px',
+          color: '#fff',
+          fontSize: '12px',
+          fontFamily: 'sans-serif',
+        }}>
+        Brush Tip
+      </p>
+      <div>
+        <BrushTip drawFn={drawSoftRound} selectedDrawFn={drawFn} setDrawFn={setDrawFn} />
+        <BrushTip drawFn={drawHardRound} selectedDrawFn={drawFn} setDrawFn={setDrawFn} />
+      </div>
+    </div>
+  );
+};
+
+interface BrushTipProps {
+  drawFn: DrawFn;
+  selectedDrawFn: DrawFn;
+  setDrawFn: React.Dispatch<DrawFn>;
+  onClick?: () => void;
+}
+const BrushTip: React.FC<BrushTipProps> = ({ drawFn, selectedDrawFn, setDrawFn }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    drawBrushTip(canvasRef.current!, drawFn);
+  }, []);
+  const selected = selectedDrawFn === drawFn;
+  return (
+    <button
+      style={{
+        marginRight: '6px',
+        padding: '6px',
+        outline: 'none',
+        border: 'solid 1px #383838',
+        borderBottom: selected ? 'solid 1px #fff' : 'solid 1px #707070',
+        background: 'none',
+      }}
+      onClick={() => setDrawFn(() => drawFn)}>
+      <canvas ref={canvasRef} width={30} height={30} />
+    </button>
+  );
+};
+
+function drawBrushTip(canvas: HTMLCanvasElement, drawFn: DrawFn) {
+  const ctx = canvas.getContext('2d')!;
+  drawFn(ctx, canvas.width, canvas.height);
+}
+
 interface SliderProps extends React.InputHTMLAttributes<HTMLInputElement> {
   brushConfigState: [BrushConfig, React.Dispatch<BrushConfig>];
   field: keyof BrushConfig;
@@ -53,6 +133,7 @@ const Slider: React.FC<SliderProps> = ({ children, brushConfigState, field, ...p
       <p
         style={{
           margin: 0,
+          marginBottom: '6px',
           color: '#fff',
           fontSize: '12px',
           fontFamily: 'sans-serif',
@@ -63,7 +144,7 @@ const Slider: React.FC<SliderProps> = ({ children, brushConfigState, field, ...p
         type="range"
         min={0}
         step={0.01}
-        style={{ width: '280px' }}
+        style={{ margin: 0, width: '280px' }}
         {...props}
         value={brushConfig[field] as any}
         onChange={e => setBrushConfig({ ...brushConfig, [field]: +e.target.value })}
@@ -75,35 +156,31 @@ const Slider: React.FC<SliderProps> = ({ children, brushConfigState, field, ...p
 interface BrushStrokePreviewProps {
   style?: CSSProperties;
   brushConfigState: [BrushConfig, React.Dispatch<BrushConfig>];
+  canvas?: HTMLCanvasElement;
 }
-const BrushStrokePreview: React.FC<BrushStrokePreviewProps> = ({ brushConfigState, style }) => {
-  const [brushConfig, setBrushConfig] = brushConfigState;
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    const ctx = canvasRef.current!.getContext('2d')!;
-    setBrushConfig({
-      ...brushConfig,
-      stamp: getSoftRoundStampFn(ctx, '#fff', 'rgba(255,255,255,0)'),
-    });
-  }, []);
-  useEffect(() => {
-    const ctx = canvasRef.current!.getContext('2d')!;
-    drawStroke(ctx, brushConfig, canvasWidth, canvasHeight, 30);
-  }, [brushConfig]);
-  return (
-    <canvas
-      ref={canvasRef}
-      width={canvasWidth}
-      height={canvasHeight}
-      style={{
-        backgroundColor: '#4e4e4e',
-        border: 'solid 1px #383838',
-        borderBottom: 'solid 1px #707070',
-        ...style,
-      }}
-    />
-  );
-};
+const BrushStrokePreview = React.forwardRef<HTMLCanvasElement, BrushStrokePreviewProps>(
+  ({ brushConfigState, canvas, style }, ref) => {
+    const [brushConfig] = brushConfigState;
+    useEffect(() => {
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d')!;
+      drawStroke(ctx, brushConfig, canvasWidth, canvasHeight, 30);
+    }, [canvas, brushConfig]);
+    return (
+      <canvas
+        ref={ref}
+        width={canvasWidth}
+        height={canvasHeight}
+        style={{
+          backgroundColor: '#4e4e4e',
+          border: 'solid 1px #383838',
+          borderBottom: 'solid 1px #707070',
+          ...style,
+        }}
+      />
+    );
+  }
+);
 
 function drawStroke(
   ctx: CanvasRenderingContext2D,
@@ -123,7 +200,6 @@ function drawStroke(
   const halfHeight = canvasHeight >> 1;
   const paddedWidth = canvasWidth - padding * 2;
   const amplitude = halfHeight - padding;
-  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
   const stylusState = createStylusState();
   stylusState.x = padding;
   stylusState.y = halfHeight;

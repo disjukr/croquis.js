@@ -57,7 +57,11 @@ export const defaultBrushConfig = Object.freeze<BrushConfig>({
 });
 
 export function getHardRoundStampFn(ctx: CanvasRenderingContext2D, color: Color) {
-  return getStampFn(ctx, (ctx, width, height) => {
+  return getStampFn(ctx, getDrawHardRoundFn(color));
+}
+
+export function getDrawHardRoundFn(color: Color): DrawFn {
+  return function drawHardRound(ctx, width, height) {
     const halfWidth = width * 0.5;
     const halfHeight = height * 0.5;
     ctx.fillStyle = color;
@@ -65,7 +69,7 @@ export function getHardRoundStampFn(ctx: CanvasRenderingContext2D, color: Color)
     ctx.arc(halfWidth, halfHeight, halfWidth, 0, one);
     ctx.closePath();
     ctx.fill();
-  });
+  };
 }
 
 export function getSoftRoundStampFn(
@@ -73,7 +77,11 @@ export function getSoftRoundStampFn(
   color: Color,
   transparentColor: Color
 ) {
-  return getStampFn(ctx, (ctx, width, height) => {
+  return getStampFn(ctx, getDrawSoftRoundFn(color, transparentColor));
+}
+
+export function getDrawSoftRoundFn(color: Color, transparentColor: Color): DrawFn {
+  return function drawSoftRound(ctx, width, height) {
     const halfWidth = width * 0.5;
     const halfHeight = height * 0.5;
     const grd = ctx.createRadialGradient(
@@ -88,7 +96,7 @@ export function getSoftRoundStampFn(
     grd.addColorStop(1, transparentColor);
     ctx.fillStyle = grd;
     ctx.fillRect(0, 0, 100, 100);
-  });
+  };
 }
 
 export function getBrushWidth(size: number, aspectRatio: number) {
