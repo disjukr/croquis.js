@@ -1,4 +1,4 @@
-import React, { useRef, PointerEventHandler, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useImperativeHandle } from 'react';
 import {
   stroke as brush,
   defaultBrushConfig,
@@ -10,35 +10,33 @@ import { createStylusState } from 'croquis.js/lib/stylus';
 const canvasWidth = 300;
 const canvasHeight = 80;
 const Page = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [brushConfig, setBrushConfig] = useState<BrushConfig>(defaultBrushConfig);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const ctx = canvasRef.current!.getContext('2d')!;
     setBrushConfig({
       ...brushConfig,
       ctx,
-      draw: getDrawCircleFn(ctx, '#000', 1),
+      draw: getDrawCircleFn(ctx, '#000'),
     });
   }, []);
-  useEffect(() => {
-    drawStroke(brushConfig, canvasWidth, canvasHeight, 30);
-  }, [brushConfig]);
   return (
     <>
-      <canvas
-        ref={canvasRef}
-        width={canvasWidth}
-        height={canvasHeight}
-        style={{
-          border: '1px solid black',
-        }}
-      />
+      <BrushStrokePreview brushConfig={brushConfig} ref={canvasRef} />
       <input
         type="range"
         min={0}
         max={50}
         value={brushConfig.size}
         onChange={e => setBrushConfig({ ...brushConfig, size: +e.target.value })}
+      />
+      <input
+        type="range"
+        min={0}
+        max={1}
+        step={0.01}
+        value={brushConfig.flow}
+        onChange={e => setBrushConfig({ ...brushConfig, flow: +e.target.value })}
       />
       <input
         type="range"
@@ -53,6 +51,27 @@ const Page = () => {
 };
 
 export default Page;
+
+interface BrushStrokePreviewProps {
+  brushConfig: BrushConfig;
+}
+const BrushStrokePreview = React.forwardRef<HTMLCanvasElement, BrushStrokePreviewProps>(
+  ({ brushConfig }, ref) => {
+    useEffect(() => {
+      drawStroke(brushConfig, canvasWidth, canvasHeight, 30);
+    }, [brushConfig]);
+    return (
+      <canvas
+        ref={ref}
+        width={canvasWidth}
+        height={canvasHeight}
+        style={{
+          border: '1px solid black',
+        }}
+      />
+    );
+  }
+);
 
 function drawStroke(
   brushConfig: BrushConfig,

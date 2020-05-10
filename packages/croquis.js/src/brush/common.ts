@@ -26,12 +26,13 @@ export interface DrawFn {
 
 export type BrushContext = Pick<
   CanvasRenderingContext2D,
-  'restore' | 'rotate' | 'save' | 'translate'
+  'restore' | 'rotate' | 'save' | 'translate' | 'globalAlpha'
 >;
 
 export interface BrushConfig {
   ctx: BrushContext;
   draw: DrawFn;
+  flow: number;
   size: number;
   aspectRatio: number;
   spacing: number;
@@ -52,11 +53,13 @@ const dummyBrushContext: BrushContext = {
   rotate: noop,
   save: noop,
   translate: noop,
+  globalAlpha: 1,
 };
 
 export const defaultBrushConfig = Object.freeze<BrushConfig>({
   ctx: dummyBrushContext,
   draw: noop,
+  flow: 1,
   size: 10,
   aspectRatio: 1,
   spacing: 0.1,
@@ -70,13 +73,12 @@ export const defaultBrushConfig = Object.freeze<BrushConfig>({
   tangentSpread: 0,
 });
 
-export function getDrawCircleFn(ctx: CanvasRenderingContext2D, color: Color, flow: number) {
+export function getDrawCircleFn(ctx: CanvasRenderingContext2D, color: Color) {
   return function drawCircle(width: number, height: number) {
     const halfWidth = width * 0.5;
     const halfHeight = height * 0.5;
     ctx.save();
     ctx.fillStyle = color;
-    ctx.globalAlpha = flow;
     ctx.beginPath();
     ctx.arc(halfWidth, halfHeight, halfWidth, 0, one);
     ctx.closePath();
@@ -111,6 +113,7 @@ export interface StampParams {
   y: number;
   scale: number;
   angle: number;
+  alpha: number;
 }
 
 export function stamp(config: BrushConfig, state: BrushStrokeState, params: StampParams) {
@@ -140,6 +143,7 @@ export function stamp(config: BrushConfig, state: BrushStrokeState, params: Stam
     ctx.translate(x, y);
     ctx.rotate(angle);
     ctx.translate(-(width * 0.5), -(height * 0.5));
+    ctx.globalAlpha = params.alpha;
     config.draw(width, height);
     ctx.restore();
   }
@@ -170,7 +174,13 @@ export const stroke: BrushStroke = {
     const state: BrushStrokeState = {
       tangent: 0,
       delta: 0,
-      lastStamp: { x: curr.x, y: curr.y, scale: curr.pressure, angle: curr.twist * toRad },
+      lastStamp: {
+        x: curr.x,
+        y: curr.y,
+        scale: curr.pressure,
+        angle: curr.twist * toRad,
+        alpha: config.flow,
+      },
       reserved: false,
       boundingRect: { x: 0, y: 0, w: 0, h: 0 },
       prev: cloneStylusState(curr),
