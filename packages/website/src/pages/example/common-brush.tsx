@@ -1,11 +1,11 @@
-import React, { useRef, useState, useEffect, useImperativeHandle, CSSProperties } from 'react';
+import React, { useRef, useState, useEffect, CSSProperties } from 'react';
 import {
   stroke as brush,
   defaultBrushConfig,
   BrushConfig,
   getDrawCircleFn,
 } from 'croquis.js/lib/brush/common';
-import { getRandomFn} from 'croquis.js/lib/prng/lfsr113';
+import { getRandomFn } from 'croquis.js/lib/prng/lfsr113';
 import { createStylusState } from 'croquis.js/lib/stylus';
 
 const canvasWidth = 300;
@@ -17,7 +17,10 @@ const Page = () => {
   }, []);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <BrushStrokePreview brushConfigState={brushConfigState} />
+      <BrushStrokePreview
+        brushConfigState={brushConfigState}
+        style={{ marginTop: '20px', marginBottom: '6px' }}
+      />
       <Slider brushConfigState={brushConfigState} min={0} max={50} field="size">
         Size
       </Slider>
@@ -47,11 +50,15 @@ const Slider: React.FC<SliderProps> = ({ children, brushConfigState, field, ...p
   const [brushConfig, setBrushConfig] = brushConfigState;
   return (
     <label style={{ marginBottom: '6px' }}>
-      <p style={{
-        margin: 0,
-        color: '#fff',
-        fontSize: '12px',
-      }}>{children}</p>
+      <p
+        style={{
+          margin: 0,
+          color: '#fff',
+          fontSize: '12px',
+          fontFamily: 'sans-serif',
+        }}>
+        {children}
+      </p>
       <input
         type="range"
         step={0.01}
@@ -115,9 +122,9 @@ function drawStroke(
   stylusState.y = halfHeight;
   stylusState.pressure = 0;
   {
-    brushConfig.angleRandom = getRandomFn();
-    brushConfig.normalRandom = getRandomFn();
-    brushConfig.tangentRandom = getRandomFn();
+    brushConfig.angleRandom = getRandomFn(0);
+    brushConfig.normalRandom = getRandomFn(1);
+    brushConfig.tangentRandom = getRandomFn(2);
   }
   const drawingPhase = brush.down(brushConfig, stylusState);
   for (let t = 0; t < 1; t += 0.01) {

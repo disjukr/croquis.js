@@ -49,10 +49,18 @@ export default function lfsr113(state: Lfsr113State) {
   return (s.a ^ s.b ^ s.c ^ s.d) * 2.3283064365386963e-10 + 0.5;
 }
 
-export function getRandomFn(state: Lfsr113State = getInitialState()) {
+export function getRandomFn(seed: number = 0) {
+  return getRandomFnFromState(getInitialState(seed));
+}
+
+export function getRandomFnFromState(state: Lfsr113State = getInitialState()) {
   return () => lfsr113(state);
 }
 
-export function* getIterator(state: Lfsr113State = getInitialState()) {
+export function getIterator(seed: number = 0) {
+  return getIteratorFromState(getInitialState(seed));
+}
+
+export function* getIteratorFromState(state: Lfsr113State = getInitialState()) {
   while (true) yield lfsr113(state);
 }
