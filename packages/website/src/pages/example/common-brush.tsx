@@ -3,7 +3,7 @@ import {
   stroke as brush,
   defaultBrushConfig,
   BrushConfig,
-  getDrawCircleFn,
+  getHardRoundStampFn,
 } from 'croquis.js/lib/brush/common';
 import { getRandomFn } from 'croquis.js/lib/prng/lfsr113';
 import { createStylusState } from 'croquis.js/lib/stylus';
@@ -82,12 +82,12 @@ const BrushStrokePreview: React.FC<BrushStrokePreviewProps> = ({ brushConfigStat
     const ctx = canvasRef.current!.getContext('2d')!;
     setBrushConfig({
       ...brushConfig,
-      ctx,
-      draw: getDrawCircleFn(ctx, '#fff'),
+      stamp: getHardRoundStampFn(ctx, '#fff'),
     });
   }, []);
   useEffect(() => {
-    drawStroke(brushConfig, canvasWidth, canvasHeight, 30);
+    const ctx = canvasRef.current!.getContext('2d')!;
+    drawStroke(ctx, brushConfig, canvasWidth, canvasHeight, 30);
   }, [brushConfig]);
   return (
     <canvas
@@ -105,13 +105,19 @@ const BrushStrokePreview: React.FC<BrushStrokePreviewProps> = ({ brushConfigStat
 };
 
 function drawStroke(
+  ctx: CanvasRenderingContext2D,
   brushConfig: BrushConfig,
   canvasWidth: number,
   canvasHeight: number,
   padding: number
 ) {
-  const ctx = brushConfig.ctx as CanvasRenderingContext2D;
-  if (!ctx.clearRect) return;
+  if (brushConfig === defaultBrushConfig) {
+    return;
+  } else {
+    brushConfig.angleRandom = getRandomFn(0);
+    brushConfig.normalRandom = getRandomFn(1);
+    brushConfig.tangentRandom = getRandomFn(2);
+  }
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
   const halfHeight = canvasHeight >> 1;
   const paddedWidth = canvasWidth - padding * 2;
@@ -121,11 +127,6 @@ function drawStroke(
   stylusState.x = padding;
   stylusState.y = halfHeight;
   stylusState.pressure = 0;
-  {
-    brushConfig.angleRandom = getRandomFn(0);
-    brushConfig.normalRandom = getRandomFn(1);
-    brushConfig.tangentRandom = getRandomFn(2);
-  }
   const drawingPhase = brush.down(brushConfig, stylusState);
   for (let t = 0; t < 1; t += 0.01) {
     stylusState.x = t * paddedWidth + padding;

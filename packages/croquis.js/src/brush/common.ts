@@ -16,25 +16,18 @@ const cos = Math.cos;
 const sqrt = Math.sqrt;
 const atan2 = Math.atan2;
 
+export interface StampFn {
+  (config: BrushConfig, state: BrushStrokeState, params: StampParams): void;
+}
+
 export interface RandomFn {
   (): number; // 0~1
 }
 
-export interface DrawFn {
-  (width: number, height: number): void;
-}
-
-export type BrushContext = Pick<
-  CanvasRenderingContext2D,
-  'restore' | 'rotate' | 'save' | 'translate' | 'globalAlpha'
->;
-
 export interface BrushConfig {
-  ctx: BrushContext;
-  draw: DrawFn;
+  stamp: StampFn;
   flow: number;
   size: number;
-  aspectRatio: number;
   spacing: number;
   angle: number; // radian
   rotateToTangent: boolean;
@@ -48,20 +41,10 @@ export interface BrushConfig {
 }
 
 const noop = () => {};
-const dummyBrushContext: BrushContext = {
-  restore: noop,
-  rotate: noop,
-  save: noop,
-  translate: noop,
-  globalAlpha: 1,
-};
-
 export const defaultBrushConfig = Object.freeze<BrushConfig>({
-  ctx: dummyBrushContext,
-  draw: noop,
+  stamp: noop,
   flow: 1,
   size: 10,
-  aspectRatio: 1,
   spacing: 0.1,
   angle: 0,
   rotateToTangent: false,
@@ -73,18 +56,16 @@ export const defaultBrushConfig = Object.freeze<BrushConfig>({
   tangentSpread: 0,
 });
 
-export function getDrawCircleFn(ctx: CanvasRenderingContext2D, color: Color) {
-  return function drawCircle(width: number, height: number) {
+export function getHardRoundStampFn(ctx: CanvasRenderingContext2D, color: Color) {
+  return getStampFn(ctx, (ctx, width, height) => {
     const halfWidth = width * 0.5;
     const halfHeight = height * 0.5;
-    ctx.save();
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(halfWidth, halfHeight, halfWidth, 0, one);
     ctx.closePath();
     ctx.fill();
-    ctx.restore();
-  };
+  });
 }
 
 export function getBrushWidth(size: number, aspectRatio: number) {
@@ -116,53 +97,62 @@ export interface StampParams {
   alpha: number;
 }
 
-export function stamp(config: BrushConfig, state: BrushStrokeState, params: StampParams) {
-  if (params.scale <= 0) return;
-  const size = config.size * params.scale;
-  const width = getBrushWidth(size, config.aspectRatio);
-  const height = getBrushHeight(size);
-  const angleSpread = config.angleSpread && config.angleSpread * (config.angleRandom() - 0.5);
-  const angle =
-    params.angle +
-    (config.rotateToTangent ? config.angle + state.tangent : config.angle) +
-    angleSpread;
-  const normalSpread =
-    config.normalSpread && config.normalSpread * size * (config.normalRandom() - 0.5);
-  const tangentSpread =
-    config.tangentSpread && config.tangentSpread * size * (config.tangentRandom() - 0.5);
-  const doSpread = normalSpread || tangentSpread;
-  const normal = state.tangent + quarter;
-  const spreadX = doSpread && cos(normal) * normalSpread + cos(state.tangent) * tangentSpread;
-  const spreadY = doSpread && sin(normal) * normalSpread + sin(state.tangent) * tangentSpread;
-  const x = params.x + spreadX;
-  const y = params.y + spreadY;
-  {
-    // draw
-    const ctx = config.ctx;
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(angle);
-    ctx.translate(-(width * 0.5), -(height * 0.5));
-    ctx.globalAlpha = params.alpha;
-    config.draw(width, height);
-    ctx.restore();
-  }
-  {
-    // expand bounding rect
-    const br = state.boundingRect;
-    const boundWidth = angle ? abs(height * sin(angle)) + abs(width * cos(angle)) : width;
-    const boundHeight = angle ? abs(width * sin(angle)) + abs(height * cos(angle)) : height;
-    const bx = x - boundWidth * 0.5;
-    const by = y - boundHeight * 0.5;
-    const rx = min(br.x, bx);
-    const ry = min(br.y, by);
-    const right = max(br.x + br.w, bx + boundWidth);
-    const bottom = max(br.y + br.h, by + boundHeight);
-    state.boundingRect.x = rx;
-    state.boundingRect.y = ry;
-    state.boundingRect.w = right - rx;
-    state.boundingRect.h = bottom - ry;
-  }
+export interface DrawFn {
+  (ctx: CanvasRenderingContext2D, width: number, height: number): void;
+}
+
+export function getStampFn(
+  ctx: CanvasRenderingContext2D,
+  drawFn: DrawFn,
+  aspectRatio = 1
+): StampFn {
+  return function stamp(config: BrushConfig, state: BrushStrokeState, params: StampParams) {
+    if (params.scale <= 0) return;
+    const size = config.size * params.scale;
+    const width = getBrushWidth(size, aspectRatio);
+    const height = getBrushHeight(size);
+    const angleSpread = config.angleSpread && config.angleSpread * (config.angleRandom() - 0.5);
+    const angle =
+      params.angle +
+      (config.rotateToTangent ? config.angle + state.tangent : config.angle) +
+      angleSpread;
+    const normalSpread =
+      config.normalSpread && config.normalSpread * size * (config.normalRandom() - 0.5);
+    const tangentSpread =
+      config.tangentSpread && config.tangentSpread * size * (config.tangentRandom() - 0.5);
+    const doSpread = normalSpread || tangentSpread;
+    const normal = state.tangent + quarter;
+    const spreadX = doSpread && cos(normal) * normalSpread + cos(state.tangent) * tangentSpread;
+    const spreadY = doSpread && sin(normal) * normalSpread + sin(state.tangent) * tangentSpread;
+    const x = params.x + spreadX;
+    const y = params.y + spreadY;
+    {
+      // draw
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.translate(-(width * 0.5), -(height * 0.5));
+      ctx.globalAlpha = params.alpha;
+      drawFn(ctx, width, height);
+      ctx.restore();
+    }
+    {
+      // expand bounding rect
+      const br = state.boundingRect;
+      const boundWidth = angle ? abs(height * sin(angle)) + abs(width * cos(angle)) : width;
+      const boundHeight = angle ? abs(width * sin(angle)) + abs(height * cos(angle)) : height;
+      const bx = x - boundWidth * 0.5;
+      const by = y - boundHeight * 0.5;
+      const rx = min(br.x, bx);
+      const ry = min(br.y, by);
+      const right = max(br.x + br.w, bx + boundWidth);
+      const bottom = max(br.y + br.h, by + boundHeight);
+      state.boundingRect.x = rx;
+      state.boundingRect.y = ry;
+      state.boundingRect.w = right - rx;
+      state.boundingRect.h = bottom - ry;
+    }
+  };
 }
 
 export type BrushStroke = StrokeProtocol<BrushConfig, BrushStrokeState, BrushStrokeResult>;
@@ -190,7 +180,7 @@ export const stroke: BrushStroke = {
     if (config.rotateToTangent || config.normalSpread > 0 || config.tangentSpread > 0) {
       state.reserved = true;
     } else {
-      stamp(config, state, state.lastStamp);
+      config.stamp(config, state, state.lastStamp);
     }
     return drawingContext;
   },
@@ -218,6 +208,7 @@ function getDrawingContext(
           const dy = curr.y - state.prev.y;
           state.delta += sqrt(dx * dx + dy * dy);
         }
+        const stamp = config.stamp;
         const prevPressure = state.prev.pressure;
         const currPressure = curr.pressure;
         const lastStamp = state.lastStamp;
@@ -260,7 +251,7 @@ function getDrawingContext(
       const lastStamp = state.lastStamp;
       state.tangent = atan2(curr.y - lastStamp.y, curr.x - lastStamp.x);
       if (state.reserved) {
-        stamp(config, state, state.lastStamp);
+        config.stamp(config, state, state.lastStamp);
         state.reserved = false;
       }
       return {
