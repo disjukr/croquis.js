@@ -5,6 +5,7 @@ import {
   BrushConfig,
   getDrawCircleFn,
 } from 'croquis.js/lib/brush/common';
+import { getRandomFn} from 'croquis.js/lib/prng/lfsr113';
 import { createStylusState } from 'croquis.js/lib/stylus';
 
 const canvasWidth = 300;
@@ -15,18 +16,24 @@ const Page = () => {
     document.body.style.backgroundColor = '#535353';
   }, []);
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <BrushStrokePreview brushConfigState={brushConfigState} />
       <Slider brushConfigState={brushConfigState} min={0} max={50} field="size">
         Size
       </Slider>
-      <Slider brushConfigState={brushConfigState} min={0} max={1} step={0.01} field="flow">
+      <Slider brushConfigState={brushConfigState} min={0} max={1} field="flow">
         Flow
       </Slider>
-      <Slider brushConfigState={brushConfigState} min={0} max={3} step={0.01} field="spacing">
+      <Slider brushConfigState={brushConfigState} min={0} max={3} field="spacing">
         Spacing
       </Slider>
-    </>
+      <Slider brushConfigState={brushConfigState} min={0} max={50} field="normalSpread">
+        Normal Spread
+      </Slider>
+      <Slider brushConfigState={brushConfigState} min={0} max={50} field="tangentSpread">
+        Tangent Spread
+      </Slider>
+    </div>
   );
 };
 
@@ -39,15 +46,16 @@ interface SliderProps extends React.InputHTMLAttributes<HTMLInputElement> {
 const Slider: React.FC<SliderProps> = ({ children, brushConfigState, field, ...props }) => {
   const [brushConfig, setBrushConfig] = brushConfigState;
   return (
-    <label>
+    <label style={{ marginBottom: '6px' }}>
       <p style={{
         margin: 0,
-        marginBottom: '6px',
         color: '#fff',
         fontSize: '12px',
       }}>{children}</p>
       <input
         type="range"
+        step={0.01}
+        style={{ width: '280px' }}
         {...props}
         value={brushConfig[field] as any}
         onChange={e => setBrushConfig({ ...brushConfig, [field]: +e.target.value })}
@@ -106,6 +114,11 @@ function drawStroke(
   stylusState.x = padding;
   stylusState.y = halfHeight;
   stylusState.pressure = 0;
+  {
+    brushConfig.angleRandom = getRandomFn();
+    brushConfig.normalRandom = getRandomFn();
+    brushConfig.tangentRandom = getRandomFn();
+  }
   const drawingPhase = brush.down(brushConfig, stylusState);
   for (let t = 0; t < 1; t += 0.01) {
     stylusState.x = t * paddedWidth + padding;
