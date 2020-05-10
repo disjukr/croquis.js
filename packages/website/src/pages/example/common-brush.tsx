@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useImperativeHandle } from 'react';
+import React, { useRef, useState, useEffect, useImperativeHandle, CSSProperties } from 'react';
 import {
   stroke as brush,
   defaultBrushConfig,
@@ -10,68 +10,84 @@ import { createStylusState } from 'croquis.js/lib/stylus';
 const canvasWidth = 300;
 const canvasHeight = 80;
 const Page = () => {
-  const [brushConfig, setBrushConfig] = useState<BrushConfig>(defaultBrushConfig);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const brushConfigState = useState<BrushConfig>(defaultBrushConfig);
   useEffect(() => {
-    const ctx = canvasRef.current!.getContext('2d')!;
-    setBrushConfig({
-      ...brushConfig,
-      ctx,
-      draw: getDrawCircleFn(ctx, '#000'),
-    });
+    document.body.style.backgroundColor = '#535353';
   }, []);
   return (
     <>
-      <BrushStrokePreview brushConfig={brushConfig} ref={canvasRef} />
-      <input
-        type="range"
-        min={0}
-        max={50}
-        value={brushConfig.size}
-        onChange={e => setBrushConfig({ ...brushConfig, size: +e.target.value })}
-      />
-      <input
-        type="range"
-        min={0}
-        max={1}
-        step={0.01}
-        value={brushConfig.flow}
-        onChange={e => setBrushConfig({ ...brushConfig, flow: +e.target.value })}
-      />
-      <input
-        type="range"
-        min={0}
-        max={3}
-        step={0.01}
-        value={brushConfig.spacing}
-        onChange={e => setBrushConfig({ ...brushConfig, spacing: +e.target.value })}
-      />
+      <BrushStrokePreview brushConfigState={brushConfigState} />
+      <Slider brushConfigState={brushConfigState} min={0} max={50} field="size">
+        Size
+      </Slider>
+      <Slider brushConfigState={brushConfigState} min={0} max={1} step={0.01} field="flow">
+        Flow
+      </Slider>
+      <Slider brushConfigState={brushConfigState} min={0} max={3} step={0.01} field="spacing">
+        Spacing
+      </Slider>
     </>
   );
 };
 
 export default Page;
 
-interface BrushStrokePreviewProps {
-  brushConfig: BrushConfig;
+interface SliderProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  brushConfigState: [BrushConfig, React.Dispatch<BrushConfig>];
+  field: keyof BrushConfig;
 }
-const BrushStrokePreview = React.forwardRef<HTMLCanvasElement, BrushStrokePreviewProps>(
-  ({ brushConfig }, ref) => {
-    useEffect(() => {
-      drawStroke(brushConfig, canvasWidth, canvasHeight, 30);
-    }, [brushConfig]);
-    return (
-      <canvas
-        ref={ref}
-        width={canvasWidth}
-        height={canvasHeight}
-        style={{
-          border: '1px solid black',
-        }}
+const Slider: React.FC<SliderProps> = ({ children, brushConfigState, field, ...props }) => {
+  const [brushConfig, setBrushConfig] = brushConfigState;
+  return (
+    <label>
+      <p style={{
+        margin: 0,
+        marginBottom: '6px',
+        color: '#fff',
+        fontSize: '12px',
+      }}>{children}</p>
+      <input
+        type="range"
+        {...props}
+        value={brushConfig[field] as any}
+        onChange={e => setBrushConfig({ ...brushConfig, [field]: +e.target.value })}
       />
-    );
-  }
-);
+    </label>
+  );
+};
+
+interface BrushStrokePreviewProps {
+  style?: CSSProperties;
+  brushConfigState: [BrushConfig, React.Dispatch<BrushConfig>];
+}
+const BrushStrokePreview: React.FC<BrushStrokePreviewProps> = ({ brushConfigState, style }) => {
+  const [brushConfig, setBrushConfig] = brushConfigState;
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const ctx = canvasRef.current!.getContext('2d')!;
+    setBrushConfig({
+      ...brushConfig,
+      ctx,
+      draw: getDrawCircleFn(ctx, '#fff'),
+    });
+  }, []);
+  useEffect(() => {
+    drawStroke(brushConfig, canvasWidth, canvasHeight, 30);
+  }, [brushConfig]);
+  return (
+    <canvas
+      ref={canvasRef}
+      width={canvasWidth}
+      height={canvasHeight}
+      style={{
+        backgroundColor: '#4e4e4e',
+        border: 'solid 1px #383838',
+        borderBottom: 'solid 1px #707070',
+        ...style,
+      }}
+    />
+  );
+};
 
 function drawStroke(
   brushConfig: BrushConfig,
