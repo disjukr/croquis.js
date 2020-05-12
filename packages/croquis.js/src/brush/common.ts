@@ -27,7 +27,9 @@ export interface RandomFn {
 export interface BrushConfig {
   stamp: StampFn;
   flow: number;
+  applyPressureToFlow: boolean;
   size: number;
+  applyPressureToSize: boolean;
   spacing: number;
   angle: number; // radian
   rotateToTangent: boolean;
@@ -44,7 +46,9 @@ const noop = () => {};
 export const defaultBrushConfig = Object.freeze<BrushConfig>({
   stamp: noop,
   flow: 1,
+  applyPressureToFlow: false,
   size: 10,
+  applyPressureToSize: true,
   spacing: 0.1,
   angle: 0,
   rotateToTangent: false,
@@ -123,9 +127,8 @@ export interface BrushStrokeResult {
 export interface StampParams {
   x: number;
   y: number;
-  scale: number;
   angle: number;
-  alpha: number;
+  pressure: number;
 }
 
 export interface DrawFn {
@@ -138,8 +141,8 @@ export function getStampFn(
   aspectRatio = 1
 ): StampFn {
   return function stamp(config: BrushConfig, state: BrushStrokeState, params: StampParams) {
-    if (params.scale <= 0) return;
-    const size = config.size * params.scale;
+    const size = config.applyPressureToSize ? config.size * params.pressure : config.size;
+    if (size <= 0) return;
     const width = getBrushWidth(size, aspectRatio);
     const height = getBrushHeight(size);
     const angleSpread = config.angleSpread && config.angleSpread * (config.angleRandom() - 0.5);
@@ -163,7 +166,7 @@ export function getStampFn(
       ctx.translate(x, y);
       ctx.rotate(angle);
       ctx.translate(-(width * 0.5), -(height * 0.5));
-      ctx.globalAlpha = params.alpha;
+      ctx.globalAlpha = config.applyPressureToFlow ? config.flow * params.pressure : config.flow;
       drawFn(ctx, width, height);
       ctx.restore();
     }
@@ -198,16 +201,14 @@ export const stroke: BrushStroke = {
       lastStamp: {
         x: curr.x,
         y: curr.y,
-        scale: curr.pressure,
         angle: curr.twist * toRad,
-        alpha: config.flow,
+        pressure: curr.pressure,
       },
       reserved: false,
       boundingRect: { x: 0, y: 0, w: 0, h: 0 },
       prev: cloneStylusState(curr),
     };
     const drawingContext = getDrawingContext(stroke, config, state);
-    if (curr.pressure <= 0) return drawingContext;
     if (config.rotateToTangent || config.normalSpread > 0 || config.tangentSpread > 0) {
       state.reserved = true;
     } else {
@@ -244,7 +245,9 @@ function getDrawingContext(
         const currPressure = curr.pressure;
         const lastStamp = state.lastStamp;
         const drawSpacing = max(
-          config.size * config.spacing * ((prevPressure + currPressure) * 0.5),
+          config.applyPressureToSize
+            ? config.size * config.spacing * ((prevPressure + currPressure) * 0.5)
+            : config.size * config.spacing,
           0.5
         );
         const ldx = curr.x - lastStamp.x;
@@ -256,7 +259,7 @@ function getDrawingContext(
         }
         if (state.delta < drawSpacing) return;
         lastStamp.angle = curr.twist * toRad;
-        lastStamp.scale = curr.pressure;
+        lastStamp.pressure = curr.pressure;
         if (sqrt(ldx * ldx + ldy * ldy) < drawSpacing) {
           state.delta -= drawSpacing;
           lastStamp.x = curr.x;
@@ -264,13 +267,13 @@ function getDrawingContext(
           stamp(config, state, lastStamp);
           return;
         }
-        const scaleSpacing = (currPressure - prevPressure) * (drawSpacing / state.delta);
+        const pressureSpacing = (currPressure - prevPressure) * (drawSpacing / state.delta);
         const tx = cos(state.tangent);
         const ty = sin(state.tangent);
         while (state.delta >= drawSpacing) {
           lastStamp.x += tx * drawSpacing;
           lastStamp.y += ty * drawSpacing;
-          lastStamp.scale += scaleSpacing;
+          lastStamp.pressure += pressureSpacing;
           state.delta -= drawSpacing;
           stamp(config, state, lastStamp);
         }
