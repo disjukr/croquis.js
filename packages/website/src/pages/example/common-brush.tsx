@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, CSSProperties } from 'react';
+import cx from 'classnames';
 import {
   stroke as brush,
   defaultBrushConfig,
@@ -21,7 +22,7 @@ const Page = () => {
     setCanvas(canvasRef.current!);
   }, []);
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div className="page">
       <BrushStrokePreview
         ref={canvasRef}
         brushConfigState={brushConfigState}
@@ -49,6 +50,13 @@ const Page = () => {
           background-color: #535353;
         }
       `}</style>
+      <style jsx>{`
+        .page {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+      `}</style>
     </div>
   );
 };
@@ -74,7 +82,7 @@ const SelectBrushTip: React.FC<SelectBrushTipProps> = ({ brushConfigState, canva
     });
   }, [canvas, drawFn]);
   return (
-    <div className='select-brush-tip'>
+    <div className="select-brush-tip">
       <p>Brush Tip</p>
       <div>
         <BrushTip drawFn={drawSoftRound} selectedDrawFn={drawFn} setDrawFn={setDrawFn} />
@@ -110,7 +118,7 @@ const BrushTip: React.FC<BrushTipProps> = ({ drawFn, selectedDrawFn, setDrawFn }
   }, []);
   const selected = selectedDrawFn === drawFn;
   return (
-    <button className='brush-tip' onClick={() => setDrawFn(() => drawFn)}>
+    <button className="brush-tip" onClick={() => setDrawFn(() => drawFn)}>
       <canvas ref={canvasRef} width={30} height={30} />
       <style jsx>{`
         .brush-tip {
@@ -142,7 +150,7 @@ interface SliderProps extends React.InputHTMLAttributes<HTMLInputElement> {
 const Slider: React.FC<SliderProps> = ({ children, brushConfigState, field, ...props }) => {
   const [brushConfig, setBrushConfig] = brushConfigState;
   return (
-    <label className='slider' style={{ marginBottom: '6px' }}>
+    <label className="slider" style={{ marginBottom: '6px' }}>
       <p>{children}</p>
       <input
         type="range"
@@ -173,12 +181,13 @@ const Slider: React.FC<SliderProps> = ({ children, brushConfigState, field, ...p
 };
 
 interface BrushStrokePreviewProps {
+  className?: string;
   style?: CSSProperties;
   brushConfigState: [BrushConfig, React.Dispatch<BrushConfig>];
   canvas?: HTMLCanvasElement;
 }
 const BrushStrokePreview = React.forwardRef<HTMLCanvasElement, BrushStrokePreviewProps>(
-  ({ brushConfigState, canvas, style }, ref) => {
+  ({ className, style, brushConfigState, canvas }, ref) => {
     const [brushConfig] = brushConfigState;
     useEffect(() => {
       if (!canvas) return;
@@ -188,7 +197,7 @@ const BrushStrokePreview = React.forwardRef<HTMLCanvasElement, BrushStrokePrevie
     return (
       <>
         <canvas
-          className='brush-stroke-preview'
+          className={cx('brush-stroke-preview', className)}
           ref={ref}
           width={canvasWidth}
           height={canvasHeight}

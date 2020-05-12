@@ -9,8 +9,10 @@
     "lint:fix": "prettier --write \"src/**/*.@(ts|tsx)\""
   },
   "dependencies": {
+    "@types/classnames": "^2.2.10",
     "@types/node": "^13.9.8",
     "@types/react": "^16.9.31",
+    "classnames": "^2.2.6",
     "croquis.js": "^0.0.1",
     "next": "9.3.4",
     "react": "16.13.1",
