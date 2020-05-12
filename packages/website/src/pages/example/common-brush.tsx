@@ -30,9 +30,15 @@ const Page = () => {
         style={{ marginTop: '20px', marginBottom: '6px' }}
       />
       <SelectBrushTip brushConfigState={brushConfigState} canvas={canvas} />
+      <Checkbox brushConfigState={brushConfigState} field="applyPressureToSize">
+        Apply Pen Pressure To Size
+      </Checkbox>
       <Slider brushConfigState={brushConfigState} max={50} field="size">
         Size
       </Slider>
+      <Checkbox brushConfigState={brushConfigState} field="applyPressureToFlow">
+        Apply Pen Pressure To Flow
+      </Checkbox>
       <Slider brushConfigState={brushConfigState} max={1} field="flow">
         Flow
       </Slider>
@@ -143,6 +149,44 @@ function drawBrushTip(canvas: HTMLCanvasElement, drawFn: DrawFn) {
   drawFn(ctx, canvas.width, canvas.height);
 }
 
+interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  brushConfigState: [BrushConfig, React.Dispatch<BrushConfig>];
+  field: keyof BrushConfig;
+}
+const Checkbox: React.FC<CheckboxProps> = ({ children, brushConfigState, field, ...props }) => {
+  const [brushConfig, setBrushConfig] = brushConfigState;
+  return (
+    <label className="checkbox">
+      <p>
+        {children}{' '}
+        <input
+          type="checkbox"
+          {...props}
+          checked={brushConfig[field] as any}
+          onChange={e => setBrushConfig({ ...brushConfig, [field]: e.target.checked })}
+        />
+      </p>
+      <style jsx>{`
+        .checkbox {
+          margin-bottom: 6px;
+          width: 280px;
+        }
+        p {
+          margin: 0;
+          color: #fff;
+          font-size: 12px;
+          font-family: sans-serif;
+        }
+        input {
+          margin: 0;
+          margin-left: 1em;
+          vertical-align: middle;
+        }
+      `}</style>
+    </label>
+  );
+};
+
 interface SliderProps extends React.InputHTMLAttributes<HTMLInputElement> {
   brushConfigState: [BrushConfig, React.Dispatch<BrushConfig>];
   field: keyof BrushConfig;
@@ -150,7 +194,7 @@ interface SliderProps extends React.InputHTMLAttributes<HTMLInputElement> {
 const Slider: React.FC<SliderProps> = ({ children, brushConfigState, field, ...props }) => {
   const [brushConfig, setBrushConfig] = brushConfigState;
   return (
-    <label className="slider" style={{ marginBottom: '6px' }}>
+    <label className="slider">
       <p>{children}</p>
       <input
         type="range"
