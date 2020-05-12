@@ -19,7 +19,6 @@ const Page = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     setCanvas(canvasRef.current!);
-    document.body.style.backgroundColor = '#535353';
   }, []);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -45,6 +44,11 @@ const Page = () => {
       <Slider brushConfigState={brushConfigState} max={20} field="tangentSpread">
         Tangent Spread
       </Slider>
+      <style jsx global>{`
+        body {
+          background-color: #535353;
+        }
+      `}</style>
     </div>
   );
 };
@@ -70,21 +74,25 @@ const SelectBrushTip: React.FC<SelectBrushTipProps> = ({ brushConfigState, canva
     });
   }, [canvas, drawFn]);
   return (
-    <div style={{ marginBottom: '6px', width: '280px' }}>
-      <p
-        style={{
-          margin: 0,
-          marginBottom: '6px',
-          color: '#fff',
-          fontSize: '12px',
-          fontFamily: 'sans-serif',
-        }}>
-        Brush Tip
-      </p>
+    <div className='select-brush-tip'>
+      <p>Brush Tip</p>
       <div>
         <BrushTip drawFn={drawSoftRound} selectedDrawFn={drawFn} setDrawFn={setDrawFn} />
         <BrushTip drawFn={drawHardRound} selectedDrawFn={drawFn} setDrawFn={setDrawFn} />
       </div>
+      <style jsx>{`
+        .select-brush-tip {
+          margin-bottom: 6px;
+          width: 280px;
+        }
+        p {
+          margin: 0;
+          margin-bottom: 6px;
+          color: #fff;
+          font-size: 12px;
+          font-family: sans-serif;
+        }
+      `}</style>
     </div>
   );
 };
@@ -102,17 +110,22 @@ const BrushTip: React.FC<BrushTipProps> = ({ drawFn, selectedDrawFn, setDrawFn }
   }, []);
   const selected = selectedDrawFn === drawFn;
   return (
-    <button
-      style={{
-        marginRight: '6px',
-        padding: '6px',
-        outline: 'none',
-        border: 'solid 1px #383838',
-        borderBottom: selected ? 'solid 1px #fff' : 'solid 1px #707070',
-        background: 'none',
-      }}
-      onClick={() => setDrawFn(() => drawFn)}>
+    <button className='brush-tip' onClick={() => setDrawFn(() => drawFn)}>
       <canvas ref={canvasRef} width={30} height={30} />
+      <style jsx>{`
+        .brush-tip {
+          margin-right: 6px;
+          padding: 6px;
+          outline: none;
+          border: solid 1px #383838;
+          background: none;
+        }
+      `}</style>
+      <style jsx>{`
+        .brush-tip {
+          border-bottom: solid 1px ${selected ? '#fff' : '#707070'};
+        }
+      `}</style>
     </button>
   );
 };
@@ -129,26 +142,32 @@ interface SliderProps extends React.InputHTMLAttributes<HTMLInputElement> {
 const Slider: React.FC<SliderProps> = ({ children, brushConfigState, field, ...props }) => {
   const [brushConfig, setBrushConfig] = brushConfigState;
   return (
-    <label style={{ marginBottom: '6px' }}>
-      <p
-        style={{
-          margin: 0,
-          marginBottom: '6px',
-          color: '#fff',
-          fontSize: '12px',
-          fontFamily: 'sans-serif',
-        }}>
-        {children}
-      </p>
+    <label className='slider' style={{ marginBottom: '6px' }}>
+      <p>{children}</p>
       <input
         type="range"
         min={0}
         step={0.01}
-        style={{ margin: 0, width: '280px' }}
         {...props}
         value={brushConfig[field] as any}
         onChange={e => setBrushConfig({ ...brushConfig, [field]: +e.target.value })}
       />
+      <style jsx>{`
+        .slider {
+          margin-bottom: 6px;
+        }
+        p {
+          margin: 0;
+          margin-bottom: 6px;
+          color: #fff;
+          font-size: 12px;
+          font-family: sans-serif;
+        }
+        input {
+          margin: 0;
+          width: 280px;
+        }
+      `}</style>
     </label>
   );
 };
@@ -167,17 +186,22 @@ const BrushStrokePreview = React.forwardRef<HTMLCanvasElement, BrushStrokePrevie
       drawStroke(ctx, brushConfig, canvasWidth, canvasHeight, 30);
     }, [canvas, brushConfig]);
     return (
-      <canvas
-        ref={ref}
-        width={canvasWidth}
-        height={canvasHeight}
-        style={{
-          backgroundColor: '#4e4e4e',
-          border: 'solid 1px #383838',
-          borderBottom: 'solid 1px #707070',
-          ...style,
-        }}
-      />
+      <>
+        <canvas
+          className='brush-stroke-preview'
+          ref={ref}
+          width={canvasWidth}
+          height={canvasHeight}
+          style={style}
+        />
+        <style jsx>{`
+          .brush-stroke-preview {
+            background-color: #4e4e4e;
+            border: solid 1px #383838;
+            border-bottom: solid 1px #707070;
+          }
+        `}</style>
+      </>
     );
   }
 );
