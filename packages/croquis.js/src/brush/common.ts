@@ -125,9 +125,9 @@ export function getDrawStarFn(
     ctx.fillStyle = color;
     ctx.translate(halfWidth, halfHeight);
     ctx.scale(halfWidth, halfHeight);
+    ctx.beginPath();
     ctx.moveTo(0, -1);
     ctx.rotate(-quarter);
-    ctx.beginPath();
     for (let a = 0; a < one; a += unit) {
       ctx.lineTo(cos(a), sin(a));
       ctx.lineTo(cos(a + halfUnit) * innerRatio, sin(a + halfUnit) * innerRatio);
