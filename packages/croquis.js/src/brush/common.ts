@@ -103,6 +103,40 @@ export function getDrawSoftRoundFn(color: Color, transparentColor: Color): DrawF
   };
 }
 
+export function getStarStampFn(
+  ctx: CanvasRenderingContext2D,
+  color: Color,
+  numPoints?: number,
+  innerRatio?: number
+) {
+  return getStampFn(ctx, getDrawStarFn(color, numPoints, innerRatio));
+}
+
+export function getDrawStarFn(
+  color: Color,
+  numPoints: number = 5,
+  innerRatio: number = 0.5
+): DrawFn {
+  return function drawStar(ctx, width, height) {
+    const halfWidth = width * 0.5;
+    const halfHeight = height * 0.5;
+    const unit = one / numPoints;
+    const halfUnit = unit * 0.5;
+    ctx.fillStyle = color;
+    ctx.translate(halfWidth, halfHeight);
+    ctx.scale(halfWidth, halfHeight);
+    ctx.moveTo(0, -1);
+    ctx.rotate(-quarter);
+    ctx.beginPath();
+    for (let a = 0; a < one; a += unit) {
+      ctx.lineTo(cos(a), sin(a));
+      ctx.lineTo(cos(a + halfUnit) * innerRatio, sin(a + halfUnit) * innerRatio);
+    }
+    ctx.closePath();
+    ctx.fill();
+  };
+}
+
 export function getBrushWidth(size: number, aspectRatio: number) {
   return size * aspectRatio;
 }

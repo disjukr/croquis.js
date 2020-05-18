@@ -6,6 +6,7 @@ import {
   BrushConfig,
   getDrawSoftRoundFn,
   getDrawHardRoundFn,
+  getDrawStarFn,
   getStampFn,
   DrawFn,
 } from 'croquis.js/lib/brush/common';
@@ -71,6 +72,7 @@ export default Page;
 
 const drawSoftRound = getDrawSoftRoundFn('#fff', 'rgba(255,255,255,0)');
 const drawHardRound = getDrawHardRoundFn('#fff');
+const drawStar = getDrawStarFn('#fff', 5, 0.5);
 
 interface SelectBrushTipProps {
   brushConfigState: [BrushConfig, React.Dispatch<BrushConfig>];
@@ -93,6 +95,7 @@ const SelectBrushTip: React.FC<SelectBrushTipProps> = ({ brushConfigState, canva
       <div>
         <BrushTip drawFn={drawSoftRound} selectedDrawFn={drawFn} setDrawFn={setDrawFn} />
         <BrushTip drawFn={drawHardRound} selectedDrawFn={drawFn} setDrawFn={setDrawFn} />
+        <BrushTip drawFn={drawStar} selectedDrawFn={drawFn} setDrawFn={setDrawFn} />
       </div>
       <style jsx>{`
         .select-brush-tip {
