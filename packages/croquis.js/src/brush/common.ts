@@ -211,8 +211,8 @@ export function getStampFn(
       const boundHeight = angle ? abs(width * sin(angle)) + abs(height * cos(angle)) : height;
       const bx = x - boundWidth * 0.5;
       const by = y - boundHeight * 0.5;
-      const rx = min(br.x, bx);
-      const ry = min(br.y, by);
+      const rx = br.w > 0 ? min(br.x, bx) : bx;
+      const ry = br.h > 0 ? min(br.y, by) : by;
       const right = max(br.x + br.w, bx + boundWidth);
       const bottom = max(br.y + br.h, by + boundHeight);
       state.boundingRect.x = rx;

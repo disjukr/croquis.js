@@ -17,6 +17,7 @@ const canvasWidth = 300;
 const canvasHeight = 80;
 const Page = () => {
   const brushConfigState = useState<BrushConfig>(defaultBrushConfig);
+  const [drawBoundingRect, setdrawBoundingRect] = useState<boolean>(false);
   const [canvas, setCanvas] = useState<HTMLCanvasElement>();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -29,35 +30,39 @@ const Page = () => {
         brushConfigState={brushConfigState}
         canvas={canvas}
         style={{ marginTop: '20px', marginBottom: '6px' }}
+        drawBoundingRect={drawBoundingRect}
       />
+      <Checkbox checked={drawBoundingRect} onChange={e => setdrawBoundingRect(e.target.checked)}>
+        Draw Bounding Rect
+      </Checkbox>
       <SelectBrushTip brushConfigState={brushConfigState} canvas={canvas} />
-      <Checkbox brushConfigState={brushConfigState} field="applyPressureToSize">
+      <BrushCheckbox brushConfigState={brushConfigState} field="applyPressureToSize">
         Apply Pen Pressure To Size
-      </Checkbox>
-      <Slider brushConfigState={brushConfigState} max={50} field="size">
+      </BrushCheckbox>
+      <BrushSlider brushConfigState={brushConfigState} max={50} field="size">
         Size
-      </Slider>
-      <Checkbox brushConfigState={brushConfigState} field="applyPressureToFlow">
+      </BrushSlider>
+      <BrushCheckbox brushConfigState={brushConfigState} field="applyPressureToFlow">
         Apply Pen Pressure To Flow
-      </Checkbox>
-      <Slider brushConfigState={brushConfigState} max={1} field="flow">
+      </BrushCheckbox>
+      <BrushSlider brushConfigState={brushConfigState} max={1} field="flow">
         Flow
-      </Slider>
-      <Checkbox brushConfigState={brushConfigState} field="rotateToTangent">
+      </BrushSlider>
+      <BrushCheckbox brushConfigState={brushConfigState} field="rotateToTangent">
         Rotate To Tangent
-      </Checkbox>
-      <Slider brushConfigState={brushConfigState} max={Math.PI * 2} field="angle">
+      </BrushCheckbox>
+      <BrushSlider brushConfigState={brushConfigState} max={Math.PI * 2} field="angle">
         Angle
-      </Slider>
-      <Slider brushConfigState={brushConfigState} max={3} field="spacing">
+      </BrushSlider>
+      <BrushSlider brushConfigState={brushConfigState} max={3} field="spacing">
         Spacing
-      </Slider>
-      <Slider brushConfigState={brushConfigState} max={20} field="normalSpread">
+      </BrushSlider>
+      <BrushSlider brushConfigState={brushConfigState} max={20} field="normalSpread">
         Normal Spread
-      </Slider>
-      <Slider brushConfigState={brushConfigState} max={20} field="tangentSpread">
+      </BrushSlider>
+      <BrushSlider brushConfigState={brushConfigState} max={20} field="tangentSpread">
         Tangent Spread
-      </Slider>
+      </BrushSlider>
       <style jsx global>{`
         body {
           background-color: #535353;
@@ -158,22 +163,33 @@ function drawBrushTip(canvas: HTMLCanvasElement, drawFn: DrawFn) {
   drawFn(ctx, canvas.width, canvas.height);
 }
 
-interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface BrushCheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
   brushConfigState: [BrushConfig, React.Dispatch<BrushConfig>];
   field: keyof BrushConfig;
 }
-const Checkbox: React.FC<CheckboxProps> = ({ children, brushConfigState, field, ...props }) => {
+const BrushCheckbox: React.FC<BrushCheckboxProps> = ({
+  children,
+  brushConfigState,
+  field,
+  ...props
+}) => {
   const [brushConfig, setBrushConfig] = brushConfigState;
+  return (
+    <Checkbox
+      {...props}
+      checked={brushConfig[field] as any}
+      onChange={e => setBrushConfig({ ...brushConfig, [field]: e.target.checked })}>
+      {children}
+    </Checkbox>
+  );
+};
+
+interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+const Checkbox: React.FC<CheckboxProps> = ({ children, ...props }) => {
   return (
     <label className="checkbox">
       <p>
-        {children}{' '}
-        <input
-          type="checkbox"
-          {...props}
-          checked={brushConfig[field] as any}
-          onChange={e => setBrushConfig({ ...brushConfig, [field]: e.target.checked })}
-        />
+        {children} <input type="checkbox" {...props} />
       </p>
       <style jsx>{`
         .checkbox {
@@ -196,23 +212,33 @@ const Checkbox: React.FC<CheckboxProps> = ({ children, brushConfigState, field, 
   );
 };
 
-interface SliderProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface BrushSliderProps extends React.InputHTMLAttributes<HTMLInputElement> {
   brushConfigState: [BrushConfig, React.Dispatch<BrushConfig>];
   field: keyof BrushConfig;
 }
-const Slider: React.FC<SliderProps> = ({ children, brushConfigState, field, ...props }) => {
+const BrushSlider: React.FC<BrushSliderProps> = ({
+  children,
+  brushConfigState,
+  field,
+  ...props
+}) => {
   const [brushConfig, setBrushConfig] = brushConfigState;
+  return (
+    <Slider
+      {...props}
+      value={brushConfig[field] as any}
+      onChange={e => setBrushConfig({ ...brushConfig, [field]: +e.target.value })}>
+      {children}
+    </Slider>
+  );
+};
+
+interface SliderProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+const Slider: React.FC<SliderProps> = ({ children, ...props }) => {
   return (
     <label className="slider">
       <p>{children}</p>
-      <input
-        type="range"
-        min={0}
-        step={0.01}
-        {...props}
-        value={brushConfig[field] as any}
-        onChange={e => setBrushConfig({ ...brushConfig, [field]: +e.target.value })}
-      />
+      <input type="range" min={0} step={0.01} {...props} />
       <style jsx>{`
         .slider {
           margin-bottom: 6px;
@@ -238,15 +264,16 @@ interface BrushStrokePreviewProps {
   style?: CSSProperties;
   brushConfigState: [BrushConfig, React.Dispatch<BrushConfig>];
   canvas?: HTMLCanvasElement;
+  drawBoundingRect: boolean;
 }
 const BrushStrokePreview = React.forwardRef<HTMLCanvasElement, BrushStrokePreviewProps>(
-  ({ className, style, brushConfigState, canvas }, ref) => {
+  ({ className, style, brushConfigState, canvas, drawBoundingRect }, ref) => {
     const [brushConfig] = brushConfigState;
     useEffect(() => {
       if (!canvas) return;
       const ctx = canvas.getContext('2d')!;
-      drawStroke(ctx, brushConfig, canvasWidth, canvasHeight, 30);
-    }, [canvas, brushConfig]);
+      drawStroke(ctx, brushConfig, canvasWidth, canvasHeight, 30, drawBoundingRect);
+    }, [canvas, brushConfig, drawBoundingRect]);
     return (
       <>
         <canvas
@@ -273,7 +300,8 @@ function drawStroke(
   brushConfig: BrushConfig,
   canvasWidth: number,
   canvasHeight: number,
-  padding: number
+  padding: number,
+  drawBoundingRect: boolean
 ) {
   if (brushConfig === defaultBrushConfig) {
     return;
@@ -300,5 +328,15 @@ function drawStroke(
   stylusState.x = canvasWidth - padding;
   stylusState.y = halfHeight;
   stylusState.pressure = 0;
-  drawingPhase.up(stylusState);
+  const { boundingRect } = drawingPhase.up(stylusState);
+  if (drawBoundingRect) {
+    const { x, y, w, h } = boundingRect;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, y, w, h);
+    ctx.closePath();
+    ctx.strokeStyle = '#f00';
+    ctx.stroke();
+    ctx.restore();
+  }
 }
