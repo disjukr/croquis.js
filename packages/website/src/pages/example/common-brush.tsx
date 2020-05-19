@@ -43,6 +43,12 @@ const Page = () => {
       <Slider brushConfigState={brushConfigState} max={1} field="flow">
         Flow
       </Slider>
+      <Checkbox brushConfigState={brushConfigState} field="rotateToTangent">
+        Rotate To Tangent
+      </Checkbox>
+      <Slider brushConfigState={brushConfigState} max={Math.PI * 2} field="angle">
+        Angle
+      </Slider>
       <Slider brushConfigState={brushConfigState} max={3} field="spacing">
         Spacing
       </Slider>
