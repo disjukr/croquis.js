@@ -1,3 +1,4 @@
 node_modules
 src
+.ultra.cache.json
 yarn-error.log
