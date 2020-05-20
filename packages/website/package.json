@@ -13,7 +13,7 @@
     "@types/node": "^13.9.8",
     "@types/react": "^16.9.31",
     "classnames": "^2.2.6",
-    "croquis.js": "^0.0.1",
+    "croquis.js": "^0.0.2",
     "next": "9.3.4",
     "react": "16.13.1",
     "react-dom": "16.13.1",
