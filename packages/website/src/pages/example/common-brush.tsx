@@ -12,6 +12,7 @@ import {
 } from 'croquis.js/lib/brush/common';
 import { getRandomFn } from 'croquis.js/lib/prng/lfsr113';
 import { createStylusState } from 'croquis.js/lib/stylus';
+import GithubCorner from '../../components/GithubCorner';
 
 const canvasWidth = 300;
 const canvasHeight = 80;
@@ -25,6 +26,11 @@ const Page = () => {
   }, []);
   return (
     <div className="page">
+      <GithubCorner
+        bannerColor="#fff"
+        octoColor="#535353"
+        href="https://github.com/disjukr/croquis.js/blob/master/packages/website/src/pages/example/common-brush.tsx"
+      />
       <BrushStrokePreview
         ref={canvasRef}
         brushConfigState={brushConfigState}
