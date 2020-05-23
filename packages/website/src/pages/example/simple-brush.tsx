@@ -10,6 +10,7 @@ import { getStylusState } from 'croquis.js/lib/stylus';
 import useCanvasFadeout from '../../misc/useCanvasFadeout';
 import useWindowSize from '../../misc/useWindowSize';
 import Draw from '../../components/example/Draw';
+import GithubCorner from '../../components/GithubCorner';
 
 const Page = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -67,6 +68,11 @@ const Page = () => {
         }}
       />
       <Draw drawing={!!drawingPhase} />
+      <GithubCorner
+        bannerColor="#000"
+        octoColor="#fff"
+        href="https://github.com/disjukr/croquis.js/blob/master/packages/website/src/pages/example/simple-brush.tsx"
+      />
     </>
   );
 };
