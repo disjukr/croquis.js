@@ -87,7 +87,7 @@ const Page = () => {
 
 export default Page;
 
-const drawSoftRound = getDrawSoftRoundFn('#fff', 'rgba(255,255,255,0)');
+const drawSoftRound = getDrawSoftRoundFn('#fff');
 const drawHardRound = getDrawHardRoundFn('#fff');
 const drawStar = getDrawStarFn('#fff', 5, 0.5);
 

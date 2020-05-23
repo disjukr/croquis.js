@@ -23,6 +23,9 @@
     "url": "https://github.com/disjukr/croquis.js/issues"
   },
   "homepage": "https://github.com/disjukr/croquis.js#readme",
+  "dependencies": {
+    "polished": "^3.6.3"
+  },
   "devDependencies": {
     "prettier": "^2.0.2",
     "typescript": "^3.8.3"

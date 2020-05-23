@@ -1,4 +1,3 @@
-import type { Color } from '../color';
 import type { Circle } from '../geometry';
 import type { StylusState } from '../stylus';
 import { cloneStylusState, copyStylusState } from '../stylus';
@@ -9,7 +8,7 @@ export type BrushContext = CanvasRenderingContext2D;
 
 export interface BrushConfig {
   ctx: BrushContext;
-  color: Color;
+  color: string;
   size: number;
 }
 

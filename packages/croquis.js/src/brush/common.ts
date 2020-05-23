@@ -1,4 +1,4 @@
-import type { Color } from '../color';
+import rgba from 'polished/lib/color/rgba';
 import type { Rect } from '../geometry';
 import type { StylusState } from '../stylus';
 import { cloneStylusState, copyStylusState } from '../stylus';
@@ -60,11 +60,11 @@ export const defaultBrushConfig = Object.freeze<BrushConfig>({
   tangentSpread: 0,
 });
 
-export function getHardRoundStampFn(ctx: CanvasRenderingContext2D, color: Color) {
+export function getHardRoundStampFn(ctx: CanvasRenderingContext2D, color: string) {
   return getStampFn(ctx, getDrawHardRoundFn(color));
 }
 
-export function getDrawHardRoundFn(color: Color): DrawFn {
+export function getDrawHardRoundFn(color: string): DrawFn {
   return function drawHardRound(ctx, width, height) {
     const halfWidth = width * 0.5;
     const halfHeight = height * 0.5;
@@ -76,15 +76,11 @@ export function getDrawHardRoundFn(color: Color): DrawFn {
   };
 }
 
-export function getSoftRoundStampFn(
-  ctx: CanvasRenderingContext2D,
-  color: Color,
-  transparentColor: Color
-) {
-  return getStampFn(ctx, getDrawSoftRoundFn(color, transparentColor));
+export function getSoftRoundStampFn(ctx: CanvasRenderingContext2D, color: string) {
+  return getStampFn(ctx, getDrawSoftRoundFn(color));
 }
 
-export function getDrawSoftRoundFn(color: Color, transparentColor: Color): DrawFn {
+export function getDrawSoftRoundFn(color: string): DrawFn {
   return function drawSoftRound(ctx, width, height) {
     const halfWidth = width * 0.5;
     const halfHeight = height * 0.5;
@@ -97,7 +93,7 @@ export function getDrawSoftRoundFn(color: Color, transparentColor: Color): DrawF
       halfWidth
     );
     grd.addColorStop(0, color);
-    grd.addColorStop(1, transparentColor);
+    grd.addColorStop(1, rgba(color, 0));
     ctx.fillStyle = grd;
     ctx.fillRect(0, 0, 100, 100);
   };
@@ -105,7 +101,7 @@ export function getDrawSoftRoundFn(color: Color, transparentColor: Color): DrawF
 
 export function getStarStampFn(
   ctx: CanvasRenderingContext2D,
-  color: Color,
+  color: string,
   numPoints?: number,
   innerRatio?: number
 ) {
@@ -113,7 +109,7 @@ export function getStarStampFn(
 }
 
 export function getDrawStarFn(
-  color: Color,
+  color: string,
   numPoints: number = 5,
   innerRatio: number = 0.5
 ): DrawFn {
