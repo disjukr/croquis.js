@@ -25,6 +25,8 @@ const DataController: React.FC<DataControllerProps> = ({ className, config, data
         {`
           table {
             position: absolute;
+            font-family: sans-serif;
+            font-variant-numeric: tabular-nums;
             user-select: none;
           }
         `}
