@@ -1,0 +1,1 @@
+self.__BUILD_MANIFEST = (function(a){return {"/example/common-brush":[a],"/example/simple-brush":[a],"/example/stabilizer-pulled-string":[a],"/example/stabilizer-snake":[a]}}("static\u002Fchunks\u002F878dad61a74739d6a4cb5e4fac4149f06ded83ef.3ffe4f4b0258b669c3bc.js"));self.__BUILD_MANIFEST_CB && self.__BUILD_MANIFEST_CB()
