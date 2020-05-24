@@ -7,14 +7,15 @@ import {
 } from 'croquis.js/lib/brush/simple';
 import {
   getStroke as getSnakeStroke,
-  defaultSnakeConfig,
   SnakeDrawingContext,
+  SnakeState,
 } from 'croquis.js/lib/stabilizer/snake';
 import type { StrokeDrawingContext } from 'croquis.js/lib/stroke-protocol';
-import { getStylusState, createStylusState } from 'croquis.js/lib/stylus';
+import { getStylusState } from 'croquis.js/lib/stylus';
 import SnakeGuide from '../../components/guide/stabilizer/SnakeGuide';
 import Draw from '../../components/example/Draw';
 import GithubCorner from '../../components/GithubCorner';
+import DataController from '../../components/DataController';
 import useCanvasFadeout from '../../misc/useCanvasFadeout';
 import useWindowSize from '../../misc/useWindowSize';
 import useForceUpdate from '../../misc/useForceUpdate';
@@ -26,10 +27,20 @@ const Page = () => {
   useCanvasFadeout(canvasRef);
   const windowSize = useWindowSize();
   const [drawingPhase, setDrawingPhase] = useState<
-    StrokeDrawingContext<any, any, BrushStrokeResult>
+    StrokeDrawingContext<any, SnakeState, BrushStrokeResult>
   >();
+  interface Config {
+    brushSize: number;
+    tailCount: number;
+    weight: number;
+  }
+  const [config, setConfig] = useState<Config>(() => ({
+    brushSize: 20,
+    tailCount: 3,
+    weight: 0.5,
+  }));
   useEffect(() => {
-    if (!drawingPhase?.getState().update) return;
+    if (!drawingPhase) return;
     const id = setInterval(drawingPhase.getState().update, 10);
     return () => clearInterval(id);
   }, [drawingPhase]);
@@ -39,11 +50,13 @@ const Page = () => {
     const brushConfig = {
       ...defaultBrushConfig,
       ctx,
-      size: 20,
+      size: config.brushSize,
     };
     const drawingPhase = snake.down(
       {
-        ...defaultSnakeConfig,
+        tailCount: config.tailCount,
+        weight: config.weight,
+        catchUp: true,
         targetConfig: brushConfig,
       },
       stylusState
@@ -89,6 +102,16 @@ const Page = () => {
         octoColor="#fff"
         href="https://github.com/disjukr/croquis.js/blob/master/packages/website/src/pages/example/stabilizer-snake.tsx"
       />
+      <DataController
+        className="data-controller"
+        data={config}
+        setData={setConfig}
+        config={{
+          brushSize: { label: 'Brush Size', type: 'range', min: 0, max: 100, step: 1 },
+          tailCount: { label: 'Tail Count', type: 'range', min: 1, max: 10, step: 1 },
+          weight: { label: 'Weight', type: 'range', min: 0, max: 1, step: 0.01 },
+        }}
+      />
     </>
   );
 };
@@ -98,17 +121,12 @@ export default Page;
 interface StabilizerGuideProps {
   drawingPhase?: SnakeDrawingContext<BrushStroke>;
 }
-const defaultStylusState = createStylusState();
 const StabilizerGuide: React.FC<StabilizerGuideProps> = props => {
-  const [stylusState, setStylusState] = useState(defaultStylusState);
   const forceUpdate = useForceUpdate();
   useEffect(() => {
-    const pointermove = (e: PointerEvent) => setStylusState(getStylusState(e));
     const id = setInterval(forceUpdate, 10);
-    window.addEventListener('pointermove', pointermove);
     return () => {
       clearInterval(id);
-      window.removeEventListener('pointermove', pointermove);
     };
   }, []);
   if (!props.drawingPhase) return null;
