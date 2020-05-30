@@ -12,10 +12,12 @@
     "@types/classnames": "^2.2.10",
     "@types/node": "^13.9.8",
     "@types/react": "^16.9.31",
+    "@types/react-color": "^3.0.2",
     "classnames": "^2.2.6",
     "croquis.js": "^0.0.2",
     "next": "9.3.4",
     "react": "16.13.1",
+    "react-color": "^2.18.1",
     "react-dom": "16.13.1",
     "typescript": "^3.8.3"
   }

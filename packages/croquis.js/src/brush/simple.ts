@@ -38,7 +38,10 @@ export const stroke: BrushStroke = {
     };
     const drawingContext = getDrawingContext(stroke, config, state);
     if (curr.pressure <= 0) return drawingContext;
+    config.ctx.save();
+    config.ctx.fillStyle = config.color;
     drawCircle(config.ctx, stylusStateToCircle(curr, config.size));
+    config.ctx.restore();
     return drawingContext;
   },
 };
@@ -60,14 +63,20 @@ function getDrawingContext(
     move(curr) {
       const c1 = stylusStateToCircle(state.prev, config.size);
       const c2 = stylusStateToCircle(curr, config.size);
+      config.ctx.save();
+      config.ctx.fillStyle = config.color;
       drawCapsule(config.ctx, c1, c2);
       copyStylusState(state.prev, curr);
+      config.ctx.restore();
     },
     up(curr) {
       const c1 = stylusStateToCircle(state.prev, config.size);
       const c2 = stylusStateToCircle(curr, config.size);
+      config.ctx.save();
+      config.ctx.fillStyle = config.color;
       drawCapsule(config.ctx, c1, c2);
       copyStylusState(state.prev, curr);
+      config.ctx.restore();
       return {
         // boundingRect: state.boundingRect,
       };
