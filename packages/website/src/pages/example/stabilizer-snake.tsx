@@ -35,9 +35,9 @@ const Page = () => {
     weight: number;
   }
   const [config, setConfig] = useState<Config>(() => ({
-    brushSize: 20,
-    tailCount: 3,
-    weight: 0.5,
+    brushSize: 40,
+    tailCount: 5,
+    weight: 0.7,
   }));
   useEffect(() => {
     if (!drawingPhase) return;
