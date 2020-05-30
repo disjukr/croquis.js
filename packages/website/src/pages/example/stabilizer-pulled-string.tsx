@@ -34,7 +34,7 @@ const Page = () => {
   }
   const [config, setConfig] = useState<Config>(() => ({
     brushSize: 40,
-    stringLength: 200,
+    stringLength: 100,
   }));
   useEffect(() => {
     if (!drawingPhase?.getState().update) return;
