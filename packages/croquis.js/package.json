@@ -1,6 +1,6 @@
 {
   "name": "croquis.js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "drawing tool library",
   "main": "index.js",
   "scripts": {
