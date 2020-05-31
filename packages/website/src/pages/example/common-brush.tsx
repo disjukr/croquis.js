@@ -324,17 +324,17 @@ function drawStroke(
   stylusState.x = padding;
   stylusState.y = halfHeight;
   stylusState.pressure = 0;
-  const drawingPhase = brush.down(brushConfig, stylusState);
+  const drawingContext = brush.down(brushConfig, stylusState);
   for (let t = 0; t < 1; t += 0.01) {
     stylusState.x = t * paddedWidth + padding;
     stylusState.y = -Math.sin(Math.PI * 2 * t) * amplitude + halfHeight;
     stylusState.pressure = 1 - Math.abs(t * 2 - 1);
-    drawingPhase.move(stylusState);
+    drawingContext.move(stylusState);
   }
   stylusState.x = canvasWidth - padding;
   stylusState.y = halfHeight;
   stylusState.pressure = 0;
-  const { boundingRect } = drawingPhase.up(stylusState);
+  const { boundingRect } = drawingContext.up(stylusState);
   if (drawBoundingRect) {
     const { x, y, w, h } = boundingRect;
     ctx.save();

@@ -25,7 +25,7 @@ const Page = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useCanvasFadeout(canvasRef);
   const windowSize = useWindowSize();
-  const [drawingPhase, setDrawingPhase] = useState<
+  const [drawingContext, setDrawingContext] = useState<
     StrokeDrawingContext<any, any, BrushStrokeResult>
   >();
   interface Config {
@@ -44,25 +44,25 @@ const Page = () => {
       ctx,
       size: config.brushSize,
     };
-    const drawingPhase = pulledString.down(
+    const drawingContext = pulledString.down(
       {
         stringLength: config.stringLength,
         targetConfig: brushConfig,
       },
       stylusState
     );
-    setDrawingPhase(drawingPhase);
+    setDrawingContext(drawingContext);
   };
   useEffect(() => {
-    if (!drawingPhase) return;
+    if (!drawingContext) return;
     const moveHandler = (e: PointerEvent) => {
       const stylusState = getStylusState(e);
-      drawingPhase.move(stylusState);
+      drawingContext.move(stylusState);
     };
     const upHandler = (e: PointerEvent) => {
       const stylusState = getStylusState(e);
-      drawingPhase.up(stylusState);
-      setDrawingPhase(undefined);
+      drawingContext.up(stylusState);
+      setDrawingContext(undefined);
     };
     window.addEventListener('pointermove', moveHandler);
     window.addEventListener('pointerup', upHandler);
@@ -70,7 +70,7 @@ const Page = () => {
       window.removeEventListener('pointermove', moveHandler);
       window.removeEventListener('pointerup', upHandler);
     };
-  }, [drawingPhase]);
+  }, [drawingContext]);
   return (
     <>
       <canvas
@@ -85,8 +85,8 @@ const Page = () => {
           touchAction: 'none',
         }}
       />
-      <StabilizerGuide drawingPhase={drawingPhase} />
-      <Draw drawing={!!drawingPhase} />
+      <StabilizerGuide drawingContext={drawingContext} />
+      <Draw drawing={!!drawingContext} />
       <GithubCorner
         bannerColor="#000"
         octoColor="#fff"
@@ -108,7 +108,7 @@ const Page = () => {
 export default Page;
 
 interface StabilizerGuideProps {
-  drawingPhase?: PulledStringDrawingContext<BrushStroke>;
+  drawingContext?: PulledStringDrawingContext<BrushStroke>;
 }
 const defaultStylusState = createStylusState();
 const StabilizerGuide: React.FC<StabilizerGuideProps> = props => {
@@ -123,13 +123,13 @@ const StabilizerGuide: React.FC<StabilizerGuideProps> = props => {
       window.removeEventListener('pointermove', pointermove);
     };
   }, []);
-  if (!props.drawingPhase) return null;
+  if (!props.drawingContext) return null;
   return (
     <PulledStringGuide
-      brushSize={props.drawingPhase.getConfig(brush).size}
+      brushSize={props.drawingContext.getConfig(brush).size}
       stylusState={stylusState}
-      follower={props.drawingPhase.getState().follower}
-      stringLength={props.drawingPhase.getConfig().stringLength}
+      follower={props.drawingContext.getState().follower}
+      stringLength={props.drawingContext.getConfig().stringLength}
       style={{ position: 'absolute', top: 0, left: 0 }}
     />
   );

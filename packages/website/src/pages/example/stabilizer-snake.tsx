@@ -26,7 +26,7 @@ const Page = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useCanvasFadeout(canvasRef);
   const windowSize = useWindowSize();
-  const [drawingPhase, setDrawingPhase] = useState<
+  const [drawingContext, setDrawingContext] = useState<
     StrokeDrawingContext<any, SnakeState, BrushStrokeResult>
   >();
   interface Config {
@@ -40,10 +40,10 @@ const Page = () => {
     weight: 0.7,
   }));
   useEffect(() => {
-    if (!drawingPhase) return;
-    const id = setInterval(drawingPhase.getState().update, 10);
+    if (!drawingContext) return;
+    const id = setInterval(drawingContext.getState().update, 10);
     return () => clearInterval(id);
-  }, [drawingPhase]);
+  }, [drawingContext]);
   const downHandler: PointerEventHandler = e => {
     const ctx = canvasRef.current!.getContext('2d')!;
     const stylusState = getStylusState(e.nativeEvent);
@@ -52,7 +52,7 @@ const Page = () => {
       ctx,
       size: config.brushSize,
     };
-    const drawingPhase = snake.down(
+    const drawingContext = snake.down(
       {
         tailCount: config.tailCount,
         weight: config.weight,
@@ -61,18 +61,18 @@ const Page = () => {
       },
       stylusState
     );
-    setDrawingPhase(drawingPhase);
+    setDrawingContext(drawingContext);
   };
   useEffect(() => {
-    if (!drawingPhase) return;
+    if (!drawingContext) return;
     const moveHandler = (e: PointerEvent) => {
       const stylusState = getStylusState(e);
-      drawingPhase.move(stylusState);
+      drawingContext.move(stylusState);
     };
     const upHandler = (e: PointerEvent) => {
       const stylusState = getStylusState(e);
-      drawingPhase.up(stylusState);
-      setDrawingPhase(undefined);
+      drawingContext.up(stylusState);
+      setDrawingContext(undefined);
     };
     window.addEventListener('pointermove', moveHandler);
     window.addEventListener('pointerup', upHandler);
@@ -80,7 +80,7 @@ const Page = () => {
       window.removeEventListener('pointermove', moveHandler);
       window.removeEventListener('pointerup', upHandler);
     };
-  }, [drawingPhase]);
+  }, [drawingContext]);
   return (
     <>
       <canvas
@@ -95,8 +95,8 @@ const Page = () => {
           touchAction: 'none',
         }}
       />
-      <StabilizerGuide drawingPhase={drawingPhase} />
-      <Draw drawing={!!drawingPhase} />
+      <StabilizerGuide drawingContext={drawingContext} />
+      <Draw drawing={!!drawingContext} />
       <GithubCorner
         bannerColor="#000"
         octoColor="#fff"
@@ -119,7 +119,7 @@ const Page = () => {
 export default Page;
 
 interface StabilizerGuideProps {
-  drawingPhase?: SnakeDrawingContext<BrushStroke>;
+  drawingContext?: SnakeDrawingContext<BrushStroke>;
 }
 const StabilizerGuide: React.FC<StabilizerGuideProps> = props => {
   const forceUpdate = useForceUpdate();
@@ -129,11 +129,11 @@ const StabilizerGuide: React.FC<StabilizerGuideProps> = props => {
       clearInterval(id);
     };
   }, []);
-  if (!props.drawingPhase) return null;
+  if (!props.drawingContext) return null;
   return (
     <SnakeGuide
-      brushSize={props.drawingPhase.getConfig(brush).size}
-      stylusStates={props.drawingPhase.getState().stylusStates}
+      brushSize={props.drawingContext.getConfig(brush).size}
+      stylusStates={props.drawingContext.getState().stylusStates}
       style={{ position: 'absolute', top: 0, left: 0 }}
     />
   );

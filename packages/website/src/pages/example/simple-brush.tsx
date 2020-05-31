@@ -13,7 +13,7 @@ const Page = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useCanvasFadeout(canvasRef);
   const windowSize = useWindowSize();
-  const [drawingPhase, setDrawingPhase] = useState<
+  const [drawingContext, setDrawingContext] = useState<
     StrokeDrawingContext<any, any, BrushStrokeResult>
   >();
   interface Config {
@@ -25,10 +25,10 @@ const Page = () => {
     color: '#000',
   }));
   useEffect(() => {
-    if (!drawingPhase?.getState().update) return;
-    const id = setInterval(drawingPhase.getState().update, 10);
+    if (!drawingContext?.getState().update) return;
+    const id = setInterval(drawingContext.getState().update, 10);
     return () => clearInterval(id);
-  }, [drawingPhase]);
+  }, [drawingContext]);
   const downHandler: PointerEventHandler = e => {
     const ctx = canvasRef.current!.getContext('2d')!;
     const brushConfig = {
@@ -37,19 +37,19 @@ const Page = () => {
       color: config.color,
     };
     const stylusState = getStylusState(e.nativeEvent);
-    const drawingPhase = brush.down(brushConfig, stylusState);
-    setDrawingPhase(drawingPhase);
+    const drawingContext = brush.down(brushConfig, stylusState);
+    setDrawingContext(drawingContext);
   };
   useEffect(() => {
-    if (!drawingPhase) return;
+    if (!drawingContext) return;
     const moveHandler = (e: PointerEvent) => {
       const stylusState = getStylusState(e);
-      drawingPhase.move(stylusState);
+      drawingContext.move(stylusState);
     };
     const upHandler = (e: PointerEvent) => {
       const stylusState = getStylusState(e);
-      drawingPhase.up(stylusState);
-      setDrawingPhase(undefined);
+      drawingContext.up(stylusState);
+      setDrawingContext(undefined);
     };
     window.addEventListener('pointermove', moveHandler);
     window.addEventListener('pointerup', upHandler);
@@ -57,7 +57,7 @@ const Page = () => {
       window.removeEventListener('pointermove', moveHandler);
       window.removeEventListener('pointerup', upHandler);
     };
-  }, [drawingPhase]);
+  }, [drawingContext]);
   return (
     <>
       <canvas
@@ -72,7 +72,7 @@ const Page = () => {
           touchAction: 'none',
         }}
       />
-      <Draw drawing={!!drawingPhase} />
+      <Draw drawing={!!drawingContext} />
       <GithubCorner
         bannerColor="#000"
         octoColor="#fff"
