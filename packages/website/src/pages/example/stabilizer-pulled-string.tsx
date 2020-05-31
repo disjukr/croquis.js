@@ -36,11 +36,6 @@ const Page = () => {
     brushSize: 40,
     stringLength: 100,
   }));
-  useEffect(() => {
-    if (!drawingPhase?.getState().update) return;
-    const id = setInterval(drawingPhase.getState().update, 10);
-    return () => clearInterval(id);
-  }, [drawingPhase]);
   const downHandler: PointerEventHandler = e => {
     const ctx = canvasRef.current!.getContext('2d')!;
     const stylusState = getStylusState(e.nativeEvent);
