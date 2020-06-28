@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import cx from 'classnames';
+import Tabs from './Tabs';
 
 const Menu: React.FC = () => {
   const [open, setOpen] = useState(false);
   return <div className={cx('menu', open && 'open')}>
     <div className='background'/>
     <button className='menu-button' onClick={() => setOpen(!open)}/>
+    <Tabs/>
     <style jsx>{`
       .menu {
         position: absolute;
@@ -39,6 +41,7 @@ const Menu: React.FC = () => {
         border-right: 5px dotted #ccc;
       }
       .background {
+        position: absolute;
         width: 100%;
         height: 100%;
         background-color: #fff;
