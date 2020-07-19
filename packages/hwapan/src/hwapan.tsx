@@ -27,7 +27,11 @@ interface UpdateFn {
   (hwapan: Hwapan): string | undefined;
 }
 const hwapanContext = React.createContext<HwapanContextValue>(null as any);
-export const HwapanProvider: React.FC = ({ children }) => {
+
+interface HwapanProviderProps {
+  initialHwapan: Hwapan;
+}
+export const HwapanProvider: React.FC<HwapanProviderProps> = ({ children }) => {
   const [hcv] = useState(() => {
     const hcv: HwapanContextValue = {
       emitter: new EventEmitter(),
