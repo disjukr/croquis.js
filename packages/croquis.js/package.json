@@ -1,5 +1,5 @@
 {
-  "name": "croquis.js",
+  "name": "croquis-js",
   "version": "0.0.3",
   "description": "drawing tool library",
   "main": "index.js",
