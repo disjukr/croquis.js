@@ -4,14 +4,14 @@ import {
   BrushStroke,
   defaultBrushConfig,
   BrushStrokeResult,
-} from 'croquis.js/lib/brush/simple';
+} from '@disjukr/croquis-js/lib/brush/simple';
 import {
   getStroke as getSnakeStroke,
   SnakeDrawingContext,
   SnakeState,
-} from 'croquis.js/lib/stabilizer/snake';
-import type { StrokeDrawingContext } from 'croquis.js/lib/stroke-protocol';
-import { getStylusState } from 'croquis.js/lib/stylus';
+} from '@disjukr/croquis-js/lib/stabilizer/snake';
+import type { StrokeDrawingContext } from '@disjukr/croquis-js/lib/stroke-protocol';
+import { getStylusState } from '@disjukr/croquis-js/lib/stylus';
 import SnakeGuide from '../../components/guide/stabilizer/SnakeGuide';
 import Draw from '../../components/example/Draw';
 import GithubCorner from '../../components/GithubCorner';

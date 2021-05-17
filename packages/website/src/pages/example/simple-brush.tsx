@@ -1,8 +1,8 @@
 import React, { useRef, PointerEventHandler, useState, useEffect } from 'react';
-import { stroke as brush, BrushStrokeResult } from 'croquis.js/lib/brush/simple';
+import { stroke as brush, BrushStrokeResult } from '@disjukr/croquis-js/lib/brush/simple';
 
-import type { StrokeDrawingContext } from 'croquis.js/lib/stroke-protocol';
-import { getStylusState } from 'croquis.js/lib/stylus';
+import type { StrokeDrawingContext } from '@disjukr/croquis-js/lib/stroke-protocol';
+import { getStylusState } from '@disjukr/croquis-js/lib/stylus';
 import useCanvasFadeout from '../../misc/useCanvasFadeout';
 import useWindowSize from '../../misc/useWindowSize';
 import Draw from '../../components/example/Draw';

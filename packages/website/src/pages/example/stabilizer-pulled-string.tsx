@@ -4,13 +4,13 @@ import {
   BrushStroke,
   defaultBrushConfig,
   BrushStrokeResult,
-} from 'croquis.js/lib/brush/simple';
+} from '@disjukr/croquis-js/lib/brush/simple';
 import {
   getStroke as getPulledStringStroke,
   PulledStringDrawingContext,
-} from 'croquis.js/lib/stabilizer/pulled-string';
-import type { StrokeDrawingContext } from 'croquis.js/lib/stroke-protocol';
-import { getStylusState, createStylusState } from 'croquis.js/lib/stylus';
+} from '@disjukr/croquis-js/lib/stabilizer/pulled-string';
+import type { StrokeDrawingContext } from '@disjukr/croquis-js/lib/stroke-protocol';
+import { getStylusState, createStylusState } from '@disjukr/croquis-js/lib/stylus';
 import PulledStringGuide from '../../components/guide/stabilizer/PulledStringGuide';
 import Draw from '../../components/example/Draw';
 import GithubCorner from '../../components/GithubCorner';

@@ -9,9 +9,9 @@ import {
   getDrawStarFn,
   getStampFn,
   DrawFn,
-} from 'croquis.js/lib/brush/common';
-import { getRandomFn } from 'croquis.js/lib/prng/lfsr113';
-import { createStylusState } from 'croquis.js/lib/stylus';
+} from '@disjukr/croquis-js/lib/brush/common';
+import { getRandomFn } from '@disjukr/croquis-js/lib/prng/lfsr113';
+import { createStylusState } from '@disjukr/croquis-js/lib/stylus';
 import GithubCorner from '../../components/GithubCorner';
 
 const canvasWidth = 300;

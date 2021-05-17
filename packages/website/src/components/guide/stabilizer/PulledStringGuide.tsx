@@ -1,6 +1,6 @@
 import React from 'react';
-import { getGuidePathData } from 'croquis.js/lib/stabilizer/pulled-string';
-import { StylusState } from 'croquis.js/lib/stylus';
+import { getGuidePathData } from '@disjukr/croquis-js/lib/stabilizer/pulled-string';
+import { StylusState } from '@disjukr/croquis-js/lib/stylus';
 
 interface PulledStringGuideProps extends React.SVGProps<SVGSVGElement> {
   brushSize: number;

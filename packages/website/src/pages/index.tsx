@@ -4,19 +4,19 @@ import {
   BrushStroke,
   defaultBrushConfig,
   BrushStrokeResult,
-} from 'croquis.js/lib/brush/simple';
+} from '@disjukr/croquis-js/lib/brush/simple';
 import {
   getStroke as getSnakeStroke,
   defaultSnakeConfig,
   SnakeDrawingContext,
-} from 'croquis.js/lib/stabilizer/snake';
+} from '@disjukr/croquis-js/lib/stabilizer/snake';
 import {
   getStroke as getPulledStringStroke,
   defaultPulledStringConfig,
   PulledStringDrawingContext,
-} from 'croquis.js/lib/stabilizer/pulled-string';
-import type { StrokeDrawingContext } from 'croquis.js/lib/stroke-protocol';
-import { getStylusState, createStylusState } from 'croquis.js/lib/stylus';
+} from '@disjukr/croquis-js/lib/stabilizer/pulled-string';
+import type { StrokeDrawingContext } from '@disjukr/croquis-js/lib/stroke-protocol';
+import { getStylusState, createStylusState } from '@disjukr/croquis-js/lib/stylus';
 import SnakeGuide from '../components/guide/stabilizer/SnakeGuide';
 import PulledStringGuide from '../components/guide/stabilizer/PulledStringGuide';
 import useCanvasFadeout from '../misc/useCanvasFadeout';
