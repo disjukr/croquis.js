@@ -14,7 +14,7 @@
     "@types/react": "^16.9.35",
     "@types/react-color": "^3.0.2",
     "classnames": "^2.2.6",
-    "croquis-js": "^0.0.3",
+    "@disjukr/croquis-js": "^0.0.3",
     "next": "^9.4.4",
     "react": "^16.13.1",
     "react-color": "^2.18.1",
