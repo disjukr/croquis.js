@@ -7,9 +7,9 @@ it also provides functions such as stabilization of brush strokes.
 
 ## install
 ```sh
-npm install croquis.js
+npm install @disjukr/croquis-js
 # or
-yarn add croquis.js
+yarn add @disjukr/croquis-js
 ```
 
 ## stroke protocol
